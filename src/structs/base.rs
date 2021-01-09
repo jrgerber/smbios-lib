@@ -30,9 +30,8 @@ pub fn get_field_handle(offset:usize, data:&[u8]) -> Option<Handle> {
     }    
 }
 
-// #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 #[derive(Debug)]
-pub enum StructName<'a>
+pub enum DefinedStruct<'a>
 {
     Information(SMBiosInformation<'a>),
     SystemInformation(SMBiosSystemInformation<'a>),
@@ -149,6 +148,12 @@ impl<'a> SMBiosStructParts<'a> {
         }    
     }
 
+    // todo: learn how to pass an index range (SliceIndex?) rather than start/end indices.
+    // This would better conform to the Rust design look and feel.
+    pub fn get_field_data(&self, start_index:usize, end_index:usize) -> Option<&[u8]> {
+        return self.data.get(start_index .. end_index)
+    }
+
     pub fn as_type<T : SMBiosStruct<'a>>(&'a self) -> Option<T> {
         if T::STRUCT_TYPE == self.header.struct_type() {
             Some(T::new(self))
@@ -158,56 +163,56 @@ impl<'a> SMBiosStructParts<'a> {
         }
     }
 
-    pub fn struct_type_name(&self) -> StructName {
+    pub fn struct_type_name(&self) -> DefinedStruct {
         match self.header.struct_type() {
-            SMBiosInformation::STRUCT_TYPE => StructName::Information(SMBiosInformation::new(self)),
-            SMBiosSystemInformation::STRUCT_TYPE => StructName::SystemInformation(SMBiosSystemInformation::new(self)),
-            SMBiosBaseboardInformation::STRUCT_TYPE => StructName::BaseBoardInformation(SMBiosBaseboardInformation::new(self)),
-            SMBiosSystemChassisInformation::STRUCT_TYPE => StructName::SystemChassisInformation(SMBiosSystemChassisInformation::new(self)),
-            SMBiosProcessorInformation::STRUCT_TYPE => StructName::ProcessorInformation(SMBiosProcessorInformation::new(self)),
-            SMBiosMemoryControllerInformation::STRUCT_TYPE => StructName::MemoryControllerInformation(SMBiosMemoryControllerInformation::new(self)),
-            SMBiosMemoryModuleInformation::STRUCT_TYPE => StructName::MemoryModuleInformation(SMBiosMemoryModuleInformation::new(self)),
-            SMBiosCacheInformation::STRUCT_TYPE => StructName::CacheInformation(SMBiosCacheInformation::new(self)),
-            SMBiosPortConnectorInformation::STRUCT_TYPE => StructName::PortConnectorInformation(SMBiosPortConnectorInformation::new(self)),
-            SMBiosSystemSlot::STRUCT_TYPE => StructName::SystemSlot(SMBiosSystemSlot::new(self)),
-            SMBiosOnBoardDeviceInformation::STRUCT_TYPE => StructName::OnBoardDeviceInformation(SMBiosOnBoardDeviceInformation::new(self)),
-            SMBiosOemStrings::STRUCT_TYPE => StructName::OemStrings(SMBiosOemStrings::new(self)),
-            SMBiosSystemConfigurationOptions::STRUCT_TYPE => StructName::SystemConfigurationOptions(SMBiosSystemConfigurationOptions::new(self)),
-            SMBiosBiosLanguageInformation::STRUCT_TYPE => StructName::LanguageInformation(SMBiosBiosLanguageInformation::new(self)),
-            SMBiosGroupAssociations::STRUCT_TYPE => StructName::GroupAssociations(SMBiosGroupAssociations::new(self)),
-            SMBiosSystemEventLog::STRUCT_TYPE => StructName::EventLog(SMBiosSystemEventLog::new(self)),
-            SMBiosPhysicalMemoryArray::STRUCT_TYPE => StructName::PhysicalMemoryArray(SMBiosPhysicalMemoryArray::new(self)),
-            SMBiosMemoryDevice::STRUCT_TYPE => StructName::MemoryDevice(SMBiosMemoryDevice::new(self)),
-            SMBiosMemoryErrorInformation32::STRUCT_TYPE => StructName::MemoryErrorInformation32Bit(SMBiosMemoryErrorInformation32::new(self)),
-            SMBiosMemoryArrayMappedAddress::STRUCT_TYPE => StructName::MemoryArrayMappedAddress(SMBiosMemoryArrayMappedAddress::new(self)),
-            SMBiosMemoryDeviceMappedAddress::STRUCT_TYPE => StructName::MemoryDeviceMappedAddress(SMBiosMemoryDeviceMappedAddress::new(self)),
-            SMBiosBuiltInPointingDevice::STRUCT_TYPE => StructName::BuiltInPointingDevice(SMBiosBuiltInPointingDevice::new(self)),
-            SMBiosPortableBattery::STRUCT_TYPE => StructName::PortableBattery(SMBiosPortableBattery::new(self)),
-            SMBiosSystemReset::STRUCT_TYPE => StructName::SystemReset(SMBiosSystemReset::new(self)),
-            SMBiosHardwareSecurity::STRUCT_TYPE => StructName::HardwareSecurity(SMBiosHardwareSecurity::new(self)),
-            SMBiosSystemPowerControls::STRUCT_TYPE => StructName::SystemPowerControls(SMBiosSystemPowerControls::new(self)),
-            SMBiosVoltageProbe::STRUCT_TYPE => StructName::VoltageProbe(SMBiosVoltageProbe::new(self)),
-            SMBiosCoolingDevice::STRUCT_TYPE => StructName::CoolingDevice(SMBiosCoolingDevice::new(self)),
-            SMBiosTemperatureProbe::STRUCT_TYPE => StructName::TemperatureProbe(SMBiosTemperatureProbe::new(self)),
-            SMBiosElectricalCurrentProbe::STRUCT_TYPE => StructName::ElectricalCurrentProbe(SMBiosElectricalCurrentProbe::new(self)),
-            SMBiosOutOfBandRemoteAccess::STRUCT_TYPE => StructName::OutOfBandRemoteAccess(SMBiosOutOfBandRemoteAccess::new(self)),
-            SMBiosBisEntryPoint::STRUCT_TYPE => StructName::BisEntryPoint(SMBiosBisEntryPoint::new(self)),
-            SMBiosSystemBootInformation::STRUCT_TYPE => StructName::SystemBootInformation(SMBiosSystemBootInformation::new(self)),
-            SMBiosMemoryErrorInformation64::STRUCT_TYPE => StructName::MemoryErrorInformation64Bit(SMBiosMemoryErrorInformation64::new(self)),
-            SMBiosManagementDevice::STRUCT_TYPE => StructName::ManagementDevice(SMBiosManagementDevice::new(self)),
-            SMBiosManagementDeviceComponent::STRUCT_TYPE => StructName::ManagementDeviceComponent(SMBiosManagementDeviceComponent::new(self)),
-            SMBiosManagementDeviceThresholdData::STRUCT_TYPE => StructName::ManagementDeviceThresholdData(SMBiosManagementDeviceThresholdData::new(self)),
-            SMBiosMemoryChannel::STRUCT_TYPE => StructName::MemoryChannel(SMBiosMemoryChannel::new(self)),
-            SMBiosIpmiDeviceInformation::STRUCT_TYPE => StructName::IpmiDeviceInformation(SMBiosIpmiDeviceInformation::new(self)),
-            SMBiosSystemPowerSupply::STRUCT_TYPE => StructName::SystemPowerSupply(SMBiosSystemPowerSupply::new(self)),
-            SMBiosAdditionalInformation::STRUCT_TYPE => StructName::AdditionalInformation(SMBiosAdditionalInformation::new(self)),
-            SMBiosOnboardDevicesExtendedInformation::STRUCT_TYPE => StructName::OnboardDevicesExtendedInformation(SMBiosOnboardDevicesExtendedInformation::new(self)),
-            SMBiosManagementControllerHostInterface::STRUCT_TYPE => StructName::ManagementControllerHostInterface(SMBiosManagementControllerHostInterface::new(self)),
-            SMBiosTpmDevice::STRUCT_TYPE => StructName::TpmDevice(SMBiosTpmDevice::new(self)),
-            SMBiosProcessorAdditionalInformation::STRUCT_TYPE => StructName::ProcessorAdditionalInformation(SMBiosProcessorAdditionalInformation::new(self)),
-            SMBiosInactive::STRUCT_TYPE => StructName::Inactive(SMBiosInactive::new(self)),
-            SMBiosEndOfTable::STRUCT_TYPE => StructName::EndOfTable(SMBiosEndOfTable::new(self)),
-            _ => StructName::Unknown(SMBiosUnknown::new(self)),
+            SMBiosInformation::STRUCT_TYPE => DefinedStruct::Information(SMBiosInformation::new(self)),
+            SMBiosSystemInformation::STRUCT_TYPE => DefinedStruct::SystemInformation(SMBiosSystemInformation::new(self)),
+            SMBiosBaseboardInformation::STRUCT_TYPE => DefinedStruct::BaseBoardInformation(SMBiosBaseboardInformation::new(self)),
+            SMBiosSystemChassisInformation::STRUCT_TYPE => DefinedStruct::SystemChassisInformation(SMBiosSystemChassisInformation::new(self)),
+            SMBiosProcessorInformation::STRUCT_TYPE => DefinedStruct::ProcessorInformation(SMBiosProcessorInformation::new(self)),
+            SMBiosMemoryControllerInformation::STRUCT_TYPE => DefinedStruct::MemoryControllerInformation(SMBiosMemoryControllerInformation::new(self)),
+            SMBiosMemoryModuleInformation::STRUCT_TYPE => DefinedStruct::MemoryModuleInformation(SMBiosMemoryModuleInformation::new(self)),
+            SMBiosCacheInformation::STRUCT_TYPE => DefinedStruct::CacheInformation(SMBiosCacheInformation::new(self)),
+            SMBiosPortConnectorInformation::STRUCT_TYPE => DefinedStruct::PortConnectorInformation(SMBiosPortConnectorInformation::new(self)),
+            SMBiosSystemSlot::STRUCT_TYPE => DefinedStruct::SystemSlot(SMBiosSystemSlot::new(self)),
+            SMBiosOnBoardDeviceInformation::STRUCT_TYPE => DefinedStruct::OnBoardDeviceInformation(SMBiosOnBoardDeviceInformation::new(self)),
+            SMBiosOemStrings::STRUCT_TYPE => DefinedStruct::OemStrings(SMBiosOemStrings::new(self)),
+            SMBiosSystemConfigurationOptions::STRUCT_TYPE => DefinedStruct::SystemConfigurationOptions(SMBiosSystemConfigurationOptions::new(self)),
+            SMBiosBiosLanguageInformation::STRUCT_TYPE => DefinedStruct::LanguageInformation(SMBiosBiosLanguageInformation::new(self)),
+            SMBiosGroupAssociations::STRUCT_TYPE => DefinedStruct::GroupAssociations(SMBiosGroupAssociations::new(self)),
+            SMBiosSystemEventLog::STRUCT_TYPE => DefinedStruct::EventLog(SMBiosSystemEventLog::new(self)),
+            SMBiosPhysicalMemoryArray::STRUCT_TYPE => DefinedStruct::PhysicalMemoryArray(SMBiosPhysicalMemoryArray::new(self)),
+            SMBiosMemoryDevice::STRUCT_TYPE => DefinedStruct::MemoryDevice(SMBiosMemoryDevice::new(self)),
+            SMBiosMemoryErrorInformation32::STRUCT_TYPE => DefinedStruct::MemoryErrorInformation32Bit(SMBiosMemoryErrorInformation32::new(self)),
+            SMBiosMemoryArrayMappedAddress::STRUCT_TYPE => DefinedStruct::MemoryArrayMappedAddress(SMBiosMemoryArrayMappedAddress::new(self)),
+            SMBiosMemoryDeviceMappedAddress::STRUCT_TYPE => DefinedStruct::MemoryDeviceMappedAddress(SMBiosMemoryDeviceMappedAddress::new(self)),
+            SMBiosBuiltInPointingDevice::STRUCT_TYPE => DefinedStruct::BuiltInPointingDevice(SMBiosBuiltInPointingDevice::new(self)),
+            SMBiosPortableBattery::STRUCT_TYPE => DefinedStruct::PortableBattery(SMBiosPortableBattery::new(self)),
+            SMBiosSystemReset::STRUCT_TYPE => DefinedStruct::SystemReset(SMBiosSystemReset::new(self)),
+            SMBiosHardwareSecurity::STRUCT_TYPE => DefinedStruct::HardwareSecurity(SMBiosHardwareSecurity::new(self)),
+            SMBiosSystemPowerControls::STRUCT_TYPE => DefinedStruct::SystemPowerControls(SMBiosSystemPowerControls::new(self)),
+            SMBiosVoltageProbe::STRUCT_TYPE => DefinedStruct::VoltageProbe(SMBiosVoltageProbe::new(self)),
+            SMBiosCoolingDevice::STRUCT_TYPE => DefinedStruct::CoolingDevice(SMBiosCoolingDevice::new(self)),
+            SMBiosTemperatureProbe::STRUCT_TYPE => DefinedStruct::TemperatureProbe(SMBiosTemperatureProbe::new(self)),
+            SMBiosElectricalCurrentProbe::STRUCT_TYPE => DefinedStruct::ElectricalCurrentProbe(SMBiosElectricalCurrentProbe::new(self)),
+            SMBiosOutOfBandRemoteAccess::STRUCT_TYPE => DefinedStruct::OutOfBandRemoteAccess(SMBiosOutOfBandRemoteAccess::new(self)),
+            SMBiosBisEntryPoint::STRUCT_TYPE => DefinedStruct::BisEntryPoint(SMBiosBisEntryPoint::new(self)),
+            SMBiosSystemBootInformation::STRUCT_TYPE => DefinedStruct::SystemBootInformation(SMBiosSystemBootInformation::new(self)),
+            SMBiosMemoryErrorInformation64::STRUCT_TYPE => DefinedStruct::MemoryErrorInformation64Bit(SMBiosMemoryErrorInformation64::new(self)),
+            SMBiosManagementDevice::STRUCT_TYPE => DefinedStruct::ManagementDevice(SMBiosManagementDevice::new(self)),
+            SMBiosManagementDeviceComponent::STRUCT_TYPE => DefinedStruct::ManagementDeviceComponent(SMBiosManagementDeviceComponent::new(self)),
+            SMBiosManagementDeviceThresholdData::STRUCT_TYPE => DefinedStruct::ManagementDeviceThresholdData(SMBiosManagementDeviceThresholdData::new(self)),
+            SMBiosMemoryChannel::STRUCT_TYPE => DefinedStruct::MemoryChannel(SMBiosMemoryChannel::new(self)),
+            SMBiosIpmiDeviceInformation::STRUCT_TYPE => DefinedStruct::IpmiDeviceInformation(SMBiosIpmiDeviceInformation::new(self)),
+            SMBiosSystemPowerSupply::STRUCT_TYPE => DefinedStruct::SystemPowerSupply(SMBiosSystemPowerSupply::new(self)),
+            SMBiosAdditionalInformation::STRUCT_TYPE => DefinedStruct::AdditionalInformation(SMBiosAdditionalInformation::new(self)),
+            SMBiosOnboardDevicesExtendedInformation::STRUCT_TYPE => DefinedStruct::OnboardDevicesExtendedInformation(SMBiosOnboardDevicesExtendedInformation::new(self)),
+            SMBiosManagementControllerHostInterface::STRUCT_TYPE => DefinedStruct::ManagementControllerHostInterface(SMBiosManagementControllerHostInterface::new(self)),
+            SMBiosTpmDevice::STRUCT_TYPE => DefinedStruct::TpmDevice(SMBiosTpmDevice::new(self)),
+            SMBiosProcessorAdditionalInformation::STRUCT_TYPE => DefinedStruct::ProcessorAdditionalInformation(SMBiosProcessorAdditionalInformation::new(self)),
+            SMBiosInactive::STRUCT_TYPE => DefinedStruct::Inactive(SMBiosInactive::new(self)),
+            SMBiosEndOfTable::STRUCT_TYPE => DefinedStruct::EndOfTable(SMBiosEndOfTable::new(self)),
+            _ => DefinedStruct::Unknown(SMBiosUnknown::new(self)),
         }
     }
 }
@@ -296,9 +301,6 @@ impl<'a> Header<'a> {
     }
 }
 
-// https://stackoverflow.com/questions/54488320/how-to-implement-display-on-a-trait-object-where-the-types-already-implement-dis
-
-///
 pub struct SMBiosTableData<'a> {
     data: &'a [u8],
 }
