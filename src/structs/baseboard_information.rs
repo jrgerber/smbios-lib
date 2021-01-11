@@ -202,8 +202,7 @@ mod tests {
         let second_entry = iterator.next().expect("has a second entry");
         assert_eq!(*second_entry, 0x1200);
 
-        let third_entry = iterator.next();
-        assert_eq!(third_entry.is_none(), true);
+        assert!(iterator.next().is_none());
 
         let mut counter = 0;
 

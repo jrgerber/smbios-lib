@@ -94,15 +94,20 @@ pub enum DefinedStruct<'a>
 pub struct SMBiosStructParts<'a> {
     pub header: Header<'a>,
     data: &'a [u8],
-    strings: Strings<'a>,
+    pub strings: Strings<'a>,
 }
 
 impl<'a> SMBiosStructParts<'a> {
     pub fn new(data: &'a [u8]) -> Self {
         SMBiosStructParts { 
             header: Header::new(data.get(..Header::SIZE).expect("A minimum of Header::SIZE bytes are required.")), 
-            data, 
-            strings: Strings::new(data) 
+            data,
+            strings: {
+                //let string_area_start_index = data[1];
+                let string_area_start_index = data.get(Header::LENGTH_OFFSET..Header::LENGTH_OFFSET + 1).unwrap_or(&[0])[0];
+                Strings::new(data.get(string_area_start_index as usize .. data.len() - 2).unwrap_or(&[]))
+            }
+            //strings: Strings::new(data) 
         }
     }
 
@@ -221,46 +226,120 @@ impl fmt::Debug for SMBiosStructParts<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosStructParts>())
             .field("header", &self.header)
+            .field("strings", &self.strings)
             .finish()
     }
 }
 
+// // TODO: Make Strings iterable and publicly expose the iterator
+// pub struct Strings<'a> {
+//     data: &'a [u8],
+// }
+
+// impl<'a> Strings<'a> {
+//     fn new(data: &'a [u8]) -> Self {
+//         Strings { data }
+//     }
+
+//     pub fn get_string(&self, index: u8) -> Option<String> {
+//         if index < 1 { 
+//             // BIOS strings are 1 based indexing, ignore bad input
+//             return None;
+//         }
+
+//         let data_length = self.data.len();
+//         match get_field_byte(1, self.data) {
+//             Some(string_area_start_index) => {
+//                 match self.data.get(string_area_start_index as usize .. data_length - 2) {
+//                     Some(string_area) => {
+//                         match string_area.split(|num| *num == 0).skip(index as usize - 1).next() {
+//                             Some(string_as_slice) => {
+//                                 let mut bios_string: Vec<char> = Vec::new();
+//                                 for a in string_as_slice {
+//                                     bios_string.push(*a as char); // byte to Windows-1252 (ISO-8859-1 superset)
+//                                 };
+//                                 Some(bios_string.into_iter().collect())
+//                             },
+//                             None => None
+//                         }
+//                     },
+//                     None => None
+//                 }
+//             },
+//             None => None
+//         }
+//     }
+// }
+
 pub struct Strings<'a> {
-    data: &'a [u8],
+    strings: Vec<&'a [u8]>,
+    current_string_index: usize
 }
 
 impl<'a> Strings<'a> {
-    fn new(data: &'a [u8]) -> Self {
-        Strings { data }
+    fn new(string_area: &[u8]) -> Strings {
+        Strings { 
+            strings: {
+                if string_area == &[] {
+                    vec![]
+                }
+                else {
+                    string_area.split(|num| *num == 0).into_iter().collect()
+                }
+            }, 
+            current_string_index: 0
+        }
     }
 
-    pub fn get_string(&self, index: u8) -> Option<String> {
-        if index < 1 { 
+    fn reset(&mut self) {
+        self.current_string_index = 0;
+    }
+
+    fn get_string(&self, index: u8) -> Option<String> {
+        let index_usize = index as usize;
+
+        if index_usize == 0 || index_usize > self.strings.len() { 
             // BIOS strings are 1 based indexing, ignore bad input
             return None;
         }
 
-        let data_length = self.data.len();
-        match get_field_byte(1, self.data) {
-            Some(string_area_start_index) => {
-                match self.data.get(string_area_start_index as usize .. data_length - 2) {
-                    Some(string_area) => {
-                        match string_area.split(|num| *num == 0).skip(index as usize - 1).next() {
-                            Some(string_as_slice) => {
-                                let mut bios_string: Vec<char> = Vec::new();
-                                for a in string_as_slice {
-                                    bios_string.push(*a as char); // byte to Windows-1252 (ISO-8859-1 superset)
-                                };
-                                Some(bios_string.into_iter().collect())
-                            },
-                            None => None
-                        }
-                    },
-                    None => None
-                }
-            },
-            None => None
+        // TODO: "*x as char" is not ISO-8859-1.  This should be made ISO-8859-1.
+        Some(self.strings[index_usize - 1].into_iter().map(|x| *x as char).collect())
+    }
+}
+
+impl<'a> Iterator for Strings<'a> {
+    type Item = String;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.current_string_index == self.strings.len() {
+            self.reset();
+            return None
         }
+
+        // TODO: "*x as char" is not ISO-8859-1.  This should be made ISO-8859-1.
+        let result:String = self.strings[self.current_string_index].into_iter().map(|x| *x as char).collect();
+        self.current_string_index = self.current_string_index + 1;
+        
+        Some(result)
+    }
+}
+
+impl<'a> IntoIterator for &'a Strings<'a> {
+    type Item = String;
+    type IntoIter = Strings<'a>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        Strings {
+            strings: self.strings.clone(), 
+            current_string_index: 0
+        }
+    }
+}
+
+impl<'a> fmt::Debug for Strings<'a> {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_list().entries(self.into_iter()).finish()
     }
 }
 
@@ -272,7 +351,6 @@ impl fmt::Debug for Header<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<Header>())
             .field("struct_type", &self.struct_type())
-            // .field("struct_type_name", &self.struct_type_name())
             .field("length", &self.length())
             .field("handle", &self.handle())
             .finish()
@@ -281,6 +359,7 @@ impl fmt::Debug for Header<'_> {
 
 impl<'a> Header<'a> {
     const SIZE: usize = 4;
+    const LENGTH_OFFSET: usize = 1;
 
     fn new(data: &'a [u8]) -> Self {
         assert!(data.len() == Self::SIZE, "Header must be 4 bytes in length, 1 for struct_type, 1 for length, and 2 for handle.");
@@ -292,7 +371,7 @@ impl<'a> Header<'a> {
     }
 
     pub fn length(&self) -> u8 {
-        self.data[1] // length is 1 byte at offset 1
+        self.data[Self::LENGTH_OFFSET] // length is 1 byte at offset 1
     }
 
     pub fn handle(&self) -> Handle {

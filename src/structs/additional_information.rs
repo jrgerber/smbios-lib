@@ -196,8 +196,7 @@ mod tests {
         assert_eq!(first_entry.entry_length().expect("must be entry length of 6"), 6);
         assert_eq!(first_entry.string().expect("must be entry string of \"X\""), "X".to_string());
 
-        let second_entry = iterator.next();
-        assert_eq!(second_entry.is_none(), true);
+        assert!(iterator.next().is_none());
 
         let additional_information_bytes = vec![
             0x28u8, 0x11, 0x02, 0x01, // header (offsets 0-3)
