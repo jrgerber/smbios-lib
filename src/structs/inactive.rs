@@ -1,5 +1,14 @@
 use super::*;
 
+/// # Inactive (Type 126)
+///
+/// This structure definition supports a system implementation where the SMBIOS structure-table is a
+/// superset of all supported system attributes and provides a standard mechanism for the system BIOS to
+/// signal that a structure is currently inactive and should not be interpreted by the upper-level software. 
+/// 
+/// Compliant with:
+/// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
+/// Document Date: 2020-07-17
 pub struct SMBiosInactive<'a> {
     parts: &'a SMBiosStructParts<'a>,
 }

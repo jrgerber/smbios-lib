@@ -1,5 +1,15 @@
 use super::*;
 
+/// # Built-in Pointing Device (Type 21)
+/// 
+/// This structure describes the attributes of the built-in pointing device for the system.
+/// Details are provided in Table 87.
+/// The presence of this structure does not imply that the built-in pointing device is active
+/// for the system’s use.
+/// 
+/// Compliant with:
+/// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
+/// Document Date: 2020-07-17
 pub struct SMBiosBuiltInPointingDevice<'a> {
     parts: &'a SMBiosStructParts<'a>,
 }
@@ -17,15 +27,19 @@ impl<'a> SMBiosStruct<'a> for SMBiosBuiltInPointingDevice<'a> {
 }
 
 impl<'a> SMBiosBuiltInPointingDevice<'a> {
-    fn device_type(&self) -> Option<u8> {
+    /// Type of pointing device.
+    pub fn device_type(&self) -> Option<u8> {
         self.parts.get_field_byte(0x04)
     }
 
-    fn interface(&self) -> Option<u8> {
+    /// Interface type for the pointing device.
+    pub fn interface(&self) -> Option<u8> {
         self.parts.get_field_byte(0x05)
     }
 
-    fn number_of_buttons(&self) -> Option<u8> {
+    /// Number of buttons on the pointing device.
+    /// If the device has 3 buttons, the field value is 3.
+    pub fn number_of_buttons(&self) -> Option<u8> {
         self.parts.get_field_byte(0x06)
     }
 }

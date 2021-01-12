@@ -1,5 +1,12 @@
 use super::*;
 
+/// # Hardware Security (Type 24)
+/// 
+/// This structure describes the system-wide hardware security settings.
+/// 
+/// Compliant with:
+/// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
+/// Document Date: 2020-07-17
 pub struct SMBiosHardwareSecurity<'a> {
     parts: &'a SMBiosStructParts<'a>,
 }
@@ -17,7 +24,8 @@ impl<'a> SMBiosStruct<'a> for SMBiosHardwareSecurity<'a> {
 }
 
 impl<'a> SMBiosHardwareSecurity<'a> {
-    fn hardware_security_settings(&self) -> Option<u8> {
+    /// Bit field that identifies the password and reset status for the system
+    pub fn hardware_security_settings(&self) -> Option<u8> {
         self.parts.get_field_byte(0x4)
     }
 }
