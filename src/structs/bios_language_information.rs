@@ -90,4 +90,3 @@ mod tests {
         println!("bios_language_information: {:?}", bios_language_information);
     }
 }
-

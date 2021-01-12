@@ -1,31 +1,43 @@
 use super::*;
 
+/// # Additional Information Entry contained within [SMBiosAdditionalInformation]
 pub struct AdditionalInformationEntry<'a> {
     additional_information: &'a SMBiosAdditionalInformation<'a>,
     entry_offset: usize,
 }
 
 impl<'a> AdditionalInformationEntry<'a> {
-    pub fn new(additional_information: &'a SMBiosAdditionalInformation<'a>, entry_offset: usize) -> Self { 
+    fn new(additional_information: &'a SMBiosAdditionalInformation<'a>, entry_offset: usize) -> Self { 
         Self { additional_information, entry_offset } 
     }
     
+    /// Length of this Additional Information Entry instance; a minimum of 6
     pub fn entry_length(&self) -> Option<u8> {
         self.additional_information.parts().get_field_byte(self.entry_offset)
     }
 
+    /// Handle, or instance number, associated with the structure for which additional information is provided
     pub fn referenced_handle(&self) -> Option<Handle> {
         self.additional_information.parts().get_field_handle(self.entry_offset + 1)
     }
 
+    /// Offset of the field within the structure referenced by the
+    /// _Referenced Handle_ for which additional information is provided
     pub fn referenced_offset(&self) -> Option<u8> {
         self.additional_information.parts().get_field_byte(self.entry_offset + 3)
     }
 
+    /// Number of the optional string to be associated with the field referenced by the _Referenced Offset_
     pub fn string(&self) -> Option<String> {
         self.additional_information.parts().get_field_string(self.entry_offset + 4)
     }
 
+    /// Enumerated value or updated field content that has not yet been
+    /// approved for publication in this specification and therefore could
+    /// not be used in the field referenced by _Referenced Offset_
+    /// 
+    /// NOTE: This field is the same type and size as the field being referenced
+    /// by this Additional Information Entry. 
     pub fn value(&self) -> Option<&[u8]> {
         const VALUE_RELATIVE_OFFSET:usize = 5usize;
         let value_offset = self.entry_offset + VALUE_RELATIVE_OFFSET;
@@ -52,6 +64,7 @@ impl fmt::Debug for AdditionalInformationEntry<'_> {
     }
 }
 
+/// Iterates over the [AdditionalInformationEntry] entries contained within [SMBiosAdditionalInformation]
 pub struct AdditionalInformationEntryIterator<'a> {
     data: &'a SMBiosAdditionalInformation<'a>,
     current_index: usize,
@@ -62,7 +75,7 @@ pub struct AdditionalInformationEntryIterator<'a> {
 impl<'a> AdditionalInformationEntryIterator<'a> {
     const ENTRIES_OFFSET:usize = 5usize;
 
-    pub fn new(data: &'a SMBiosAdditionalInformation<'a>) -> Self {
+    fn new(data: &'a SMBiosAdditionalInformation<'a>) -> Self {
         AdditionalInformationEntryIterator {
             data: data, 
             current_index: Self::ENTRIES_OFFSET,
@@ -135,6 +148,14 @@ impl<'a> fmt::Debug for AdditionalInformationEntryIterator<'a> {
     }
 }
 
+/// # Additional Information (Type 40)
+/// 
+/// This structure is intended to provide additional information for handling unspecified enumerated values
+/// and interim field updates in another structure.
+/// 
+/// Compliant with:
+/// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
+/// Document Date: 2020-07-17
 pub struct SMBiosAdditionalInformation<'a> {
     parts: &'a SMBiosStructParts<'a>,
 }
@@ -152,10 +173,12 @@ impl<'a> SMBiosStruct<'a> for SMBiosAdditionalInformation<'a> {
 }
 
 impl<'a> SMBiosAdditionalInformation<'a> {
+    /// Number of [AdditionalInformationEntry] entries
     pub fn number_of_entries(&self) -> Option<u8> {
         self.parts.get_field_byte(0x04)
     }
 
+    /// Iterates over the [AdditionalInformationEntry] entries
     pub fn entry_iterator(&'a self) -> AdditionalInformationEntryIterator<'a> {
         AdditionalInformationEntryIterator::new(self)
     }

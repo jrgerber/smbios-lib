@@ -231,46 +231,6 @@ impl fmt::Debug for SMBiosStructParts<'_> {
     }
 }
 
-// // TODO: Make Strings iterable and publicly expose the iterator
-// pub struct Strings<'a> {
-//     data: &'a [u8],
-// }
-
-// impl<'a> Strings<'a> {
-//     fn new(data: &'a [u8]) -> Self {
-//         Strings { data }
-//     }
-
-//     pub fn get_string(&self, index: u8) -> Option<String> {
-//         if index < 1 { 
-//             // BIOS strings are 1 based indexing, ignore bad input
-//             return None;
-//         }
-
-//         let data_length = self.data.len();
-//         match get_field_byte(1, self.data) {
-//             Some(string_area_start_index) => {
-//                 match self.data.get(string_area_start_index as usize .. data_length - 2) {
-//                     Some(string_area) => {
-//                         match string_area.split(|num| *num == 0).skip(index as usize - 1).next() {
-//                             Some(string_as_slice) => {
-//                                 let mut bios_string: Vec<char> = Vec::new();
-//                                 for a in string_as_slice {
-//                                     bios_string.push(*a as char); // byte to Windows-1252 (ISO-8859-1 superset)
-//                                 };
-//                                 Some(bios_string.into_iter().collect())
-//                             },
-//                             None => None
-//                         }
-//                     },
-//                     None => None
-//                 }
-//             },
-//             None => None
-//         }
-//     }
-// }
-
 pub struct Strings<'a> {
     strings: Vec<&'a [u8]>,
     current_string_index: usize
@@ -407,6 +367,7 @@ impl<'a> IntoIterator for &'a SMBiosTableData<'a> {
         RawStructIterator::new(self.data)
     }
 }
+
 impl<'a> fmt::Debug for SMBiosTableData<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // TODO: format as an array, make a function on SMBiosStructParts to return an enum of variants of the struct types

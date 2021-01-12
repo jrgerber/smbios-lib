@@ -1,5 +1,10 @@
 use super::*;
 
+/// # Baseboard (or Module) Information (Type 2)
+/// 
+/// Compliant with:
+/// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
+/// Document Date: 2020-07-17
 pub struct SMBiosBaseboardInformation<'a> {
     parts: &'a SMBiosStructParts<'a>,
 }
@@ -17,46 +22,57 @@ impl<'a> SMBiosStruct<'a> for SMBiosBaseboardInformation<'a> {
 }
 
 impl<'a> SMBiosBaseboardInformation<'a> {
-    fn manufacturer(&self) -> Option<String> {
+    ///Baseboard manufacturer 
+    pub fn manufacturer(&self) -> Option<String> {
         self.parts.get_field_string(0x04)
     }
 
-    fn product(&self) -> Option<String> {
+    /// Baseboard product
+    pub fn product(&self) -> Option<String> {
         self.parts.get_field_string(0x05)
     }
 
-    fn version(&self) -> Option<String> {
+    /// Baseboard version
+    pub fn version(&self) -> Option<String> {
         self.parts.get_field_string(0x06)
     }
 
-    fn serial_number(&self) -> Option<String> {
+    /// Baseboard serial number
+    pub fn serial_number(&self) -> Option<String> {
         self.parts.get_field_string(0x07)
     }
 
-    fn asset_tag(&self) -> Option<String> {
+    /// Baseboard asset tag
+    pub fn asset_tag(&self) -> Option<String> {
         self.parts.get_field_string(0x08)
     }
 
-    fn feature_flags(&self) -> Option<u8> {
+    /// Collection of flags that identify features of this baseboard.
+    pub fn feature_flags(&self) -> Option<u8> {
         self.parts.get_field_byte(0x09)
     }
 
-    fn location_in_chassis(&self) -> Option<String> {
+    /// This baseboard's location within the chassis (chassis is referenced by ChassisHandle).
+    pub fn location_in_chassis(&self) -> Option<String> {
         self.parts.get_field_string(0x0A)
     }
 
-    fn chassis_handle(&self) -> Option<Handle> {
+    /// Handle, or instance number, associated with the chassis in which this board resides.
+    pub fn chassis_handle(&self) -> Option<Handle> {
         self.parts.get_field_handle(0x0B)
     }
 
-    fn board_type(&self) -> Option<u8> {
+    /// Type of baseboard.
+    pub fn board_type(&self) -> Option<u8> {
         self.parts.get_field_byte(0x0D)
     }
 
-    fn number_of_contained_object_handles(&self) -> Option<u8> {
+    /// The count of ObjectHandles.
+    pub fn number_of_contained_object_handles(&self) -> Option<u8> {
         self.parts.get_field_byte(0x0E)
     }
 
+    /// List of handles of other structures that are contained by this baseboard.
     pub fn contained_object_handle_iterator(&'a self) -> ObjectHandleIterator<'a> {
         ObjectHandleIterator::new(self)
     }
@@ -81,6 +97,7 @@ impl fmt::Debug for SMBiosBaseboardInformation<'_> {
     }
 }
 
+/// Iterates over the object handles contained within the [SMBiosBaseboardInformation] structure
 pub struct ObjectHandleIterator<'a> {
     data: &'a SMBiosBaseboardInformation<'a>,
     current_index: usize,
