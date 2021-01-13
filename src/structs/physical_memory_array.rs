@@ -1,5 +1,12 @@
 use super::*;
 
+/// # Physical Memory Array (Type 16)
+///
+/// This structure describes a collection of memory devices that operate together to form a memory address space.
+/// 
+/// Compliant with:
+/// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
+/// Document Date: 2020-07-17
 pub struct SMBiosPhysicalMemoryArray<'a> {
     parts: &'a SMBiosStructParts<'a>,
 }
@@ -17,31 +24,59 @@ impl<'a> SMBiosStruct<'a> for SMBiosPhysicalMemoryArray<'a> {
 }
 
 impl<'a> SMBiosPhysicalMemoryArray<'a> {
-    fn location(&self) -> Option<u8> {
+    /// Physical location of the Memory Array, whether on
+    /// the system board or an add-in board
+    pub fn location(&self) -> Option<u8> {
         self.parts.get_field_byte(0x04)
     }
 
-    fn usage(&self) -> Option<u8> {
+    /// Function for which the array is used
+    pub fn usage(&self) -> Option<u8> {
         self.parts.get_field_byte(0x05)
     }
 
-    fn memory_error_correction(&self) -> Option<u8> {
+    /// Primary hardware error correction or detection
+    /// method supported by this memory array
+    pub fn memory_error_correction(&self) -> Option<u8> {
         self.parts.get_field_byte(0x06)
     }
 
-    fn maximum_capacity(&self) -> Option<u32> {
+    /// Maximum memory capacity, in kilobytes, for this array
+    /// If the capacity is not represented in this field, then
+    /// this field contains 8000 0000h and the Extended
+    /// Maximum Capacity field should be used. Values 2
+    /// TB (8000 0000h) or greater must be represented
+    /// in the Extended Maximum Capacity field.
+    pub fn maximum_capacity(&self) -> Option<u32> {
         self.parts.get_field_dword(0x07)
     }
 
-    fn memory_error_information_handle(&self) -> Option<u16> {
+    /// Handle, or instance number, associated with any
+    /// error that was previously detected for the array
+    /// If the system does not provide the error
+    /// information structure, the field contains FFFEh;
+    /// otherwise, the field contains either FFFFh (if no
+    /// error was detected) or the handle of the errorinformation structure.
+    pub fn memory_error_information_handle(&self) -> Option<u16> {
         self.parts.get_field_word(0x0B)
     }
 
-    fn number_of_memory_devices(&self) -> Option<u16> {
+    /// Number of slots or sockets available for [SMBiosMemoryDevice]s in this array
+    /// This value represents the number of [SMBiosMemoryDevice]
+    /// structures that compose this Memory
+    /// Array. Each [SMBiosMemoryDevice] has a reference to
+    /// the “owning” Memory Array.
+    pub fn number_of_memory_devices(&self) -> Option<u16> {
         self.parts.get_field_word(0x0D)
     }
 
-    fn extended_maximum_capacity(&self) -> Option<u64> {
+    /// Maximum memory capacity, in bytes, for this array
+    /// This field is only valid when the Maximum
+    /// Capacity field contains 8000 0000h. When
+    /// Maximum Capacity contains a value that is not
+    /// 8000 0000h, Extended Maximum Capacity must
+    /// contain zeros.
+    pub fn extended_maximum_capacity(&self) -> Option<u64> {
         self.parts.get_field_qword(0x0F)
     }
 }
