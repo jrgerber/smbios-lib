@@ -1,5 +1,12 @@
 use super::*;
 
+/// # Memory Array Mapped Address (Type 19)
+/// 
+/// This structure provides the address mapping for a Physical Memory Array.
+/// 
+/// Compliant with:
+/// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
+/// Document Date: 2020-07-17
 pub struct SMBiosMemoryArrayMappedAddress<'a> {
     parts: &'a SMBiosStructParts<'a>,
 }
@@ -17,27 +24,70 @@ impl<'a> SMBiosStruct<'a> for SMBiosMemoryArrayMappedAddress<'a> {
 }
 
 impl<'a> SMBiosMemoryArrayMappedAddress<'a> {
-    fn starting_address(&self) -> Option<u32> {
+    /// Physical address, in kilobytes, of a range of
+    /// memory mapped to the specified Physical Memory
+    /// Array
+    /// When the field value is FFFF FFFFh, the actual
+    /// address is stored in the Extended Starting
+    /// Address field. When this field contains a valid
+    /// address, Ending Address must also contain a valid
+    /// address. When this field contains FFFF FFFFh,
+    /// Ending Address must also contain FFFF FFFFh.
+    pub fn starting_address(&self) -> Option<u32> {
         self.parts.get_field_dword(0x4)
     }
 
-    fn ending_address(&self) -> Option<u32> {
+    /// Physical ending address of the last kilobyte of a
+    /// range of addresses mapped to the specified
+    /// Physical Memory Array
+    /// When the field value is FFFF FFFFh and the
+    /// Starting Address field also contains FFFF FFFFh,
+    /// the actual address is stored in the Extended
+    /// Ending Address field. When this field contains a
+    /// valid address, Starting Address must also contain
+    /// a valid address.
+    pub fn ending_address(&self) -> Option<u32> {
         self.parts.get_field_dword(0x8)
     }
 
-    fn physical_memory_array_handle(&self) -> Option<Handle> {
+    /// Handle, or instance number, associated with the
+    /// Physical Memory Array to which this address
+    /// range is mapped
+    /// Multiple address ranges can be mapped to a
+    /// single Physical Memory Array.
+    pub fn physical_memory_array_handle(&self) -> Option<Handle> {
         self.parts.get_field_handle(0xC)
     }
 
-    fn partition_width(&self) -> Option<u8> {
+    /// Number of Memory Devices that form a single row
+    /// of memory for the address partition defined by this
+    /// structure
+    pub fn partition_width(&self) -> Option<u8> {
         self.parts.get_field_byte(0xE)
     }
 
-    fn extended_starting_address(&self) -> Option<u64> {
+    /// Physical address, in bytes, of a range of memory
+    /// mapped to the specified Physical Memory Array
+    /// This field is valid when Starting Address contains
+    /// the value FFFF FFFFh. If Starting Address
+    /// contains a value other than FFFF FFFFh, this field
+    /// contains zeros. When this field contains a valid
+    /// address, Extended Ending Address must also
+    /// contain a valid address.
+    pub fn extended_starting_address(&self) -> Option<u64> {
         self.parts.get_field_qword(0xF)
     }
 
-    fn extended_ending_address(&self) -> Option<u64> {
+    /// Physical ending address, in bytes, of the last of a
+    /// range of addresses mapped to the specified
+    /// Physical Memory Array
+    /// This field is valid when both Starting Address and
+    /// Ending Address contain the value FFFF FFFFh. If
+    /// Ending Address contains a value other than FFFF
+    /// FFFFh, this field contains zeros. When this field
+    /// contains a valid address, Extended Starting
+    /// Address must also contain a valid address.
+    pub fn extended_ending_address(&self) -> Option<u64> {
         self.parts.get_field_qword(0x17)
     }
 }

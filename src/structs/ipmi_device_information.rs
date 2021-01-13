@@ -25,7 +25,7 @@ impl<'a> SMBiosStruct<'a> for SMBiosIpmiDeviceInformation<'a> {
 }
 
 impl<'a> SMBiosIpmiDeviceInformation<'a> {
-    /// 
+    /// Baseboard Management Controller (BMC) interface type.
     pub fn interface_type(&self) -> Option<u8> {
         self.parts.get_field_byte(0x04)
     }

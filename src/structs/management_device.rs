@@ -1,5 +1,12 @@
 use super::*;
 
+/// # Management Device (Type 34)
+///
+/// The information in this structure defines the attributes of a Management Device.
+/// 
+/// Compliant with:
+/// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
+/// Document Date: 2020-07-17
 pub struct SMBiosManagementDevice<'a> {
     parts: &'a SMBiosStructParts<'a>,
 }
@@ -17,19 +24,23 @@ impl<'a> SMBiosStruct<'a> for SMBiosManagementDevice<'a> {
 }
 
 impl<'a> SMBiosManagementDevice<'a> {
-    fn description(&self) -> Option<String> {
+    /// Additional descriptive information about the device or its location
+    pub fn description(&self) -> Option<String> {
         self.parts.get_field_string(0x04)
     }
 
-    fn device_type(&self) -> Option<u8> {
+    /// Device's type
+    pub fn device_type(&self) -> Option<u8> {
         self.parts.get_field_byte(0x05)
     }
 
-    fn address(&self) -> Option<u32> {
+    /// Device's address
+    pub fn address(&self) -> Option<u32> {
         self.parts.get_field_dword(0x06)
     }
 
-    fn address_type(&self) -> Option<u8> {
+    /// Type of addressing used to access the device
+    pub fn address_type(&self) -> Option<u8> {
         self.parts.get_field_byte(0x0A)
     }
 }

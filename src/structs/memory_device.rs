@@ -1,5 +1,12 @@
 use super::*;
 
+/// # Memory Device (Type 17)
+/// 
+/// This structure describes a single memory device that is part of a larger [SMBiosPhysicalMemoryArray] (Type 16) structure.
+/// 
+/// Compliant with:
+/// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
+/// Document Date: 2020-07-17
 pub struct SMBiosMemoryDevice<'a> {
     parts: &'a SMBiosStructParts<'a>,
 }
@@ -17,143 +24,259 @@ impl<'a> SMBiosStruct<'a> for SMBiosMemoryDevice<'a> {
 }
 
 impl<'a> SMBiosMemoryDevice<'a> {
-    fn physical_memory_array_handle(&self) -> Option<u16> {
+    /// Handle, or instance number, associated with the
+    /// [SMBiosPhysicalMemoryArray] to which this device belongs
+    pub fn physical_memory_array_handle(&self) -> Option<u16> {
         self.parts.get_field_word(0x04)
     }
 
-    fn memory_error_information_handle(&self) -> Option<u16> {
+    /// Handle, or instance number, associated with any
+    /// error that was previously detected for the device
+    /// If the system does not provide the error information
+    /// structure, the field contains FFFEh; otherwise, the
+    /// field contains either FFFFh (if no error was
+    /// detected) or the handle of the error-information
+    /// structure ([SMBiosMemoryErrorInformation32] or 
+    /// [SMBiosMemoryErrorInformation64]).
+    pub fn memory_error_information_handle(&self) -> Option<u16> {
         self.parts.get_field_word(0x06)
     }
 
-    fn total_width(&self) -> Option<u16> {
+    /// Total width, in bits, of this memory device, including
+    /// any check or error-correction bits
+    /// If there are no error-correction bits, this value
+    /// should be equal to Data Width. If the width is
+    /// unknown, the field is set to FFFFh.
+    pub fn total_width(&self) -> Option<u16> {
         self.parts.get_field_word(0x08)
     }
 
-    fn data_width(&self) -> Option<u16> {
+    /// Data width, in bits, of this memory device
+    /// A Data Width of 0 and a Total Width of 8 indicates
+    /// that the device is being used solely to provide 8
+    /// error-correction bits. If the width is unknown, the
+    /// field is set to FFFFh.
+    pub fn data_width(&self) -> Option<u16> {
         self.parts.get_field_word(0x0A)
     }
 
-    fn size(&self) -> Option<u16> {
+    /// Size of the memory device
+    /// If the value is 0, no memory device is installed in the
+    /// socket; if the size is unknown, the field value is
+    /// FFFFh. If the size is 32 GB-1 MB or greater, the
+    /// field value is 7FFFh and the actual size is stored in
+    /// the Extended Size field.
+    /// The granularity in which the value is specified
+    /// depends on the setting of the most-significant bit (bit
+    /// 15). If the bit is 0, the value is specified in megabyte
+    /// units; if the bit is 1, the value is specified in kilobyte
+    /// units. For example, the value 8100h identifies a
+    /// 256 KB memory device and 0100h identifies a
+    /// 256 MB memory device.
+    pub fn size(&self) -> Option<u16> {
         self.parts.get_field_word(0x0C)
     }
 
-    fn form_factor(&self) -> Option<u8> {
+    /// Implementation form factor for this memory device
+    pub fn form_factor(&self) -> Option<u8> {
         self.parts.get_field_byte(0x0E)
     }
 
-    fn device_set(&self) -> Option<u8> {
+    /// Identifies when the Memory Device is one of a set
+    /// of Memory Devices that must be populated with all
+    /// devices of the same type and size, and the set to
+    /// which this device belongs
+    /// A value of 0 indicates that the device is not part of a
+    /// set; a value of FFh indicates that the attribute is
+    /// unknown.
+    /// NOTE: A Device Set number must be unique within the
+    /// context of the Memory Array containing this Memory
+    /// Device.
+    pub fn device_set(&self) -> Option<u8> {
         self.parts.get_field_byte(0x0F)
     }
 
-    fn device_locator(&self) -> Option<String> {
+    /// Identifies the physically-labeled socket or board position where 
+    /// the memory device is located
+    /// EXAMPLE: “SIMM 3”
+    pub fn device_locator(&self) -> Option<String> {
         self.parts.get_field_string(0x10)
     }
 
-    fn bank_locator(&self) -> Option<String> {
+    /// Identifies the physically labeled bank where the memory device is located
+    /// EXAMPLE: “Bank 0” or “A”
+    pub fn bank_locator(&self) -> Option<String> {
         self.parts.get_field_string(0x11)
     }
 
-    fn memory_type(&self) -> Option<u8> {
+    /// Type of memory used in this device
+    pub fn memory_type(&self) -> Option<u8> {
         self.parts.get_field_byte(0x12)
     }
 
-    fn type_detail(&self) -> Option<u16> {
+    /// Additional detail on the memory device type
+    pub fn type_detail(&self) -> Option<u16> {
         self.parts.get_field_word(0x13)
     }
 
-    fn speed(&self) -> Option<u16> {
+    /// Identifies the maximum capable speed of the
+    /// device, in megatransfers per second (MT/s).
+    /// 0000h = the speed is unknown
+    /// FFFFh = the speed is 65,535 MT/s or greater,
+    /// and the actual speed is stored in the Extended
+    /// Speed field
+    pub fn speed(&self) -> Option<u16> {
         self.parts.get_field_word(0x15)
     }
 
-    fn manufacturer(&self) -> Option<String> {
+    /// The manufacturer of this memory device
+    pub fn manufacturer(&self) -> Option<String> {
         self.parts.get_field_string(0x17)
     }
 
-    fn serial_number(&self) -> Option<String> {
+    /// The serial number of this memory device.
+    /// This value is set by the manufacturer and normally
+    /// is not changeable.
+    pub fn serial_number(&self) -> Option<String> {
         self.parts.get_field_string(0x18)
     }
 
-    fn asset_tag(&self) -> Option<String> {
+    /// The asset tag of this memory device
+    pub fn asset_tag(&self) -> Option<String> {
         self.parts.get_field_string(0x19)
     }
 
-    fn part_number(&self) -> Option<String> {
+    /// The part number of this memory device.
+    /// This value is set by the manufacturer and normally
+    /// is not changeable.
+    pub fn part_number(&self) -> Option<String> {
         self.parts.get_field_string(0x1A)
     }
 
-    fn attributes(&self) -> Option<u8> {
+    /// Bits 7-4: reserved
+    /// Bits 3-0: rank
+    /// Value=0 for unknown rank information
+    pub fn attributes(&self) -> Option<u8> {
         self.parts.get_field_byte(0x1B)
     }
 
-    fn extended_size(&self) -> Option<u32> {
+    /// Extended size of the memory device (complements
+    /// the Size field at offset 0Ch)
+    pub fn extended_size(&self) -> Option<u32> {
         self.parts.get_field_dword(0x1C)
     }
 
-    fn configured_memory_speed(&self) -> Option<u16> {
+    /// Identifies the configured speed of the memory
+    /// device, in megatransfers per second (MT/s). See
+    /// 7.18.4 for details.
+    /// 0000h = the speed is unknown
+    /// FFFFh = the speed is 65,535 MT/s or greater,
+    /// and the actual speed is stored in the Extended
+    /// Configured Memory Speed field
+    pub fn configured_memory_speed(&self) -> Option<u16> {
         self.parts.get_field_word(0x20)
     }
 
-    fn minimum_voltage(&self) -> Option<u16> {
+    /// Minimum operating voltage for this device, in
+    /// millivolts
+    /// If the value is 0, the voltage is unknown.
+    pub fn minimum_voltage(&self) -> Option<u16> {
         self.parts.get_field_word(0x22)
     }
 
-    fn maximum_voltage(&self) -> Option<u16> {
+    /// Maximum operating voltage for this device, in
+    /// millivolts
+    /// If the value is 0, the voltage is unknown.
+    pub fn maximum_voltage(&self) -> Option<u16> {
         self.parts.get_field_word(0x24)
     }
 
-    fn configured_voltage(&self) -> Option<u16> {
+    /// Configured voltage for this device, in millivolts
+    /// If the value is 0, the voltage is unknown.
+    pub fn configured_voltage(&self) -> Option<u16> {
         self.parts.get_field_word(0x26)
     }
 
-    fn memory_technology(&self) -> Option<u8> {
+    /// Memory technology type for this memory device.
+    pub fn memory_technology(&self) -> Option<u8> {
         self.parts.get_field_byte(0x28)
     }
 
-    fn memory_operating_mode_capability(&self) -> Option<u16> {
+    /// The operating modes supported by this memory device.
+    pub fn memory_operating_mode_capability(&self) -> Option<u16> {
         self.parts.get_field_word(0x29)
     }
 
-    fn firmware_version(&self) -> Option<String> {
+    /// The firmware version of this memory device.
+    pub fn firmware_version(&self) -> Option<String> {
         self.parts.get_field_string(0x2B)
     }
 
-    fn module_manufacturer_id(&self) -> Option<u16> {
+    /// The two-byte module manufacturer ID found in the SPD of this memory device; LSB first.
+    pub fn module_manufacturer_id(&self) -> Option<u16> {
         self.parts.get_field_word(0x2C)
     }
 
-    fn module_product_id(&self) -> Option<u16> {
+    /// The two-byte module product ID found in the SPD of this memory device; LSB first.
+    pub fn module_product_id(&self) -> Option<u16> {
         self.parts.get_field_word(0x2E)
     }
 
-    fn memory_subsystem_controller_manufacturer_id(&self) -> Option<u16> {
+    /// The two-byte memory subsystem controller manufacturer ID found in the SPD of this memory device; LSB first.
+    pub fn memory_subsystem_controller_manufacturer_id(&self) -> Option<u16> {
         self.parts.get_field_word(0x30)
     }
 
-    fn memory_subsystem_controller_product_id(&self) -> Option<u16> {
+    /// The two-byte memory subsystem controller product ID found in the SPD of this memory device; LSB first.
+    pub fn memory_subsystem_controller_product_id(&self) -> Option<u16> {
         self.parts.get_field_word(0x32)
     }
 
-    fn non_volatile_size(&self) -> Option<u64> {
+    /// Size of the Non-volatile portion of the memory
+    /// device in Bytes, if any. If the value is 0, there is no
+    /// non-volatile portion. If the Non-volatile Size is
+    /// unknown, the field is set to FFFFFFFFFFFFFFFFh.
+    pub fn non_volatile_size(&self) -> Option<u64> {
         self.parts.get_field_qword(0x34)
     }
 
-    fn volatile_size(&self) -> Option<u64> {
+    /// Size of the Volatile portion of the memory device in
+    /// Bytes, if any. If the value is 0, there is no Volatile
+    /// portion. If the Volatile Size is unknown, the field is
+    /// set to FFFFFFFFFFFFFFFFh.
+    pub fn volatile_size(&self) -> Option<u64> {
         self.parts.get_field_qword(0x3C)
     }
 
-    fn cache_size(&self) -> Option<u64> {
+    /// Size of the Cache portion of the memory device in
+    /// Bytes, if any. If the value is 0, there is no Cache
+    /// portion. If the Cache Size is unknown, the field is
+    /// set to FFFFFFFFFFFFFFFFh.
+    pub fn cache_size(&self) -> Option<u64> {
         self.parts.get_field_qword(0x44)
     }
 
-    fn logical_size(&self) -> Option<u64> {
+    /// Size of the Logical memory device in Bytes. If the
+    /// size is unknown, the field is set to
+    /// FFFFFFFFFFFFFFFFh.
+    pub fn logical_size(&self) -> Option<u64> {
         self.parts.get_field_qword(0x4C)
     }
 
-    fn extended_speed(&self) -> Option<u32> {
+    /// Extended speed of the memory device
+    /// (complements the Speed field at offset 15h).
+    /// Identifies the maximum capable speed of the
+    /// device, in megatransfers per second (MT/s).
+    pub fn extended_speed(&self) -> Option<u32> {
         self.parts.get_field_dword(0x54)
     }
 
-    fn extended_configured_memory_speed(&self) -> Option<u32> {
+    /// Extended configured memory speed of the memory
+    /// device (complements the Configured Memory
+    /// Speed field at offset 20h). Identifies the configured
+    /// speed of the memory device, in megatransfers per
+    /// second (MT/s).    
+    pub fn extended_configured_memory_speed(&self) -> Option<u32> {
         self.parts.get_field_dword(0x58)
     }
 }

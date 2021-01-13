@@ -1,5 +1,13 @@
 use super::*;
 
+/// # Management Device Component (Type 35)
+///
+/// This structure associates a cooling device or environmental probe with structures that define the
+/// controlling hardware device and (optionally) the component’s thresholds.
+/// 
+/// Compliant with:
+/// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
+/// Document Date: 2020-07-17
 pub struct SMBiosManagementDeviceComponent<'a> {
     parts: &'a SMBiosStructParts<'a>,
 }
@@ -17,19 +25,26 @@ impl<'a> SMBiosStruct<'a> for SMBiosManagementDeviceComponent<'a> {
 }
 
 impl<'a> SMBiosManagementDeviceComponent<'a> {
-    fn description(&self) -> Option<String> {
+    /// Number of the string that contains additional descriptive information about the component
+    pub fn description(&self) -> Option<String> {
         self.parts.get_field_string(0x04)
     }
 
-    fn management_device_handle(&self) -> Option<Handle> {
+    /// Handle, or instance number, of the Management Device that contains this component
+    pub fn management_device_handle(&self) -> Option<Handle> {
         self.parts.get_field_handle(0x05)
     }
 
-    fn component_handle(&self) -> Option<Handle> {
+    /// Handle, or instance number, of the probe or cooling device that defines this component
+    pub fn component_handle(&self) -> Option<Handle> {
         self.parts.get_field_handle(0x07)
     }
 
-    fn threshold_handle(&self) -> Option<Handle> {
+    /// Handle, or instance number, associated with the device
+    /// thresholds;
+    /// A value of 0FFFFh indicates that no Threshold Data
+    /// structure is associated with this component.
+    pub fn threshold_handle(&self) -> Option<Handle> {
         self.parts.get_field_handle(0x09)
     }
 }

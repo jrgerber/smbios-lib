@@ -1,5 +1,13 @@
 use super::*;
 
+/// # Memory Controller Information (Type 5, Obsolete)
+///
+/// The information in this structure defines the attributes of the system’s memory controller(s) and the
+/// supported attributes of any memory-modules present in the sockets controlled by this controller.
+/// 
+/// Compliant with:
+/// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
+/// Document Date: 2020-07-17
 pub struct SMBiosMemoryControllerInformation<'a> {
     parts: &'a SMBiosStructParts<'a>,
 }
@@ -17,43 +25,53 @@ impl<'a> SMBiosStruct<'a> for SMBiosMemoryControllerInformation<'a> {
 }
 
 impl<'a> SMBiosMemoryControllerInformation<'a> {
-    fn error_detecting_method(&self) -> Option<u8> {
+    /// Error detecting method
+    pub fn error_detecting_method(&self) -> Option<u8> {
         self.parts.get_field_byte(0x04)
     }
 
-    fn error_correcting_capability(&self) -> Option<u8> {
+    /// Error correcting capability
+    pub fn error_correcting_capability(&self) -> Option<u8> {
         self.parts.get_field_byte(0x05)
     }
 
-    fn supported_interleave(&self) -> Option<u8> {
+    /// Supported interleave
+    pub fn supported_interleave(&self) -> Option<u8> {
         self.parts.get_field_byte(0x06)
     }
 
-    fn current_interleave(&self) -> Option<u8> {
+    /// Current interleave
+    pub fn current_interleave(&self) -> Option<u8> {
         self.parts.get_field_byte(0x07)
     }
 
-    fn maximum_memory_module_size(&self) -> Option<u8> {
+    /// 
+    pub fn maximum_memory_module_size(&self) -> Option<u8> {
         self.parts.get_field_byte(0x08)
     }
 
-    fn supported_speeds(&self) -> Option<u16> {
+    /// 
+    pub fn supported_speeds(&self) -> Option<u16> {
         self.parts.get_field_word(0x09)
     }
 
-    fn supported_memory_types(&self) -> Option<u16> {
+    /// 
+    pub fn supported_memory_types(&self) -> Option<u16> {
         self.parts.get_field_word(0x0B)
     }
 
-    fn memory_module_voltage(&self) -> Option<u8> {
+    /// 
+    pub fn memory_module_voltage(&self) -> Option<u8> {
         self.parts.get_field_byte(0x0D)
     }
 
-    fn number_of_associated_memory_slots(&self) -> Option<u8> {
+    /// 
+    pub fn number_of_associated_memory_slots(&self) -> Option<u8> {
         self.parts.get_field_byte(0x0E)
     }
 
-    fn memory_module_configuration_handles(&self) -> Option<u8> {
+    /// 
+    pub fn memory_module_configuration_handles(&self) -> Option<u8> {
         self.parts.get_field_byte(0x0F)
     }
 }
