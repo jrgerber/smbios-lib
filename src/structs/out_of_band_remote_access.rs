@@ -1,5 +1,16 @@
 use super::*;
 
+/// # Out-of-Band Remote Access (Type 30)
+///
+/// This structure describes the attributes and policy settings of a hardware facility that may be used to gain
+/// remote access to a hardware system when the operating system is not available due to power-down
+/// status, hardware failures, or boot failures.
+/// 
+/// NOTE: This structure type was added in version 2.2 of this specification.
+/// 
+/// Compliant with:
+/// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
+/// Document Date: 2020-07-17
 pub struct SMBiosOutOfBandRemoteAccess<'a> {
     parts: &'a SMBiosStructParts<'a>,
 }
@@ -17,11 +28,13 @@ impl<'a> SMBiosStruct<'a> for SMBiosOutOfBandRemoteAccess<'a> {
 }
 
 impl<'a> SMBiosOutOfBandRemoteAccess<'a> {
-    fn manufacturer_name(&self) -> Option<u8> {
+    ///  The manufacturer of the out-of-band access facility
+    pub fn manufacturer_name(&self) -> Option<u8> {
         self.parts.get_field_byte(0x04)
     }
 
-    fn connections(&self) -> Option<u8> {
+    /// Current remote-access connections (bit field)
+    pub fn connections(&self) -> Option<u8> {
         self.parts.get_field_byte(0x05)
     }
 }

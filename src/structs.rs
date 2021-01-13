@@ -1,6 +1,5 @@
 
 use crate::fields::*;
-use crate::display::*;
 use std::fmt;
 
 pub mod base;

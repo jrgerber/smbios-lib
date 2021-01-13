@@ -43,7 +43,7 @@ impl<'a> SMBiosBiosLanguageInformation<'a> {
     }
 
     /// Iterable collection of the installable languages.
-    fn installable_langauges(&self) -> &Strings {
+    pub fn installable_langauges(&self) -> &Strings {
         &self.parts.strings
     }
 }
