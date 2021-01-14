@@ -1,5 +1,4 @@
 use std::convert::TryInto;
-use std::fmt;
 
 pub fn get_field_byte(offset: usize, data: &[u8]) -> Option<u8> {
     match data.get(offset..offset + 1) {
