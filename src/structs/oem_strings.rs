@@ -16,15 +16,12 @@ impl<'a> SMBiosStruct<'a> for SMBiosOemStrings<'a> {
     }
 }
 
-impl<'a> SMBiosOemStrings<'a> {
-}
+impl<'a> SMBiosOemStrings<'a> {}
 
 impl fmt::Debug for SMBiosOemStrings<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosOemStrings>())
-        .field("header", &self.parts.header)
-
-        .finish()
+            .field("header", &self.parts.header)
+            .finish()
     }
 }
-

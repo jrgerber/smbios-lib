@@ -37,12 +37,11 @@ impl<'a> SMBiosProcessorAdditionalInformation<'a> {
 impl fmt::Debug for SMBiosProcessorAdditionalInformation<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosProcessorAdditionalInformation>())
-        .field("header", &self.parts.header)
-        .field("referenced_handle", &self.referenced_handle())
-        .field("block_length", &self.block_length())
-        .field("processor_type", &self.processor_type())
-        // .field("processor_specific_data", &self.processor_specific_data())
-        .finish()
+            .field("header", &self.parts.header)
+            .field("referenced_handle", &self.referenced_handle())
+            .field("block_length", &self.block_length())
+            .field("processor_type", &self.processor_type())
+            // .field("processor_specific_data", &self.processor_specific_data())
+            .finish()
     }
 }
-

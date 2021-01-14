@@ -45,14 +45,13 @@ impl<'a> SMBiosCoolingDevice<'a> {
 impl fmt::Debug for SMBiosCoolingDevice<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosCoolingDevice>())
-        .field("header", &self.parts.header)
-        .field("temperature_probe_handle", &self.temperature_probe_handle())
-        .field("device_type_and_status", &self.device_type_and_status())
-        .field("cooling_unit_group", &self.cooling_unit_group())
-        .field("oem_defined", &self.oem_defined())
-        .field("nominal_speed", &self.nominal_speed())
-        .field("description", &self.description())
-        .finish()
+            .field("header", &self.parts.header)
+            .field("temperature_probe_handle", &self.temperature_probe_handle())
+            .field("device_type_and_status", &self.device_type_and_status())
+            .field("cooling_unit_group", &self.cooling_unit_group())
+            .field("oem_defined", &self.oem_defined())
+            .field("nominal_speed", &self.nominal_speed())
+            .field("description", &self.description())
+            .finish()
     }
 }
-

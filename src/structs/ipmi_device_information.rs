@@ -49,15 +49,17 @@ impl<'a> SMBiosIpmiDeviceInformation<'a> {
 impl fmt::Debug for SMBiosIpmiDeviceInformation<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosIpmiDeviceInformation>())
-        .field("header", &self.parts.header)
-        .field("interface_type", &self.interface_type())
-        .field("ipmi_specification_revision", &self.ipmi_specification_revision())
-        .field("i2c_target_address", &self.i2c_target_address())
-        .field("nvstorage_device_address", &self.nvstorage_device_address())
-        .field("base_address", &self.base_address())
-        .field("base_address_modifier", &self.base_address_modifier())
-        .field("interrupt_number", &self.interrupt_number())
-        .finish()
+            .field("header", &self.parts.header)
+            .field("interface_type", &self.interface_type())
+            .field(
+                "ipmi_specification_revision",
+                &self.ipmi_specification_revision(),
+            )
+            .field("i2c_target_address", &self.i2c_target_address())
+            .field("nvstorage_device_address", &self.nvstorage_device_address())
+            .field("base_address", &self.base_address())
+            .field("base_address_modifier", &self.base_address_modifier())
+            .field("interrupt_number", &self.interrupt_number())
+            .finish()
     }
 }
-

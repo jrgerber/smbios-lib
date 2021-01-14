@@ -65,19 +65,24 @@ impl<'a> SMBiosSystemEventLog<'a> {
 impl fmt::Debug for SMBiosSystemEventLog<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosSystemEventLog>())
-        .field("header", &self.parts.header)
-        .field("log_area_length", &self.log_area_length())
-        .field("log_header_start_offset", &self.log_header_start_offset())
-        .field("log_data_start_offset", &self.log_data_start_offset())
-        .field("access_method", &self.access_method())
-        .field("log_status", &self.log_status())
-        .field("log_change_token", &self.log_change_token())
-        .field("access_method_address", &self.access_method_address())
-        .field("log_header_format", &self.log_header_format())
-        .field("number_of_supported_log_type_descriptors", &self.number_of_supported_log_type_descriptors())
-        .field("length_of_each_log_type_descriptor", &self.length_of_each_log_type_descriptor())
-        // .field("list_of_supported_event_log_type_descriptors", &self.list_of_supported_event_log_type_descriptors())
-        .finish()
+            .field("header", &self.parts.header)
+            .field("log_area_length", &self.log_area_length())
+            .field("log_header_start_offset", &self.log_header_start_offset())
+            .field("log_data_start_offset", &self.log_data_start_offset())
+            .field("access_method", &self.access_method())
+            .field("log_status", &self.log_status())
+            .field("log_change_token", &self.log_change_token())
+            .field("access_method_address", &self.access_method_address())
+            .field("log_header_format", &self.log_header_format())
+            .field(
+                "number_of_supported_log_type_descriptors",
+                &self.number_of_supported_log_type_descriptors(),
+            )
+            .field(
+                "length_of_each_log_type_descriptor",
+                &self.length_of_each_log_type_descriptor(),
+            )
+            // .field("list_of_supported_event_log_type_descriptors", &self.list_of_supported_event_log_type_descriptors())
+            .finish()
     }
 }
-

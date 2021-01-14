@@ -41,13 +41,18 @@ impl<'a> SMBiosPortConnectorInformation<'a> {
 impl fmt::Debug for SMBiosPortConnectorInformation<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosPortConnectorInformation>())
-        .field("header", &self.parts.header)
-        .field("internal_reference_designator", &self.internal_reference_designator())
-        .field("internal_connector_type", &self.internal_connector_type())
-        .field("external_reference_designator", &self.external_reference_designator())
-        .field("external_connector_type", &self.external_connector_type())
-        .field("port_type", &self.port_type())
-        .finish()
+            .field("header", &self.parts.header)
+            .field(
+                "internal_reference_designator",
+                &self.internal_reference_designator(),
+            )
+            .field("internal_connector_type", &self.internal_connector_type())
+            .field(
+                "external_reference_designator",
+                &self.external_reference_designator(),
+            )
+            .field("external_connector_type", &self.external_connector_type())
+            .field("port_type", &self.port_type())
+            .finish()
     }
 }
-

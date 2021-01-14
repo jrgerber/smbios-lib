@@ -33,11 +33,10 @@ impl<'a> SMBiosBuiltInPointingDevice<'a> {
 impl fmt::Debug for SMBiosBuiltInPointingDevice<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosBuiltInPointingDevice>())
-        .field("header", &self.parts.header)
-        .field("device_type", &self.device_type())
-        .field("interface", &self.interface())
-        .field("number_of_buttons", &self.number_of_buttons())
-        .finish()
+            .field("header", &self.parts.header)
+            .field("device_type", &self.device_type())
+            .field("interface", &self.interface())
+            .field("number_of_buttons", &self.number_of_buttons())
+            .finish()
     }
 }
-

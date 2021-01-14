@@ -33,11 +33,10 @@ impl<'a> SMBiosOnBoardDeviceInformation<'a> {
 impl fmt::Debug for SMBiosOnBoardDeviceInformation<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosOnBoardDeviceInformation>())
-        .field("header", &self.parts.header)
-        .field("device_type", &self.device_type())
-        .field("device_description", &self.device_description())
-        // .field("minimum_ending_offset", &self.minimum_ending_offset())
-        .finish()
+            .field("header", &self.parts.header)
+            .field("device_type", &self.device_type())
+            .field("device_description", &self.device_description())
+            // .field("minimum_ending_offset", &self.minimum_ending_offset())
+            .finish()
     }
 }
-

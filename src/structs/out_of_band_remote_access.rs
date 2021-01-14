@@ -29,10 +29,9 @@ impl<'a> SMBiosOutOfBandRemoteAccess<'a> {
 impl fmt::Debug for SMBiosOutOfBandRemoteAccess<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosOutOfBandRemoteAccess>())
-        .field("header", &self.parts.header)
-        .field("manufacturer_name", &self.manufacturer_name())
-        .field("connections", &self.connections())
-        .finish()
+            .field("header", &self.parts.header)
+            .field("manufacturer_name", &self.manufacturer_name())
+            .field("connections", &self.connections())
+            .finish()
     }
 }
-

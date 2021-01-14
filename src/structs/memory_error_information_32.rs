@@ -49,15 +49,17 @@ impl<'a> SMBiosMemoryErrorInformation32<'a> {
 impl fmt::Debug for SMBiosMemoryErrorInformation32<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosMemoryErrorInformation32>())
-        .field("header", &self.parts.header)
-        .field("error_type", &self.error_type())
-        .field("error_granularity", &self.error_granularity())
-        .field("error_operation", &self.error_operation())
-        .field("vendor_syndrome", &self.vendor_syndrome())
-        .field("memory_array_error_address", &self.memory_array_error_address())
-        .field("device_error_address", &self.device_error_address())
-        .field("error_resolution", &self.error_resolution())
-        .finish()
+            .field("header", &self.parts.header)
+            .field("error_type", &self.error_type())
+            .field("error_granularity", &self.error_granularity())
+            .field("error_operation", &self.error_operation())
+            .field("vendor_syndrome", &self.vendor_syndrome())
+            .field(
+                "memory_array_error_address",
+                &self.memory_array_error_address(),
+            )
+            .field("device_error_address", &self.device_error_address())
+            .field("error_resolution", &self.error_resolution())
+            .finish()
     }
 }
-

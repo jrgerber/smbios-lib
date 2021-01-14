@@ -53,16 +53,15 @@ impl<'a> SMBiosTpmDevice<'a> {
 impl fmt::Debug for SMBiosTpmDevice<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosTpmDevice>())
-        .field("header", &self.parts.header)
-        .field("vendor_id", &self.vendor_id())
-        .field("major_spec_version", &self.major_spec_version())
-        .field("minor_spec_version", &self.minor_spec_version())
-        .field("firmware_version_1", &self.firmware_version_1())
-        .field("firmware_version_2", &self.firmware_version_2())
-        .field("description", &self.description())
-        .field("characteristics", &self.characteristics())
-        .field("oem_defined", &self.oem_defined())
-        .finish()
+            .field("header", &self.parts.header)
+            .field("vendor_id", &self.vendor_id())
+            .field("major_spec_version", &self.major_spec_version())
+            .field("minor_spec_version", &self.minor_spec_version())
+            .field("firmware_version_1", &self.firmware_version_1())
+            .field("firmware_version_2", &self.firmware_version_2())
+            .field("description", &self.description())
+            .field("characteristics", &self.characteristics())
+            .field("oem_defined", &self.oem_defined())
+            .finish()
     }
 }
-

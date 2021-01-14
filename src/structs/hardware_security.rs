@@ -25,9 +25,11 @@ impl<'a> SMBiosHardwareSecurity<'a> {
 impl fmt::Debug for SMBiosHardwareSecurity<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosHardwareSecurity>())
-        .field("header", &self.parts.header)
-        .field("hardware_security_settings", &self.hardware_security_settings())
-        .finish()
+            .field("header", &self.parts.header)
+            .field(
+                "hardware_security_settings",
+                &self.hardware_security_settings(),
+            )
+            .finish()
     }
 }
-

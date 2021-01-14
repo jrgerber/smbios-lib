@@ -73,21 +73,29 @@ impl<'a> SMBiosSystemPowerSupply<'a> {
 impl fmt::Debug for SMBiosSystemPowerSupply<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosSystemPowerSupply>())
-        .field("header", &self.parts.header)
-        .field("power_unit_group", &self.power_unit_group())
-        .field("location", &self.location())
-        .field("device_name", &self.device_name())
-        .field("manufacturer", &self.manufacturer())
-        .field("serial_number", &self.serial_number())
-        .field("asset_tag_number", &self.asset_tag_number())
-        .field("model_part_number", &self.model_part_number())
-        .field("revision_level", &self.revision_level())
-        .field("max_power_capacity", &self.max_power_capacity())
-        .field("power_supply_characteristics", &self.power_supply_characteristics())
-        .field("input_voltage_probe_handle", &self.input_voltage_probe_handle())
-        .field("cooling_device_handle", &self.cooling_device_handle())
-        .field("input_current_probe_handle", &self.input_current_probe_handle())
-        .finish()
+            .field("header", &self.parts.header)
+            .field("power_unit_group", &self.power_unit_group())
+            .field("location", &self.location())
+            .field("device_name", &self.device_name())
+            .field("manufacturer", &self.manufacturer())
+            .field("serial_number", &self.serial_number())
+            .field("asset_tag_number", &self.asset_tag_number())
+            .field("model_part_number", &self.model_part_number())
+            .field("revision_level", &self.revision_level())
+            .field("max_power_capacity", &self.max_power_capacity())
+            .field(
+                "power_supply_characteristics",
+                &self.power_supply_characteristics(),
+            )
+            .field(
+                "input_voltage_probe_handle",
+                &self.input_voltage_probe_handle(),
+            )
+            .field("cooling_device_handle", &self.cooling_device_handle())
+            .field(
+                "input_current_probe_handle",
+                &self.input_current_probe_handle(),
+            )
+            .finish()
     }
 }
-

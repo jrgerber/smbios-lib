@@ -1,7 +1,7 @@
 use super::*;
-use std::{convert::TryInto, ops::Deref};
 use crate::fields::*;
 use std::fmt;
+use std::{convert::TryInto, ops::Deref};
 
 // use super::SMBiosUnknown;
 
@@ -23,16 +23,18 @@ impl fmt::Debug for Handle {
     }
 }
 
-pub fn get_field_handle(offset:usize, data:&[u8]) -> Option<Handle> {
-    match data.get(offset .. offset + 2) {
-        Some(val) => Some(Handle(u16::from_le_bytes(val.try_into().expect("array length does not match type width")))),
+pub fn get_field_handle(offset: usize, data: &[u8]) -> Option<Handle> {
+    match data.get(offset..offset + 2) {
+        Some(val) => Some(Handle(u16::from_le_bytes(
+            val.try_into()
+                .expect("array length does not match type width"),
+        ))),
         None => None,
-    }    
+    }
 }
 
 #[derive(Debug)]
-pub enum DefinedStruct<'a>
-{
+pub enum DefinedStruct<'a> {
     Information(SMBiosInformation<'a>),
     SystemInformation(SMBiosSystemInformation<'a>),
     BaseBoardInformation(SMBiosBaseboardInformation<'a>),
@@ -99,122 +101,240 @@ pub struct SMBiosStructParts<'a> {
 
 impl<'a> SMBiosStructParts<'a> {
     pub fn new(data: &'a [u8]) -> Self {
-        SMBiosStructParts { 
-            header: Header::new(data.get(..Header::SIZE).expect("A minimum of Header::SIZE bytes are required.")), 
+        SMBiosStructParts {
+            header: Header::new(
+                data.get(..Header::SIZE)
+                    .expect("A minimum of Header::SIZE bytes are required."),
+            ),
             data,
             strings: {
                 //let string_area_start_index = data[1];
-                let string_area_start_index = data.get(Header::LENGTH_OFFSET..Header::LENGTH_OFFSET + 1).unwrap_or(&[0])[0];
-                Strings::new(data.get(string_area_start_index as usize .. data.len() - 2).unwrap_or(&[]))
-            }
-            //strings: Strings::new(data) 
+                let string_area_start_index = data
+                    .get(Header::LENGTH_OFFSET..Header::LENGTH_OFFSET + 1)
+                    .unwrap_or(&[0])[0];
+                Strings::new(
+                    data.get(string_area_start_index as usize..data.len() - 2)
+                        .unwrap_or(&[]),
+                )
+            }, //strings: Strings::new(data)
         }
     }
 
-    pub fn get_field_byte(&self, offset:usize) -> Option<u8> {
-        match self.data.get(offset .. offset + 1) {
+    pub fn get_field_byte(&self, offset: usize) -> Option<u8> {
+        match self.data.get(offset..offset + 1) {
             Some(val) => Some(val[0]),
             None => None,
         }
     }
 
-    pub fn get_field_word(&self, offset:usize) -> Option<u16> {
-        match self.data.get(offset .. offset + 2) {
-            Some(val) => Some(u16::from_le_bytes(val.try_into().expect("array length does not match type width"))),
+    pub fn get_field_word(&self, offset: usize) -> Option<u16> {
+        match self.data.get(offset..offset + 2) {
+            Some(val) => Some(u16::from_le_bytes(
+                val.try_into()
+                    .expect("array length does not match type width"),
+            )),
             None => None,
-        }    
+        }
     }
 
-    pub fn get_field_handle(&self, offset:usize) -> Option<Handle> {
-        match self.data.get(offset .. offset + 2) {
-            Some(val) => Some(Handle(u16::from_le_bytes(val.try_into().expect("array length does not match type width")))),
+    pub fn get_field_handle(&self, offset: usize) -> Option<Handle> {
+        match self.data.get(offset..offset + 2) {
+            Some(val) => Some(Handle(u16::from_le_bytes(
+                val.try_into()
+                    .expect("array length does not match type width"),
+            ))),
             None => None,
-        }    
+        }
     }
 
-    pub fn get_field_dword(&self, offset:usize) -> Option<u32> {
-        match self.data.get(offset .. offset + 4) {
-            Some(val) => Some(u32::from_le_bytes(val.try_into().expect("array length does not match type width"))),
+    pub fn get_field_dword(&self, offset: usize) -> Option<u32> {
+        match self.data.get(offset..offset + 4) {
+            Some(val) => Some(u32::from_le_bytes(
+                val.try_into()
+                    .expect("array length does not match type width"),
+            )),
             None => None,
-        }    
+        }
     }
 
-    pub fn get_field_qword(&self, offset:usize) -> Option<u64> {
-        match self.data.get(offset .. offset + 8) {
-            Some(val) => Some(u64::from_le_bytes(val.try_into().expect("array length does not match type width"))),
+    pub fn get_field_qword(&self, offset: usize) -> Option<u64> {
+        match self.data.get(offset..offset + 8) {
+            Some(val) => Some(u64::from_le_bytes(
+                val.try_into()
+                    .expect("array length does not match type width"),
+            )),
             None => None,
-        }    
+        }
     }
 
-    pub fn get_field_string(&self, offset:usize) -> Option<String> {
+    pub fn get_field_string(&self, offset: usize) -> Option<String> {
         match self.get_field_byte(offset) {
             Some(val) => self.strings.get_string(val),
             None => None,
-        }    
+        }
     }
 
     // todo: learn how to pass an index range (SliceIndex?) rather than start/end indices.
     // This would better conform to the Rust design look and feel.
-    pub fn get_field_data(&self, start_index:usize, end_index:usize) -> Option<&[u8]> {
-        return self.data.get(start_index .. end_index)
+    pub fn get_field_data(&self, start_index: usize, end_index: usize) -> Option<&[u8]> {
+        return self.data.get(start_index..end_index);
     }
 
-    pub fn as_type<T : SMBiosStruct<'a>>(&'a self) -> Option<T> {
+    pub fn as_type<T: SMBiosStruct<'a>>(&'a self) -> Option<T> {
         if T::STRUCT_TYPE == self.header.struct_type() {
             Some(T::new(self))
-        }
-        else {
+        } else {
             None
         }
     }
 
     pub fn struct_type_name(&self) -> DefinedStruct {
         match self.header.struct_type() {
-            SMBiosInformation::STRUCT_TYPE => DefinedStruct::Information(SMBiosInformation::new(self)),
-            SMBiosSystemInformation::STRUCT_TYPE => DefinedStruct::SystemInformation(SMBiosSystemInformation::new(self)),
-            SMBiosBaseboardInformation::STRUCT_TYPE => DefinedStruct::BaseBoardInformation(SMBiosBaseboardInformation::new(self)),
-            SMBiosSystemChassisInformation::STRUCT_TYPE => DefinedStruct::SystemChassisInformation(SMBiosSystemChassisInformation::new(self)),
-            SMBiosProcessorInformation::STRUCT_TYPE => DefinedStruct::ProcessorInformation(SMBiosProcessorInformation::new(self)),
-            SMBiosMemoryControllerInformation::STRUCT_TYPE => DefinedStruct::MemoryControllerInformation(SMBiosMemoryControllerInformation::new(self)),
-            SMBiosMemoryModuleInformation::STRUCT_TYPE => DefinedStruct::MemoryModuleInformation(SMBiosMemoryModuleInformation::new(self)),
-            SMBiosCacheInformation::STRUCT_TYPE => DefinedStruct::CacheInformation(SMBiosCacheInformation::new(self)),
-            SMBiosPortConnectorInformation::STRUCT_TYPE => DefinedStruct::PortConnectorInformation(SMBiosPortConnectorInformation::new(self)),
+            SMBiosInformation::STRUCT_TYPE => {
+                DefinedStruct::Information(SMBiosInformation::new(self))
+            }
+            SMBiosSystemInformation::STRUCT_TYPE => {
+                DefinedStruct::SystemInformation(SMBiosSystemInformation::new(self))
+            }
+            SMBiosBaseboardInformation::STRUCT_TYPE => {
+                DefinedStruct::BaseBoardInformation(SMBiosBaseboardInformation::new(self))
+            }
+            SMBiosSystemChassisInformation::STRUCT_TYPE => {
+                DefinedStruct::SystemChassisInformation(SMBiosSystemChassisInformation::new(self))
+            }
+            SMBiosProcessorInformation::STRUCT_TYPE => {
+                DefinedStruct::ProcessorInformation(SMBiosProcessorInformation::new(self))
+            }
+            SMBiosMemoryControllerInformation::STRUCT_TYPE => {
+                DefinedStruct::MemoryControllerInformation(SMBiosMemoryControllerInformation::new(
+                    self,
+                ))
+            }
+            SMBiosMemoryModuleInformation::STRUCT_TYPE => {
+                DefinedStruct::MemoryModuleInformation(SMBiosMemoryModuleInformation::new(self))
+            }
+            SMBiosCacheInformation::STRUCT_TYPE => {
+                DefinedStruct::CacheInformation(SMBiosCacheInformation::new(self))
+            }
+            SMBiosPortConnectorInformation::STRUCT_TYPE => {
+                DefinedStruct::PortConnectorInformation(SMBiosPortConnectorInformation::new(self))
+            }
             SMBiosSystemSlot::STRUCT_TYPE => DefinedStruct::SystemSlot(SMBiosSystemSlot::new(self)),
-            SMBiosOnBoardDeviceInformation::STRUCT_TYPE => DefinedStruct::OnBoardDeviceInformation(SMBiosOnBoardDeviceInformation::new(self)),
+            SMBiosOnBoardDeviceInformation::STRUCT_TYPE => {
+                DefinedStruct::OnBoardDeviceInformation(SMBiosOnBoardDeviceInformation::new(self))
+            }
             SMBiosOemStrings::STRUCT_TYPE => DefinedStruct::OemStrings(SMBiosOemStrings::new(self)),
-            SMBiosSystemConfigurationOptions::STRUCT_TYPE => DefinedStruct::SystemConfigurationOptions(SMBiosSystemConfigurationOptions::new(self)),
-            SMBiosBiosLanguageInformation::STRUCT_TYPE => DefinedStruct::LanguageInformation(SMBiosBiosLanguageInformation::new(self)),
-            SMBiosGroupAssociations::STRUCT_TYPE => DefinedStruct::GroupAssociations(SMBiosGroupAssociations::new(self)),
-            SMBiosSystemEventLog::STRUCT_TYPE => DefinedStruct::EventLog(SMBiosSystemEventLog::new(self)),
-            SMBiosPhysicalMemoryArray::STRUCT_TYPE => DefinedStruct::PhysicalMemoryArray(SMBiosPhysicalMemoryArray::new(self)),
-            SMBiosMemoryDevice::STRUCT_TYPE => DefinedStruct::MemoryDevice(SMBiosMemoryDevice::new(self)),
-            SMBiosMemoryErrorInformation32::STRUCT_TYPE => DefinedStruct::MemoryErrorInformation32Bit(SMBiosMemoryErrorInformation32::new(self)),
-            SMBiosMemoryArrayMappedAddress::STRUCT_TYPE => DefinedStruct::MemoryArrayMappedAddress(SMBiosMemoryArrayMappedAddress::new(self)),
-            SMBiosMemoryDeviceMappedAddress::STRUCT_TYPE => DefinedStruct::MemoryDeviceMappedAddress(SMBiosMemoryDeviceMappedAddress::new(self)),
-            SMBiosBuiltInPointingDevice::STRUCT_TYPE => DefinedStruct::BuiltInPointingDevice(SMBiosBuiltInPointingDevice::new(self)),
-            SMBiosPortableBattery::STRUCT_TYPE => DefinedStruct::PortableBattery(SMBiosPortableBattery::new(self)),
-            SMBiosSystemReset::STRUCT_TYPE => DefinedStruct::SystemReset(SMBiosSystemReset::new(self)),
-            SMBiosHardwareSecurity::STRUCT_TYPE => DefinedStruct::HardwareSecurity(SMBiosHardwareSecurity::new(self)),
-            SMBiosSystemPowerControls::STRUCT_TYPE => DefinedStruct::SystemPowerControls(SMBiosSystemPowerControls::new(self)),
-            SMBiosVoltageProbe::STRUCT_TYPE => DefinedStruct::VoltageProbe(SMBiosVoltageProbe::new(self)),
-            SMBiosCoolingDevice::STRUCT_TYPE => DefinedStruct::CoolingDevice(SMBiosCoolingDevice::new(self)),
-            SMBiosTemperatureProbe::STRUCT_TYPE => DefinedStruct::TemperatureProbe(SMBiosTemperatureProbe::new(self)),
-            SMBiosElectricalCurrentProbe::STRUCT_TYPE => DefinedStruct::ElectricalCurrentProbe(SMBiosElectricalCurrentProbe::new(self)),
-            SMBiosOutOfBandRemoteAccess::STRUCT_TYPE => DefinedStruct::OutOfBandRemoteAccess(SMBiosOutOfBandRemoteAccess::new(self)),
-            SMBiosBisEntryPoint::STRUCT_TYPE => DefinedStruct::BisEntryPoint(SMBiosBisEntryPoint::new(self)),
-            SMBiosSystemBootInformation::STRUCT_TYPE => DefinedStruct::SystemBootInformation(SMBiosSystemBootInformation::new(self)),
-            SMBiosMemoryErrorInformation64::STRUCT_TYPE => DefinedStruct::MemoryErrorInformation64Bit(SMBiosMemoryErrorInformation64::new(self)),
-            SMBiosManagementDevice::STRUCT_TYPE => DefinedStruct::ManagementDevice(SMBiosManagementDevice::new(self)),
-            SMBiosManagementDeviceComponent::STRUCT_TYPE => DefinedStruct::ManagementDeviceComponent(SMBiosManagementDeviceComponent::new(self)),
-            SMBiosManagementDeviceThresholdData::STRUCT_TYPE => DefinedStruct::ManagementDeviceThresholdData(SMBiosManagementDeviceThresholdData::new(self)),
-            SMBiosMemoryChannel::STRUCT_TYPE => DefinedStruct::MemoryChannel(SMBiosMemoryChannel::new(self)),
-            SMBiosIpmiDeviceInformation::STRUCT_TYPE => DefinedStruct::IpmiDeviceInformation(SMBiosIpmiDeviceInformation::new(self)),
-            SMBiosSystemPowerSupply::STRUCT_TYPE => DefinedStruct::SystemPowerSupply(SMBiosSystemPowerSupply::new(self)),
-            SMBiosAdditionalInformation::STRUCT_TYPE => DefinedStruct::AdditionalInformation(SMBiosAdditionalInformation::new(self)),
-            SMBiosOnboardDevicesExtendedInformation::STRUCT_TYPE => DefinedStruct::OnboardDevicesExtendedInformation(SMBiosOnboardDevicesExtendedInformation::new(self)),
-            SMBiosManagementControllerHostInterface::STRUCT_TYPE => DefinedStruct::ManagementControllerHostInterface(SMBiosManagementControllerHostInterface::new(self)),
+            SMBiosSystemConfigurationOptions::STRUCT_TYPE => {
+                DefinedStruct::SystemConfigurationOptions(SMBiosSystemConfigurationOptions::new(
+                    self,
+                ))
+            }
+            SMBiosBiosLanguageInformation::STRUCT_TYPE => {
+                DefinedStruct::LanguageInformation(SMBiosBiosLanguageInformation::new(self))
+            }
+            SMBiosGroupAssociations::STRUCT_TYPE => {
+                DefinedStruct::GroupAssociations(SMBiosGroupAssociations::new(self))
+            }
+            SMBiosSystemEventLog::STRUCT_TYPE => {
+                DefinedStruct::EventLog(SMBiosSystemEventLog::new(self))
+            }
+            SMBiosPhysicalMemoryArray::STRUCT_TYPE => {
+                DefinedStruct::PhysicalMemoryArray(SMBiosPhysicalMemoryArray::new(self))
+            }
+            SMBiosMemoryDevice::STRUCT_TYPE => {
+                DefinedStruct::MemoryDevice(SMBiosMemoryDevice::new(self))
+            }
+            SMBiosMemoryErrorInformation32::STRUCT_TYPE => {
+                DefinedStruct::MemoryErrorInformation32Bit(SMBiosMemoryErrorInformation32::new(
+                    self,
+                ))
+            }
+            SMBiosMemoryArrayMappedAddress::STRUCT_TYPE => {
+                DefinedStruct::MemoryArrayMappedAddress(SMBiosMemoryArrayMappedAddress::new(self))
+            }
+            SMBiosMemoryDeviceMappedAddress::STRUCT_TYPE => {
+                DefinedStruct::MemoryDeviceMappedAddress(SMBiosMemoryDeviceMappedAddress::new(self))
+            }
+            SMBiosBuiltInPointingDevice::STRUCT_TYPE => {
+                DefinedStruct::BuiltInPointingDevice(SMBiosBuiltInPointingDevice::new(self))
+            }
+            SMBiosPortableBattery::STRUCT_TYPE => {
+                DefinedStruct::PortableBattery(SMBiosPortableBattery::new(self))
+            }
+            SMBiosSystemReset::STRUCT_TYPE => {
+                DefinedStruct::SystemReset(SMBiosSystemReset::new(self))
+            }
+            SMBiosHardwareSecurity::STRUCT_TYPE => {
+                DefinedStruct::HardwareSecurity(SMBiosHardwareSecurity::new(self))
+            }
+            SMBiosSystemPowerControls::STRUCT_TYPE => {
+                DefinedStruct::SystemPowerControls(SMBiosSystemPowerControls::new(self))
+            }
+            SMBiosVoltageProbe::STRUCT_TYPE => {
+                DefinedStruct::VoltageProbe(SMBiosVoltageProbe::new(self))
+            }
+            SMBiosCoolingDevice::STRUCT_TYPE => {
+                DefinedStruct::CoolingDevice(SMBiosCoolingDevice::new(self))
+            }
+            SMBiosTemperatureProbe::STRUCT_TYPE => {
+                DefinedStruct::TemperatureProbe(SMBiosTemperatureProbe::new(self))
+            }
+            SMBiosElectricalCurrentProbe::STRUCT_TYPE => {
+                DefinedStruct::ElectricalCurrentProbe(SMBiosElectricalCurrentProbe::new(self))
+            }
+            SMBiosOutOfBandRemoteAccess::STRUCT_TYPE => {
+                DefinedStruct::OutOfBandRemoteAccess(SMBiosOutOfBandRemoteAccess::new(self))
+            }
+            SMBiosBisEntryPoint::STRUCT_TYPE => {
+                DefinedStruct::BisEntryPoint(SMBiosBisEntryPoint::new(self))
+            }
+            SMBiosSystemBootInformation::STRUCT_TYPE => {
+                DefinedStruct::SystemBootInformation(SMBiosSystemBootInformation::new(self))
+            }
+            SMBiosMemoryErrorInformation64::STRUCT_TYPE => {
+                DefinedStruct::MemoryErrorInformation64Bit(SMBiosMemoryErrorInformation64::new(
+                    self,
+                ))
+            }
+            SMBiosManagementDevice::STRUCT_TYPE => {
+                DefinedStruct::ManagementDevice(SMBiosManagementDevice::new(self))
+            }
+            SMBiosManagementDeviceComponent::STRUCT_TYPE => {
+                DefinedStruct::ManagementDeviceComponent(SMBiosManagementDeviceComponent::new(self))
+            }
+            SMBiosManagementDeviceThresholdData::STRUCT_TYPE => {
+                DefinedStruct::ManagementDeviceThresholdData(
+                    SMBiosManagementDeviceThresholdData::new(self),
+                )
+            }
+            SMBiosMemoryChannel::STRUCT_TYPE => {
+                DefinedStruct::MemoryChannel(SMBiosMemoryChannel::new(self))
+            }
+            SMBiosIpmiDeviceInformation::STRUCT_TYPE => {
+                DefinedStruct::IpmiDeviceInformation(SMBiosIpmiDeviceInformation::new(self))
+            }
+            SMBiosSystemPowerSupply::STRUCT_TYPE => {
+                DefinedStruct::SystemPowerSupply(SMBiosSystemPowerSupply::new(self))
+            }
+            SMBiosAdditionalInformation::STRUCT_TYPE => {
+                DefinedStruct::AdditionalInformation(SMBiosAdditionalInformation::new(self))
+            }
+            SMBiosOnboardDevicesExtendedInformation::STRUCT_TYPE => {
+                DefinedStruct::OnboardDevicesExtendedInformation(
+                    SMBiosOnboardDevicesExtendedInformation::new(self),
+                )
+            }
+            SMBiosManagementControllerHostInterface::STRUCT_TYPE => {
+                DefinedStruct::ManagementControllerHostInterface(
+                    SMBiosManagementControllerHostInterface::new(self),
+                )
+            }
             SMBiosTpmDevice::STRUCT_TYPE => DefinedStruct::TpmDevice(SMBiosTpmDevice::new(self)),
-            SMBiosProcessorAdditionalInformation::STRUCT_TYPE => DefinedStruct::ProcessorAdditionalInformation(SMBiosProcessorAdditionalInformation::new(self)),
+            SMBiosProcessorAdditionalInformation::STRUCT_TYPE => {
+                DefinedStruct::ProcessorAdditionalInformation(
+                    SMBiosProcessorAdditionalInformation::new(self),
+                )
+            }
             SMBiosInactive::STRUCT_TYPE => DefinedStruct::Inactive(SMBiosInactive::new(self)),
             SMBiosEndOfTable::STRUCT_TYPE => DefinedStruct::EndOfTable(SMBiosEndOfTable::new(self)),
             _ => DefinedStruct::Unknown(SMBiosUnknown::new(self)),
@@ -233,21 +353,20 @@ impl fmt::Debug for SMBiosStructParts<'_> {
 
 pub struct Strings<'a> {
     strings: Vec<&'a [u8]>,
-    current_string_index: usize
+    current_string_index: usize,
 }
 
 impl<'a> Strings<'a> {
     fn new(string_area: &[u8]) -> Strings {
-        Strings { 
+        Strings {
             strings: {
                 if string_area == &[] {
                     vec![]
-                }
-                else {
+                } else {
                     string_area.split(|num| *num == 0).into_iter().collect()
                 }
-            }, 
-            current_string_index: 0
+            },
+            current_string_index: 0,
         }
     }
 
@@ -258,13 +377,18 @@ impl<'a> Strings<'a> {
     fn get_string(&self, index: u8) -> Option<String> {
         let index_usize = index as usize;
 
-        if index_usize == 0 || index_usize > self.strings.len() { 
+        if index_usize == 0 || index_usize > self.strings.len() {
             // BIOS strings are 1 based indexing, ignore bad input
             return None;
         }
 
         // TODO: "*x as char" is not ISO-8859-1.  This should be made ISO-8859-1.
-        Some(self.strings[index_usize - 1].into_iter().map(|x| *x as char).collect())
+        Some(
+            self.strings[index_usize - 1]
+                .into_iter()
+                .map(|x| *x as char)
+                .collect(),
+        )
     }
 }
 
@@ -274,13 +398,16 @@ impl<'a> Iterator for Strings<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         if self.current_string_index == self.strings.len() {
             self.reset();
-            return None
+            return None;
         }
 
         // TODO: "*x as char" is not ISO-8859-1.  This should be made ISO-8859-1.
-        let result:String = self.strings[self.current_string_index].into_iter().map(|x| *x as char).collect();
+        let result: String = self.strings[self.current_string_index]
+            .into_iter()
+            .map(|x| *x as char)
+            .collect();
         self.current_string_index = self.current_string_index + 1;
-        
+
         Some(result)
     }
 }
@@ -291,8 +418,8 @@ impl<'a> IntoIterator for &'a Strings<'a> {
 
     fn into_iter(self) -> Self::IntoIter {
         Strings {
-            strings: self.strings.clone(), 
-            current_string_index: 0
+            strings: self.strings.clone(),
+            current_string_index: 0,
         }
     }
 }
@@ -322,7 +449,10 @@ impl<'a> Header<'a> {
     const LENGTH_OFFSET: usize = 1;
 
     fn new(data: &'a [u8]) -> Self {
-        assert!(data.len() == Self::SIZE, "Header must be 4 bytes in length, 1 for struct_type, 1 for length, and 2 for handle.");
+        assert!(
+            data.len() == Self::SIZE,
+            "Header must be 4 bytes in length, 1 for struct_type, 1 for length, and 2 for handle."
+        );
         Header { data }
     }
 
@@ -336,7 +466,11 @@ impl<'a> Header<'a> {
 
     pub fn handle(&self) -> Handle {
         // handle is 2 bytes at offset 2
-        Handle(u16::from_le_bytes(self.data[2..4].try_into().expect("array length does not match type width")))
+        Handle(u16::from_le_bytes(
+            self.data[2..4]
+                .try_into()
+                .expect("array length does not match type width"),
+        ))
     }
 }
 
@@ -345,7 +479,9 @@ pub struct SMBiosTableData<'a> {
 }
 
 impl<'a> SMBiosTableData<'a> {
-    pub fn new(data: &'a [u8]) -> Self { Self { data } }
+    pub fn new(data: &'a [u8]) -> Self {
+        Self { data }
+    }
 }
 
 impl<'a> IntoIterator for SMBiosTableData<'a> {
@@ -385,12 +521,15 @@ pub trait SMBiosStruct<'a> {
 
 pub struct RawStructIterator<'a> {
     data: &'a [u8],
-    current_index : usize,
+    current_index: usize,
 }
 
 impl<'a> RawStructIterator<'a> {
     pub fn new(data: &'a [u8]) -> Self {
-        RawStructIterator{data: data, current_index: 0}
+        RawStructIterator {
+            data: data,
+            current_index: 0,
+        }
     }
 }
 
@@ -413,11 +552,13 @@ impl<'a> Iterator for RawStructIterator<'a> {
         // - The second byte indicates the structure length (header plus structure data).
         //   The length does not include the string area (which at a minimum the last two bytes of zero)
         // - The last two bytes are 0 (the end of the string area)
-        if next_index == 0 
-        && (len < Header::SIZE + 2 // struct is too short
+        if next_index == 0
+            && (len < Header::SIZE + 2 // struct is too short
             || (self.data[next_index + 1] as usize) > len - 2 // struct header specifies a length too long
             || self.data[len - 2] != 0 // 2nd to last byte should be zero and it is not
-            || self.data[len - 1] != 0) { // Last byte should be zero and it is not
+            || self.data[len - 1] != 0)
+        {
+            // Last byte should be zero and it is not
             return None;
         }
 
@@ -428,9 +569,9 @@ impl<'a> Iterator for RawStructIterator<'a> {
 
         // next_index is pointing at the start of the string area.
         // The string area is terminated with \0\0.  If no strings exist then its contents is \0\0.
-        // Search for \0\0 and point at the byte immediately after it.  That point is either the start of the 
+        // Search for \0\0 and point at the byte immediately after it.  That point is either the start of the
         // next structure header or one byte beyond the end of "data".
-        let mut a:bool;
+        let mut a: bool;
         let mut b = true;
         loop {
             a = self.data[next_index] != 0;
@@ -439,7 +580,9 @@ impl<'a> Iterator for RawStructIterator<'a> {
                 b = self.data[next_index] != 0;
                 next_index = next_index + 1;
             }
-            if !(a || b) { break; }
+            if !(a || b) {
+                break;
+            }
         }
 
         let previous_index = self.current_index;
@@ -447,7 +590,7 @@ impl<'a> Iterator for RawStructIterator<'a> {
 
         match self.data.get(previous_index..self.current_index) {
             Some(val) => Some(SMBiosStructParts::new(val)),
-            None => None
+            None => None,
         }
     }
 }
