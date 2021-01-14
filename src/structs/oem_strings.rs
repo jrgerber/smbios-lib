@@ -39,10 +39,9 @@ impl<'a> SMBiosOemStrings<'a> {
 impl fmt::Debug for SMBiosOemStrings<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosOemStrings>())
-        .field("header", &self.parts.header)
-        .field("count", &self.count())
-        .field("oem_strings", &self.oem_strings())
-        .finish()
+            .field("header", &self.parts.header)
+            .field("count", &self.count())
+            .field("oem_strings", &self.oem_strings())
+            .finish()
     }
 }
-

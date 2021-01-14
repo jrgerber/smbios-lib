@@ -70,15 +70,14 @@ impl<'a> SMBiosMemoryModuleInformation<'a> {
 impl fmt::Debug for SMBiosMemoryModuleInformation<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosMemoryModuleInformation>())
-        .field("header", &self.parts.header)
-        .field("socket_designation", &self.socket_designation())
-        .field("bank_connections", &self.bank_connections())
-        .field("current_speed", &self.current_speed())
-        .field("current_memory_type", &self.current_memory_type())
-        .field("installed_size", &self.installed_size())
-        .field("enabled_size", &self.enabled_size())
-        .field("error_status", &self.error_status())
-        .finish()
+            .field("header", &self.parts.header)
+            .field("socket_designation", &self.socket_designation())
+            .field("bank_connections", &self.bank_connections())
+            .field("current_speed", &self.current_speed())
+            .field("current_memory_type", &self.current_memory_type())
+            .field("installed_size", &self.installed_size())
+            .field("enabled_size", &self.enabled_size())
+            .field("error_status", &self.error_status())
+            .finish()
     }
 }
-

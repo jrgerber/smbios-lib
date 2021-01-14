@@ -59,13 +59,12 @@ impl<'a> SMBiosMemoryChannel<'a> {
 impl fmt::Debug for SMBiosMemoryChannel<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosMemoryChannel>())
-        .field("header", &self.parts.header)
-        .field("channel_type", &self.channel_type())
-        .field("maximum_channel_load", &self.maximum_channel_load())
-        .field("memory_device_count", &self.memory_device_count())
-        // .field("memory_device_load", &self.memory_device_load())
-        // .field("memory_device_handle", &self.memory_device_handle())
-        .finish()
+            .field("header", &self.parts.header)
+            .field("channel_type", &self.channel_type())
+            .field("maximum_channel_load", &self.maximum_channel_load())
+            .field("memory_device_count", &self.memory_device_count())
+            // .field("memory_device_load", &self.memory_device_load())
+            // .field("memory_device_handle", &self.memory_device_handle())
+            .finish()
     }
 }
-

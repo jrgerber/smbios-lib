@@ -48,12 +48,11 @@ impl<'a> SMBiosManagementDevice<'a> {
 impl fmt::Debug for SMBiosManagementDevice<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosManagementDevice>())
-        .field("header", &self.parts.header)
-        .field("description", &self.description())
-        .field("device_type", &self.device_type())
-        .field("address", &self.address())
-        .field("address_type", &self.address_type())
-        .finish()
+            .field("header", &self.parts.header)
+            .field("description", &self.description())
+            .field("device_type", &self.device_type())
+            .field("address", &self.address())
+            .field("address_type", &self.address_type())
+            .finish()
     }
 }
-

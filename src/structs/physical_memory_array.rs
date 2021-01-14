@@ -84,15 +84,20 @@ impl<'a> SMBiosPhysicalMemoryArray<'a> {
 impl fmt::Debug for SMBiosPhysicalMemoryArray<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosPhysicalMemoryArray>())
-        .field("header", &self.parts.header)
-        .field("location", &self.location())
-        .field("usage", &self.usage())
-        .field("memory_error_correction", &self.memory_error_correction())
-        .field("maximum_capacity", &self.maximum_capacity())
-        .field("memory_error_information_handle", &self.memory_error_information_handle())
-        .field("number_of_memory_devices", &self.number_of_memory_devices())
-        .field("extended_maximum_capacity", &self.extended_maximum_capacity())
-        .finish()
+            .field("header", &self.parts.header)
+            .field("location", &self.location())
+            .field("usage", &self.usage())
+            .field("memory_error_correction", &self.memory_error_correction())
+            .field("maximum_capacity", &self.maximum_capacity())
+            .field(
+                "memory_error_information_handle",
+                &self.memory_error_information_handle(),
+            )
+            .field("number_of_memory_devices", &self.number_of_memory_devices())
+            .field(
+                "extended_maximum_capacity",
+                &self.extended_maximum_capacity(),
+            )
+            .finish()
     }
 }
-

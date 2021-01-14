@@ -95,14 +95,19 @@ impl<'a> SMBiosMemoryArrayMappedAddress<'a> {
 impl fmt::Debug for SMBiosMemoryArrayMappedAddress<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosMemoryArrayMappedAddress>())
-        .field("header", &self.parts.header)
-        .field("starting_address", &self.starting_address())
-        .field("ending_address", &self.ending_address())
-        .field("physical_memory_array_handle", &self.physical_memory_array_handle())
-        .field("partition_width", &self.partition_width())
-        .field("extended_starting_address", &self.extended_starting_address())
-        .field("extended_ending_address", &self.extended_ending_address())
-        .finish()
+            .field("header", &self.parts.header)
+            .field("starting_address", &self.starting_address())
+            .field("ending_address", &self.ending_address())
+            .field(
+                "physical_memory_array_handle",
+                &self.physical_memory_array_handle(),
+            )
+            .field("partition_width", &self.partition_width())
+            .field(
+                "extended_starting_address",
+                &self.extended_starting_address(),
+            )
+            .field("extended_ending_address", &self.extended_ending_address())
+            .finish()
     }
 }
-

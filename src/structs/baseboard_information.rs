@@ -1,7 +1,7 @@
 use super::*;
 
 /// # Baseboard (or Module) Information (Type 2)
-/// 
+///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
@@ -22,7 +22,7 @@ impl<'a> SMBiosStruct<'a> for SMBiosBaseboardInformation<'a> {
 }
 
 impl<'a> SMBiosBaseboardInformation<'a> {
-    ///Baseboard manufacturer 
+    ///Baseboard manufacturer
     pub fn manufacturer(&self) -> Option<String> {
         self.parts.get_field_string(0x04)
     }
@@ -81,19 +81,25 @@ impl<'a> SMBiosBaseboardInformation<'a> {
 impl fmt::Debug for SMBiosBaseboardInformation<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosBaseboardInformation>())
-        .field("header", &self.parts.header)
-        .field("manufacturer", &self.manufacturer())
-        .field("product", &self.product())
-        .field("version", &self.version())
-        .field("serial_number", &self.serial_number())
-        .field("asset_tag", &self.asset_tag())
-        .field("feature_flags", &self.feature_flags())
-        .field("location_in_chassis", &self.location_in_chassis())
-        .field("chassis_handle", &self.chassis_handle())
-        .field("board_type", &self.board_type())
-        .field("number_of_contained_object_handles", &self.number_of_contained_object_handles())
-        .field("contained_object_handle_iterator", &self.contained_object_handle_iterator())
-        .finish()
+            .field("header", &self.parts.header)
+            .field("manufacturer", &self.manufacturer())
+            .field("product", &self.product())
+            .field("version", &self.version())
+            .field("serial_number", &self.serial_number())
+            .field("asset_tag", &self.asset_tag())
+            .field("feature_flags", &self.feature_flags())
+            .field("location_in_chassis", &self.location_in_chassis())
+            .field("chassis_handle", &self.chassis_handle())
+            .field("board_type", &self.board_type())
+            .field(
+                "number_of_contained_object_handles",
+                &self.number_of_contained_object_handles(),
+            )
+            .field(
+                "contained_object_handle_iterator",
+                &self.contained_object_handle_iterator(),
+            )
+            .finish()
     }
 }
 
@@ -106,15 +112,18 @@ pub struct ObjectHandleIterator<'a> {
 }
 
 impl<'a> ObjectHandleIterator<'a> {
-    const OBJECT_HANDLES_OFFSET:usize = 0x0Fusize;
-    const HANDLE_SIZE:usize = 2usize;
+    const OBJECT_HANDLES_OFFSET: usize = 0x0Fusize;
+    const HANDLE_SIZE: usize = 2usize;
 
     pub fn new(data: &'a SMBiosBaseboardInformation<'a>) -> Self {
         ObjectHandleIterator {
-            data: data, 
+            data: data,
             current_index: Self::OBJECT_HANDLES_OFFSET,
             current_entry: 0,
-            number_of_contained_object_handles: data.number_of_contained_object_handles().unwrap_or(0) }
+            number_of_contained_object_handles: data
+                .number_of_contained_object_handles()
+                .unwrap_or(0),
+        }
     }
 
     fn reset(&mut self) {
@@ -129,10 +138,14 @@ impl<'a> IntoIterator for &'a ObjectHandleIterator<'a> {
 
     fn into_iter(self) -> Self::IntoIter {
         ObjectHandleIterator {
-            data: self.data, 
+            data: self.data,
             current_index: ObjectHandleIterator::OBJECT_HANDLES_OFFSET,
             current_entry: 0,
-            number_of_contained_object_handles: self.data.number_of_contained_object_handles().unwrap_or(0) }
+            number_of_contained_object_handles: self
+                .data
+                .number_of_contained_object_handles()
+                .unwrap_or(0),
+        }
     }
 }
 
@@ -142,7 +155,7 @@ impl<'a> Iterator for ObjectHandleIterator<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         if self.current_entry == self.number_of_contained_object_handles {
             self.reset();
-            return None
+            return None;
         }
 
         match self.data.parts().get_field_handle(self.current_index) {
@@ -150,11 +163,11 @@ impl<'a> Iterator for ObjectHandleIterator<'a> {
                 self.current_index = self.current_index + Self::HANDLE_SIZE;
                 self.current_entry = self.current_entry + 1;
                 Some(current_handle)
-            },
+            }
             None => {
                 self.reset();
                 None
-            },
+            }
         }
     }
 }
@@ -178,17 +191,17 @@ mod tests {
             // location_in_chassis(0), chassis_handle(0x0F), board_type(0x0A), number_of_contained_object_handles(2)
             0x01, 0x02, 0x00, 0x03, 0x00, 0x01, 0x00, 0x0F, 0x00, 0x0A, 0x02,
             // handle[0] == 0x0005
-            0x05, 0x00,
-            // handle[1] == 0x1200
-            0x00, 0x12,
-            // manufacturer: "Microsoft Corporation" (1)
-            0x4D, 0x69, 0x63, 0x72, 0x6F, 0x73, 0x6F, 0x66, 0x74, 0x20, 0x43, 0x6F, 0x72, 0x70, 0x6F, 0x72, 0x61, 0x74, 0x69, 0x6F, 0x6E, 0x00,
+            0x05, 0x00, // handle[1] == 0x1200
+            0x00, 0x12, // manufacturer: "Microsoft Corporation" (1)
+            0x4D, 0x69, 0x63, 0x72, 0x6F, 0x73, 0x6F, 0x66, 0x74, 0x20, 0x43, 0x6F, 0x72, 0x70,
+            0x6F, 0x72, 0x61, 0x74, 0x69, 0x6F, 0x6E, 0x00,
             // product: "Surface Laptop 3" (2)
-            0x53, 0x75, 0x72, 0x66, 0x61, 0x63, 0x65, 0x20, 0x4C, 0x61, 0x70, 0x74, 0x6F, 0x70, 0x20, 0x33, 0x00,
-            // serial_number: "B009250100J1939B" (3)
-            0x42, 0x30, 0x30, 0x39, 0x32, 0x35, 0x30, 0x31, 0x30, 0x30, 0x4A, 0x31, 0x39, 0x33, 0x39, 0x42, 0x00,
-            // end of structure
-            0x00];
+            0x53, 0x75, 0x72, 0x66, 0x61, 0x63, 0x65, 0x20, 0x4C, 0x61, 0x70, 0x74, 0x6F, 0x70,
+            0x20, 0x33, 0x00, // serial_number: "B009250100J1939B" (3)
+            0x42, 0x30, 0x30, 0x39, 0x32, 0x35, 0x30, 0x31, 0x30, 0x30, 0x4A, 0x31, 0x39, 0x33,
+            0x39, 0x42, 0x00, // end of structure
+            0x00,
+        ];
 
         let parts = SMBiosStructParts::new(baseboard_information_bytes.as_slice());
         let baseboard_information = SMBiosBaseboardInformation::new(&parts);
@@ -196,20 +209,55 @@ mod tests {
         // header tests
         assert_eq!(*baseboard_information.parts().header.handle(), 0x0010);
         assert_eq!(baseboard_information.parts().header.length(), 0x13);
-        
+
         // basic field tests
-        assert_eq!(baseboard_information.manufacturer().expect("manufacturer field exists"), "Microsoft Corporation".to_string());
-        assert_eq!(baseboard_information.product().expect("product field exists"), "Surface Laptop 3".to_string());
+        assert_eq!(
+            baseboard_information
+                .manufacturer()
+                .expect("manufacturer field exists"),
+            "Microsoft Corporation".to_string()
+        );
+        assert_eq!(
+            baseboard_information
+                .product()
+                .expect("product field exists"),
+            "Surface Laptop 3".to_string()
+        );
         assert_eq!(baseboard_information.version().is_none(), true);
-        assert_eq!(baseboard_information.serial_number().expect("serial_number field exists"), "B009250100J1939B".to_string());
+        assert_eq!(
+            baseboard_information
+                .serial_number()
+                .expect("serial_number field exists"),
+            "B009250100J1939B".to_string()
+        );
         assert_eq!(baseboard_information.asset_tag().is_none(), true);
-        assert_eq!(baseboard_information.feature_flags().expect("feature_flags field exists"), 1);
+        assert_eq!(
+            baseboard_information
+                .feature_flags()
+                .expect("feature_flags field exists"),
+            1
+        );
         assert_eq!(baseboard_information.location_in_chassis().is_none(), true);
-        assert_eq!(*baseboard_information.chassis_handle().expect("chassis_handle field exists"), 0x0F);
-        assert_eq!(baseboard_information.board_type().expect("board_type field exists"), 0x0A);
+        assert_eq!(
+            *baseboard_information
+                .chassis_handle()
+                .expect("chassis_handle field exists"),
+            0x0F
+        );
+        assert_eq!(
+            baseboard_information
+                .board_type()
+                .expect("board_type field exists"),
+            0x0A
+        );
 
         // contained object handle tests
-        assert_eq!(baseboard_information.number_of_contained_object_handles().expect("2 object handles"), 2);
+        assert_eq!(
+            baseboard_information
+                .number_of_contained_object_handles()
+                .expect("2 object handles"),
+            2
+        );
 
         let mut iterator = baseboard_information.contained_object_handle_iterator();
 

@@ -11,10 +11,10 @@ fn windows_dump() {
                     for parts in table_data {
                         println!("{:?}", parts.struct_type_name());
                     }
-                },
-                None => ()
+                }
+                None => (),
             }
-        },
-        None => ()
+        }
+        None => (),
     }
 }

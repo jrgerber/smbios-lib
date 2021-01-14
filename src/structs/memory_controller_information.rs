@@ -79,18 +79,29 @@ impl<'a> SMBiosMemoryControllerInformation<'a> {
 impl fmt::Debug for SMBiosMemoryControllerInformation<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosMemoryControllerInformation>())
-        .field("header", &self.parts.header)
-        .field("error_detecting_method", &self.error_detecting_method())
-        .field("error_correcting_capability", &self.error_correcting_capability())
-        .field("supported_interleave", &self.supported_interleave())
-        .field("current_interleave", &self.current_interleave())
-        .field("maximum_memory_module_size", &self.maximum_memory_module_size())
-        .field("supported_speeds", &self.supported_speeds())
-        .field("supported_memory_types", &self.supported_memory_types())
-        .field("memory_module_voltage", &self.memory_module_voltage())
-        .field("number_of_associated_memory_slots", &self.number_of_associated_memory_slots())
-        .field("memory_module_configuration_handles", &self.memory_module_configuration_handles())
-        .finish()
+            .field("header", &self.parts.header)
+            .field("error_detecting_method", &self.error_detecting_method())
+            .field(
+                "error_correcting_capability",
+                &self.error_correcting_capability(),
+            )
+            .field("supported_interleave", &self.supported_interleave())
+            .field("current_interleave", &self.current_interleave())
+            .field(
+                "maximum_memory_module_size",
+                &self.maximum_memory_module_size(),
+            )
+            .field("supported_speeds", &self.supported_speeds())
+            .field("supported_memory_types", &self.supported_memory_types())
+            .field("memory_module_voltage", &self.memory_module_voltage())
+            .field(
+                "number_of_associated_memory_slots",
+                &self.number_of_associated_memory_slots(),
+            )
+            .field(
+                "memory_module_configuration_handles",
+                &self.memory_module_configuration_handles(),
+            )
+            .finish()
     }
 }
-

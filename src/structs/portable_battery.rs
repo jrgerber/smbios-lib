@@ -158,23 +158,28 @@ impl<'a> SMBiosPortableBattery<'a> {
 impl fmt::Debug for SMBiosPortableBattery<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosPortableBattery>())
-        .field("header", &self.parts.header)
-        .field("location", &self.location())
-        .field("manufacturer", &self.manufacturer())
-        .field("manufacture_date", &self.manufacture_date())
-        .field("serial_number", &self.serial_number())
-        .field("device_name", &self.device_name())
-        .field("device_chemistry", &self.device_chemistry())
-        .field("design_capacity", &self.design_capacity())
-        .field("design_voltage", &self.design_voltage())
-        .field("sbds_version_number", &self.sbds_version_number())
-        .field("maximum_error_in_battery_data", &self.maximum_error_in_battery_data())
-        .field("sbds_serial_number", &self.sbds_serial_number())
-        .field("sbds_manufacture_date", &self.sbds_manufacture_date())
-        .field("sbds_device_chemistry", &self.sbds_device_chemistry())
-        .field("design_capacity_multiplier", &self.design_capacity_multiplier())
-        .field("oem_specific", &self.oem_specific())
-        .finish()
+            .field("header", &self.parts.header)
+            .field("location", &self.location())
+            .field("manufacturer", &self.manufacturer())
+            .field("manufacture_date", &self.manufacture_date())
+            .field("serial_number", &self.serial_number())
+            .field("device_name", &self.device_name())
+            .field("device_chemistry", &self.device_chemistry())
+            .field("design_capacity", &self.design_capacity())
+            .field("design_voltage", &self.design_voltage())
+            .field("sbds_version_number", &self.sbds_version_number())
+            .field(
+                "maximum_error_in_battery_data",
+                &self.maximum_error_in_battery_data(),
+            )
+            .field("sbds_serial_number", &self.sbds_serial_number())
+            .field("sbds_manufacture_date", &self.sbds_manufacture_date())
+            .field("sbds_device_chemistry", &self.sbds_device_chemistry())
+            .field(
+                "design_capacity_multiplier",
+                &self.design_capacity_multiplier(),
+            )
+            .field("oem_specific", &self.oem_specific())
+            .finish()
     }
 }
-

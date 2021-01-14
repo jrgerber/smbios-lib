@@ -29,14 +29,12 @@ impl<'a> SMBiosStruct<'a> for SMBiosEndOfTable<'a> {
     }
 }
 
-impl<'a> SMBiosEndOfTable<'a> {
-}
+impl<'a> SMBiosEndOfTable<'a> {}
 
 impl fmt::Debug for SMBiosEndOfTable<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosEndOfTable>())
-        .field("header", &self.parts.header)
-        .finish()
+            .field("header", &self.parts.header)
+            .finish()
     }
 }
-

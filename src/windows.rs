@@ -9,28 +9,25 @@ mod ffi {
     #[link(name = "kernel32")]
     extern "system" {
         pub fn GetSystemFirmwareTable(
-            firmware_table_provider_signature: u32, 
-            firmware_table_id: u32, 
-            firmware_table_buffer_ptr: *mut u8, 
-            buffer_size: u32
+            firmware_table_provider_signature: u32,
+            firmware_table_id: u32,
+            firmware_table_buffer_ptr: *mut u8,
+            buffer_size: u32,
         ) -> u32;
-    } 
+    }
 }
 
 pub fn get_raw_smbios_data() -> Option<RawSMBiosData> {
-    use std::ptr;
     use std::convert::TryInto;
+    use std::ptr;
 
     unsafe {
         const RAW_SMBIOS_SIGNATURE: u32 = 1381190978u32; // 'RSMB' ASCII bytes == 1381190978
         let max_i32: u32 = i32::MAX.try_into().unwrap();
         let firmware_table_buffer_ptr: *mut u8 = ptr::null_mut();
 
-        let buffer_size = ffi::GetSystemFirmwareTable(
-            RAW_SMBIOS_SIGNATURE, 
-            0, 
-            firmware_table_buffer_ptr, 
-            0);
+        let buffer_size =
+            ffi::GetSystemFirmwareTable(RAW_SMBIOS_SIGNATURE, 0, firmware_table_buffer_ptr, 0);
 
         // 0 is win32 exception, > i32::MAX is memory exception
         if buffer_size == 0 || buffer_size > max_i32 {
@@ -41,10 +38,11 @@ pub fn get_raw_smbios_data() -> Option<RawSMBiosData> {
         let firmware_table_buffer_ptr = firmware_table_buffer.as_mut_ptr();
 
         let buffer_size = ffi::GetSystemFirmwareTable(
-            RAW_SMBIOS_SIGNATURE, 
-            0, 
-            firmware_table_buffer_ptr, 
-            buffer_size);
+            RAW_SMBIOS_SIGNATURE,
+            0,
+            firmware_table_buffer_ptr,
+            buffer_size,
+        );
         // 0 is win32 exception, > i32::MAX is memory exception
         if buffer_size == 0 || buffer_size > max_i32 {
             None
@@ -64,7 +62,7 @@ impl RawSMBiosData {
         RawSMBiosData { raw_smbios_data }
     }
 
-    pub fn raw_smbios_data(&self) -> & [u8] {
+    pub fn raw_smbios_data(&self) -> &[u8] {
         self.raw_smbios_data.as_slice()
     }
 
@@ -92,7 +90,7 @@ impl RawSMBiosData {
     pub fn smbios_table_data(&self) -> Option<SMBiosTableData> {
         match self.raw_smbios_data.get(8..) {
             Some(val) => Some(SMBiosTableData::new(val)),
-            None => None
+            None => None,
         }
     }
 }

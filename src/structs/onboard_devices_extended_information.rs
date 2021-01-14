@@ -66,14 +66,13 @@ impl<'a> SMBiosOnboardDevicesExtendedInformation<'a> {
 impl fmt::Debug for SMBiosOnboardDevicesExtendedInformation<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosOnboardDevicesExtendedInformation>())
-        .field("header", &self.parts.header)
-        .field("reference_designation", &self.reference_designation())
-        .field("device_type", &self.device_type())
-        .field("device_type_instance", &self.device_type_instance())
-        .field("segment_group_number", &self.segment_group_number())
-        .field("bus_number", &self.bus_number())
-        .field("device_function_number", &self.device_function_number())
-        .finish()
+            .field("header", &self.parts.header)
+            .field("reference_designation", &self.reference_designation())
+            .field("device_type", &self.device_type())
+            .field("device_type_instance", &self.device_type_instance())
+            .field("segment_group_number", &self.segment_group_number())
+            .field("bus_number", &self.bus_number())
+            .field("device_function_number", &self.device_function_number())
+            .finish()
     }
 }
-

@@ -159,24 +159,26 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
 impl fmt::Debug for SMBiosSystemChassisInformation<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosSystemChassisInformation>())
-        .field("header", &self.parts.header)
-        .field("manufacturer", &self.manufacturer())
-        .field("chassis_type", &self.chassis_type())
-        .field("version", &self.version())
-        .field("serial_number", &self.serial_number())
-        .field("asset_tag_number", &self.asset_tag_number())
-        .field("bootup_state", &self.bootup_state())
-        .field("power_supply_state", &self.power_supply_state())
-        .field("thermal_state", &self.thermal_state())
-        .field("security_status", &self.security_status())
-        .field("oem_defined", &self.oem_defined())
-        .field("height", &self.height())
-        .field("number_of_power_cords", &self.number_of_power_cords())
-        .field("contained_element_count", &self.contained_element_count())
-        .field("contained_element_record_length", &self.contained_element_record_length())
-        // .field("contained_elements", &self.contained_elements())
-        .field("sku_number", &self.sku_number())
-        .finish()
+            .field("header", &self.parts.header)
+            .field("manufacturer", &self.manufacturer())
+            .field("chassis_type", &self.chassis_type())
+            .field("version", &self.version())
+            .field("serial_number", &self.serial_number())
+            .field("asset_tag_number", &self.asset_tag_number())
+            .field("bootup_state", &self.bootup_state())
+            .field("power_supply_state", &self.power_supply_state())
+            .field("thermal_state", &self.thermal_state())
+            .field("security_status", &self.security_status())
+            .field("oem_defined", &self.oem_defined())
+            .field("height", &self.height())
+            .field("number_of_power_cords", &self.number_of_power_cords())
+            .field("contained_element_count", &self.contained_element_count())
+            .field(
+                "contained_element_record_length",
+                &self.contained_element_record_length(),
+            )
+            // .field("contained_elements", &self.contained_elements())
+            .field("sku_number", &self.sku_number())
+            .finish()
     }
 }
-

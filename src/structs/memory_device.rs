@@ -284,43 +284,60 @@ impl<'a> SMBiosMemoryDevice<'a> {
 impl fmt::Debug for SMBiosMemoryDevice<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosMemoryDevice>())
-        .field("header", &self.parts.header)
-        .field("physical_memory_array_handle", &self.physical_memory_array_handle())
-        .field("memory_error_information_handle", &self.memory_error_information_handle())
-        .field("total_width", &self.total_width())
-        .field("data_width", &self.data_width())
-        .field("size", &self.size())
-        .field("form_factor", &self.form_factor())
-        .field("device_set", &self.device_set())
-        .field("device_locator", &self.device_locator())
-        .field("bank_locator", &self.bank_locator())
-        .field("memory_type", &self.memory_type())
-        .field("type_detail", &self.type_detail())
-        .field("speed", &self.speed())
-        .field("manufacturer", &self.manufacturer())
-        .field("serial_number", &self.serial_number())
-        .field("asset_tag", &self.asset_tag())
-        .field("part_number", &self.part_number())
-        .field("attributes", &self.attributes())
-        .field("extended_size", &self.extended_size())
-        .field("configured_memory_speed", &self.configured_memory_speed())
-        .field("minimum_voltage", &self.minimum_voltage())
-        .field("maximum_voltage", &self.maximum_voltage())
-        .field("configured_voltage", &self.configured_voltage())
-        .field("memory_technology", &self.memory_technology())
-        .field("memory_operating_mode_capability", &self.memory_operating_mode_capability())
-        .field("firmware_version", &self.firmware_version())
-        .field("module_manufacturer_id", &self.module_manufacturer_id())
-        .field("module_product_id", &self.module_product_id())
-        .field("memory_subsystem_controller_manufacturer_id", &self.memory_subsystem_controller_manufacturer_id())
-        .field("memory_subsystem_controller_product_id", &self.memory_subsystem_controller_product_id())
-        .field("non_volatile_size", &self.non_volatile_size())
-        .field("volatile_size", &self.volatile_size())
-        .field("cache_size", &self.cache_size())
-        .field("logical_size", &self.logical_size())
-        .field("extended_speed", &self.extended_speed())
-        .field("extended_configured_memory_speed", &self.extended_configured_memory_speed())
-        .finish()
+            .field("header", &self.parts.header)
+            .field(
+                "physical_memory_array_handle",
+                &self.physical_memory_array_handle(),
+            )
+            .field(
+                "memory_error_information_handle",
+                &self.memory_error_information_handle(),
+            )
+            .field("total_width", &self.total_width())
+            .field("data_width", &self.data_width())
+            .field("size", &self.size())
+            .field("form_factor", &self.form_factor())
+            .field("device_set", &self.device_set())
+            .field("device_locator", &self.device_locator())
+            .field("bank_locator", &self.bank_locator())
+            .field("memory_type", &self.memory_type())
+            .field("type_detail", &self.type_detail())
+            .field("speed", &self.speed())
+            .field("manufacturer", &self.manufacturer())
+            .field("serial_number", &self.serial_number())
+            .field("asset_tag", &self.asset_tag())
+            .field("part_number", &self.part_number())
+            .field("attributes", &self.attributes())
+            .field("extended_size", &self.extended_size())
+            .field("configured_memory_speed", &self.configured_memory_speed())
+            .field("minimum_voltage", &self.minimum_voltage())
+            .field("maximum_voltage", &self.maximum_voltage())
+            .field("configured_voltage", &self.configured_voltage())
+            .field("memory_technology", &self.memory_technology())
+            .field(
+                "memory_operating_mode_capability",
+                &self.memory_operating_mode_capability(),
+            )
+            .field("firmware_version", &self.firmware_version())
+            .field("module_manufacturer_id", &self.module_manufacturer_id())
+            .field("module_product_id", &self.module_product_id())
+            .field(
+                "memory_subsystem_controller_manufacturer_id",
+                &self.memory_subsystem_controller_manufacturer_id(),
+            )
+            .field(
+                "memory_subsystem_controller_product_id",
+                &self.memory_subsystem_controller_product_id(),
+            )
+            .field("non_volatile_size", &self.non_volatile_size())
+            .field("volatile_size", &self.volatile_size())
+            .field("cache_size", &self.cache_size())
+            .field("logical_size", &self.logical_size())
+            .field("extended_speed", &self.extended_speed())
+            .field(
+                "extended_configured_memory_speed",
+                &self.extended_configured_memory_speed(),
+            )
+            .finish()
     }
 }
-

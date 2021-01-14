@@ -45,11 +45,13 @@ impl<'a> SMBiosManagementControllerHostInterface<'a> {
 impl fmt::Debug for SMBiosManagementControllerHostInterface<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosManagementControllerHostInterface>())
-        .field("header", &self.parts.header)
-        .field("interface_type", &self.interface_type())
-        .field("interface_type_specific_data_length", &self.interface_type_specific_data_length())
-        // .field("interface_type_specific_data", &self.interface_type_specific_data())
-        .finish()
+            .field("header", &self.parts.header)
+            .field("interface_type", &self.interface_type())
+            .field(
+                "interface_type_specific_data_length",
+                &self.interface_type_specific_data_length(),
+            )
+            // .field("interface_type_specific_data", &self.interface_type_specific_data())
+            .finish()
     }
 }
-

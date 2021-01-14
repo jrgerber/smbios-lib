@@ -58,14 +58,25 @@ impl<'a> SMBiosManagementDeviceThresholdData<'a> {
 impl fmt::Debug for SMBiosManagementDeviceThresholdData<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosManagementDeviceThresholdData>())
-        .field("header", &self.parts.header)
-        .field("lower_threshold_non_critical", &self.lower_threshold_non_critical())
-        .field("upper_threshold_non_critical", &self.upper_threshold_non_critical())
-        .field("lower_threshold_critical", &self.lower_threshold_critical())
-        .field("upper_threshold_critical", &self.upper_threshold_critical())
-        .field("lower_threshold_non_recoverable", &self.lower_threshold_non_recoverable())
-        .field("upper_threshold_non_recoverable", &self.upper_threshold_non_recoverable())
-        .finish()
+            .field("header", &self.parts.header)
+            .field(
+                "lower_threshold_non_critical",
+                &self.lower_threshold_non_critical(),
+            )
+            .field(
+                "upper_threshold_non_critical",
+                &self.upper_threshold_non_critical(),
+            )
+            .field("lower_threshold_critical", &self.lower_threshold_critical())
+            .field("upper_threshold_critical", &self.upper_threshold_critical())
+            .field(
+                "lower_threshold_non_recoverable",
+                &self.lower_threshold_non_recoverable(),
+            )
+            .field(
+                "upper_threshold_non_recoverable",
+                &self.upper_threshold_non_recoverable(),
+            )
+            .finish()
     }
 }
-

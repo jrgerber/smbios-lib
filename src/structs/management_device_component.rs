@@ -52,12 +52,11 @@ impl<'a> SMBiosManagementDeviceComponent<'a> {
 impl fmt::Debug for SMBiosManagementDeviceComponent<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosManagementDeviceComponent>())
-        .field("header", &self.parts.header)
-        .field("description", &self.description())
-        .field("management_device_handle", &self.management_device_handle())
-        .field("component_handle", &self.component_handle())
-        .field("threshold_handle", &self.threshold_handle())
-        .finish()
+            .field("header", &self.parts.header)
+            .field("description", &self.description())
+            .field("management_device_handle", &self.management_device_handle())
+            .field("component_handle", &self.component_handle())
+            .field("threshold_handle", &self.threshold_handle())
+            .finish()
     }
 }
-

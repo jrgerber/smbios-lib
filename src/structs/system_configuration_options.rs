@@ -24,28 +24,27 @@ impl<'a> SMBiosStruct<'a> for SMBiosSystemConfigurationOptions<'a> {
 }
 
 impl<'a> SMBiosSystemConfigurationOptions<'a> {
-        /// Number of strings
-        pub fn count(&self) -> Option<u8> {
-            self.parts.get_field_byte(0x04)
-        }
-    
-        /// Iterable collection of OEM strings
-        /// 
-        /// EXAMPLES:
-        /// "JP2: 1-2 Cache Size is 256K, 2-3 Cache Size is 512K"
-        /// "SW1-1: Close to Disable On Board Video"
-        pub fn configuration_strings(&self) -> &Strings {
-            &self.parts.strings
-        }
+    /// Number of strings
+    pub fn count(&self) -> Option<u8> {
+        self.parts.get_field_byte(0x04)
+    }
+
+    /// Iterable collection of OEM strings
+    /// 
+    /// EXAMPLES:
+    /// "JP2: 1-2 Cache Size is 256K, 2-3 Cache Size is 512K"
+    /// "SW1-1: Close to Disable On Board Video"
+    pub fn configuration_strings(&self) -> &Strings {
+        &self.parts.strings
+    }
 }
 
 impl fmt::Debug for SMBiosSystemConfigurationOptions<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosSystemConfigurationOptions>())
-        .field("header", &self.parts.header)
-        .field("count", &self.count())
-        .field("configuration_strings", &self.configuration_strings())
-        .finish()
+            .field("header", &self.parts.header)
+            .field("count", &self.count())
+            .field("configuration_strings", &self.configuration_strings())
+            .finish()
     }
 }
-

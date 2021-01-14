@@ -57,17 +57,16 @@ impl<'a> SMBiosVoltageProbe<'a> {
 impl fmt::Debug for SMBiosVoltageProbe<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosVoltageProbe>())
-        .field("header", &self.parts.header)
-        .field("description", &self.description())
-        .field("location_and_status", &self.location_and_status())
-        .field("maximum_value", &self.maximum_value())
-        .field("minimum_value", &self.minimum_value())
-        .field("resolution", &self.resolution())
-        .field("tolerance", &self.tolerance())
-        .field("accuracy", &self.accuracy())
-        .field("oem_defined", &self.oem_defined())
-        .field("nominal_value", &self.nominal_value())
-        .finish()
+            .field("header", &self.parts.header)
+            .field("description", &self.description())
+            .field("location_and_status", &self.location_and_status())
+            .field("maximum_value", &self.maximum_value())
+            .field("minimum_value", &self.minimum_value())
+            .field("resolution", &self.resolution())
+            .field("tolerance", &self.tolerance())
+            .field("accuracy", &self.accuracy())
+            .field("oem_defined", &self.oem_defined())
+            .field("nominal_value", &self.nominal_value())
+            .finish()
     }
 }
-
