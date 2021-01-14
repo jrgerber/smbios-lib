@@ -25,9 +25,8 @@ impl<'a> SMBiosSystemSlot<'a> {
 impl fmt::Debug for SMBiosSystemSlot<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosSystemSlot>())
-        .field("header", &self.parts.header)
-        .field("data_bus_width", &self.data_bus_width())
-        .finish()
+            .field("header", &self.parts.header)
+            .field("data_bus_width", &self.data_bus_width())
+            .finish()
     }
 }
-

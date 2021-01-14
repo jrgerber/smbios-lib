@@ -41,13 +41,12 @@ impl<'a> SMBiosSystemReset<'a> {
 impl fmt::Debug for SMBiosSystemReset<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosSystemReset>())
-        .field("header", &self.parts.header)
-        .field("capabilities", &self.capabilities())
-        .field("reset_count", &self.reset_count())
-        .field("reset_limit", &self.reset_limit())
-        .field("timer_interval", &self.timer_interval())
-        .field("timeout", &self.timeout())
-        .finish()
+            .field("header", &self.parts.header)
+            .field("capabilities", &self.capabilities())
+            .field("reset_count", &self.reset_count())
+            .field("reset_limit", &self.reset_limit())
+            .field("timer_interval", &self.timer_interval())
+            .field("timeout", &self.timeout())
+            .finish()
     }
 }
-

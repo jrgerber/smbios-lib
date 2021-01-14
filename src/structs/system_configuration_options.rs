@@ -16,15 +16,12 @@ impl<'a> SMBiosStruct<'a> for SMBiosSystemConfigurationOptions<'a> {
     }
 }
 
-impl<'a> SMBiosSystemConfigurationOptions<'a> {
-}
+impl<'a> SMBiosSystemConfigurationOptions<'a> {}
 
 impl fmt::Debug for SMBiosSystemConfigurationOptions<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosSystemConfigurationOptions>())
-        .field("header", &self.parts.header)
-
-        .finish()
+            .field("header", &self.parts.header)
+            .finish()
     }
 }
-

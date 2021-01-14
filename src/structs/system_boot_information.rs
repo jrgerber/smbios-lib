@@ -29,10 +29,9 @@ impl<'a> SMBiosSystemBootInformation<'a> {
 impl fmt::Debug for SMBiosSystemBootInformation<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosSystemBootInformation>())
-        .field("header", &self.parts.header)
-        // .field("reserved", &self.reserved())
-        // .field("boot_status", &self.boot_status())
-        .finish()
+            .field("header", &self.parts.header)
+            // .field("reserved", &self.reserved())
+            // .field("boot_status", &self.boot_status())
+            .finish()
     }
 }
-

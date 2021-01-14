@@ -41,13 +41,27 @@ impl<'a> SMBiosSystemPowerControls<'a> {
 impl fmt::Debug for SMBiosSystemPowerControls<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosSystemPowerControls>())
-        .field("header", &self.parts.header)
-        .field("next_scheduled_power_on_month", &self.next_scheduled_power_on_month())
-        .field("next_scheduled_power_on_day_of_month", &self.next_scheduled_power_on_day_of_month())
-        .field("next_scheduled_power_on_hour", &self.next_scheduled_power_on_hour())
-        .field("next_scheduled_power_on_minute", &self.next_scheduled_power_on_minute())
-        .field("next_scheduled_power_on_second", &self.next_scheduled_power_on_second())
-        .finish()
+            .field("header", &self.parts.header)
+            .field(
+                "next_scheduled_power_on_month",
+                &self.next_scheduled_power_on_month(),
+            )
+            .field(
+                "next_scheduled_power_on_day_of_month",
+                &self.next_scheduled_power_on_day_of_month(),
+            )
+            .field(
+                "next_scheduled_power_on_hour",
+                &self.next_scheduled_power_on_hour(),
+            )
+            .field(
+                "next_scheduled_power_on_minute",
+                &self.next_scheduled_power_on_minute(),
+            )
+            .field(
+                "next_scheduled_power_on_second",
+                &self.next_scheduled_power_on_second(),
+            )
+            .finish()
     }
 }
-

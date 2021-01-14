@@ -37,12 +37,11 @@ impl<'a> SMBiosGroupAssociations<'a> {
 impl fmt::Debug for SMBiosGroupAssociations<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosGroupAssociations>())
-        .field("header", &self.parts.header)
-        .field("group_name", &self.group_name())
-        .field("item_type", &self.item_type())
-        .field("item_handle", &self.item_handle())
-        // .field("minimum_ending_offset", &self.minimum_ending_offset())
-        .finish()
+            .field("header", &self.parts.header)
+            .field("group_name", &self.group_name())
+            .field("item_type", &self.item_type())
+            .field("item_handle", &self.item_handle())
+            // .field("minimum_ending_offset", &self.minimum_ending_offset())
+            .finish()
     }
 }
-

@@ -2,9 +2,9 @@
 
 mod fields;
 pub use fields::*;
-pub mod windows;
-pub mod structs;
 pub mod display;
+pub mod structs;
+pub mod windows;
 
 #[cfg(test)]
 mod tests {

@@ -16,13 +16,12 @@ impl<'a> SMBiosStruct<'a> for SMBiosInactive<'a> {
     }
 }
 
-impl<'a> SMBiosInactive<'a> {
-}
+impl<'a> SMBiosInactive<'a> {}
 
 impl fmt::Debug for SMBiosInactive<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosInactive>())
-        .field("header", &self.parts.header)
-        .finish()
+            .field("header", &self.parts.header)
+            .finish()
     }
 }

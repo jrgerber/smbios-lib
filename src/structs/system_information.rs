@@ -53,16 +53,15 @@ impl<'a> SMBiosSystemInformation<'a> {
 impl fmt::Debug for SMBiosSystemInformation<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosSystemInformation>())
-        .field("header", &self.parts.header)
-        .field("manufacturer", &self.manufacturer())
-        .field("product_name", &self.product_name())
-        .field("version", &self.version())
-        .field("serial_number", &self.serial_number())
-        // .field("uuid", &self.uuid())
-        .field("wakeup_type", &self.wakeup_type())
-        .field("sku_number", &self.sku_number())
-        .field("family", &self.family())
-        .finish()
+            .field("header", &self.parts.header)
+            .field("manufacturer", &self.manufacturer())
+            .field("product_name", &self.product_name())
+            .field("version", &self.version())
+            .field("serial_number", &self.serial_number())
+            // .field("uuid", &self.uuid())
+            .field("wakeup_type", &self.wakeup_type())
+            .field("sku_number", &self.sku_number())
+            .field("family", &self.family())
+            .finish()
     }
 }
-

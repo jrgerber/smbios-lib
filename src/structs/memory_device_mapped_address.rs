@@ -57,17 +57,22 @@ impl<'a> SMBiosMemoryDeviceMappedAddress<'a> {
 impl fmt::Debug for SMBiosMemoryDeviceMappedAddress<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosMemoryDeviceMappedAddress>())
-        .field("header", &self.parts.header)
-        .field("starting_address", &self.starting_address())
-        .field("ending_address", &self.ending_address())
-        .field("memory_device_handle", &self.memory_device_handle())
-        .field("memory_array_mapped_address_handle", &self.memory_array_mapped_address_handle())
-        .field("partition_row_position", &self.partition_row_position())
-        .field("interleave_position", &self.interleave_position())
-        .field("interleaved_data_depth", &self.interleaved_data_depth())
-        .field("extended_starting_address", &self.extended_starting_address())
-        .field("extended_ending_address", &self.extended_ending_address())
-        .finish()
+            .field("header", &self.parts.header)
+            .field("starting_address", &self.starting_address())
+            .field("ending_address", &self.ending_address())
+            .field("memory_device_handle", &self.memory_device_handle())
+            .field(
+                "memory_array_mapped_address_handle",
+                &self.memory_array_mapped_address_handle(),
+            )
+            .field("partition_row_position", &self.partition_row_position())
+            .field("interleave_position", &self.interleave_position())
+            .field("interleaved_data_depth", &self.interleaved_data_depth())
+            .field(
+                "extended_starting_address",
+                &self.extended_starting_address(),
+            )
+            .field("extended_ending_address", &self.extended_ending_address())
+            .finish()
     }
 }
-

@@ -21,12 +21,12 @@ use super::*;
 
 /// # Boot Integrity Services (BIS) (Type 31)
 /// Structure is reserved for use by the Boot Integrity Services (BIS)
-/// 
+///
 /// This class is compliant with:
 /// Boot Integrity Services Application Programming Interface Version 1.0
 /// with added corrigenda: bis037
 /// Published August 31, 1999
-/// 
+///
 /// Note:
 /// The BIS (Boot Integrity Services) Entry Point structure is not defined in the SMBIOS DMTF document.
 /// bisapi037.pdf, section 3.1.3
@@ -62,7 +62,7 @@ impl<'a> SMBiosBisEntryPoint<'a> {
     // }
 
     /// BIS entry point pointer for use by 16-bit real-mode callers. This is a segmented pointer(in segment:offset form).
-    /// 
+    ///
     /// Real Mode: In Real Mode all addresses are composed of Segment:Offset pairs, with
     /// both Segment and Offset being 16 bits.These combine to form a 20-bit physical address
     /// that cannot access above approximately the 1 Megabyte boundary.This mode is
@@ -74,7 +74,7 @@ impl<'a> SMBiosBisEntryPoint<'a> {
     }
 
     /// BIS entry point pointer for use by 32-bit flat physical address mode callers. This is a 32-bit physical address.
-    /// 
+    ///
     /// Flat Mode: A 32-bit (protected) IA-32 processor mode where CS:0, DS:0, and SS:0 all
     /// refer to physical location 0 and all have 4 GB of address space.This mode is referred to
     /// in this section as “32-bit flat-mode” or “32-bit mode”. Callers in this mode may only
@@ -96,11 +96,10 @@ impl<'a> SMBiosBisEntryPoint<'a> {
 impl fmt::Debug for SMBiosBisEntryPoint<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosBisEntryPoint>())
-        .field("header", &self.parts.header)
-        .field("checksum", &self.checksum())
-        .field("bis_entry_16", &self.bis_entry_16())
-        .field("bis_entry_32", &self.bis_entry_32())
-        .finish()
+            .field("header", &self.parts.header)
+            .field("checksum", &self.checksum())
+            .field("bis_entry_16", &self.bis_entry_16())
+            .field("bis_entry_32", &self.bis_entry_32())
+            .finish()
     }
 }
-
