@@ -1,5 +1,14 @@
 use super::*;
 
+/// # System Information (Type 1)
+///
+/// The information in this structure defines attributes of the overall system and is intended to be associated
+/// with the Component ID group of the system’s MIF. An SMBIOS implementation is associated with a single
+/// system instance and contains one and only one System Information (Type 1) structure.
+/// 
+/// Compliant with:
+/// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
+/// Document Date: 2020-07-17
 pub struct SMBiosSystemInformation<'a> {
     parts: &'a SMBiosStructParts<'a>,
 }
@@ -17,19 +26,23 @@ impl<'a> SMBiosStruct<'a> for SMBiosSystemInformation<'a> {
 }
 
 impl<'a> SMBiosSystemInformation<'a> {
-    fn manufacturer(&self) -> Option<String> {
+    /// Manufacturer
+    pub fn manufacturer(&self) -> Option<String> {
         self.parts.get_field_string(0x04)
     }
 
-    fn product_name(&self) -> Option<String> {
+    /// Product name
+    pub fn product_name(&self) -> Option<String> {
         self.parts.get_field_string(0x05)
     }
 
-    fn version(&self) -> Option<String> {
+    /// Version
+    pub fn version(&self) -> Option<String> {
         self.parts.get_field_string(0x06)
     }
 
-    fn serial_number(&self) -> Option<String> {
+    /// Serial number
+    pub fn serial_number(&self) -> Option<String> {
         self.parts.get_field_string(0x07)
     }
 
@@ -37,15 +50,40 @@ impl<'a> SMBiosSystemInformation<'a> {
     //     self.parts.get_field_undefined(0x08)
     // }
 
-    fn wakeup_type(&self) -> Option<u8> {
+    /// Wake-up type
+    /// 
+    /// Identifies the event that caused the system to power up.
+    pub fn wakeup_type(&self) -> Option<u8> {
         self.parts.get_field_byte(0x18)
     }
 
-    fn sku_number(&self) -> Option<String> {
+    /// SKU Number
+    /// 
+    /// This text string identifies a particular computer
+    /// configuration for sale. It is sometimes also
+    /// called a product ID or purchase order number.
+    /// This number is frequently found in existing
+    /// fields, but there is no standard format.
+    /// Typically for a given system board from a
+    /// given OEM, there are tens of unique
+    /// processor, memory, hard drive, and optical
+    /// drive configurations.
+    pub fn sku_number(&self) -> Option<String> {
         self.parts.get_field_string(0x19)
     }
 
-    fn family(&self) -> Option<String> {
+    /// Family
+    /// 
+    /// This text string identifies the family to which a
+    /// particular computer belongs. A family refers to
+    /// a set of computers that are similar but not
+    /// identical from a hardware or software point of
+    /// view. Typically, a family is composed of
+    /// different computer models, which have
+    /// different configurations and pricing points.
+    /// Computers in the same family often have
+    /// similar branding and cosmetic features.
+    pub fn family(&self) -> Option<String> {
         self.parts.get_field_string(0x1A)
     }
 }

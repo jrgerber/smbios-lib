@@ -11,6 +11,10 @@ use super::*;
 /// SMBIOS type 44 defines the standard header for the processor-specific block, while the
 /// contents of processor-specific data are maintained by processor architecture workgroups or vendors in
 /// separate documents.
+/// 
+/// Compliant with:
+/// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
+/// Document Date: 2020-07-17
 pub struct SMBiosProcessorAdditionalInformation<'a> {
     parts: &'a SMBiosStructParts<'a>,
 }

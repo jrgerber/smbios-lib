@@ -1,5 +1,18 @@
 use super::*;
 
+/// # System Power Controls (Type 25)
+///
+/// This structure describes the attributes for controlling the main power supply to the system.
+/// 
+/// Software that interprets this structure uses the month, day, hour, minute, and second values to determine
+/// the number of seconds until the next power-on of the system. The presence of this structure implies that a
+/// timed power-on facility is available for the system.
+/// 
+/// NOTE This structure type was added in version 2.2 of the specification.
+/// 
+/// Compliant with:
+/// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
+/// Document Date: 2020-07-17
 pub struct SMBiosSystemPowerControls<'a> {
     parts: &'a SMBiosStructParts<'a>,
 }
@@ -17,23 +30,43 @@ impl<'a> SMBiosStruct<'a> for SMBiosSystemPowerControls<'a> {
 }
 
 impl<'a> SMBiosSystemPowerControls<'a> {
-    fn next_scheduled_power_on_month(&self) -> Option<u8> {
+    /// Next scheduled power-on month
+    /// 
+    /// BCD value of the month on which the next scheduled
+    /// power-on is to occur, in the range 01h to 12h.
+    pub fn next_scheduled_power_on_month(&self) -> Option<u8> {
         self.parts.get_field_byte(0x04)
     }
 
-    fn next_scheduled_power_on_day_of_month(&self) -> Option<u8> {
+    /// Next scheduled power-on day-of month
+    /// 
+    /// BCD value of the day-of-month on which the next
+    /// scheduled power-on is to occur, in the range 01h to 31h.
+    pub fn next_scheduled_power_on_day_of_month(&self) -> Option<u8> {
         self.parts.get_field_byte(0x05)
     }
 
-    fn next_scheduled_power_on_hour(&self) -> Option<u8> {
+    /// Next scheduled power-on hour
+    /// 
+    /// BCD value of the hour on which the next scheduled power-on 
+    /// is to occur, in the range 00h to 23h.
+    pub fn next_scheduled_power_on_hour(&self) -> Option<u8> {
         self.parts.get_field_byte(0x06)
     }
 
-    fn next_scheduled_power_on_minute(&self) -> Option<u8> {
+    /// Next scheduled power-on minute
+    /// 
+    /// BCD value of the minute on which the next scheduled
+    /// power-on is to occur, in the range 00h to 59h.
+    pub fn next_scheduled_power_on_minute(&self) -> Option<u8> {
         self.parts.get_field_byte(0x07)
     }
 
-    fn next_scheduled_power_on_second(&self) -> Option<u8> {
+    /// Next scheduled power-on second
+    /// 
+    /// BCD value of the second on which the next scheduled
+    /// power-on is to occur, in the range 00h to 59h.
+    pub fn next_scheduled_power_on_second(&self) -> Option<u8> {
         self.parts.get_field_byte(0x08)
     }
 }

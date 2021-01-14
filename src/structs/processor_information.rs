@@ -11,6 +11,10 @@ use super::*;
 /// to two processors includes two Processor Information structures — even if only one processor is currently
 /// installed. Software that interprets the SMBIOS information can count the Processor Information structures to
 /// determine the maximum possible configuration of the system.
+/// 
+/// Compliant with:
+/// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
+/// Document Date: 2020-07-17
 pub struct SMBiosProcessorInformation<'a> {
     parts: &'a SMBiosStructParts<'a>,
 }
