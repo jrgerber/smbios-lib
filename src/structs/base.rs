@@ -4,7 +4,7 @@ use std::{convert::TryInto, ops::Deref};
 
 // use super::SMBiosUnknown;
 
-/// Structure Handle
+/// # Structure Handle
 /// 
 /// Each SMBIOS structure has a handle or instance value associated with it.
 /// Some structures will reference other structures by using this value.
@@ -38,6 +38,8 @@ pub fn get_field_handle(offset: usize, data: &[u8]) -> Option<Handle> {
     }
 }
 
+/// # SMBIOS Standard Defined Structure
+/// 
 /// Represents one of the SMBIOS defined structures or, in the case
 /// of an OEM defined structure, as a generically defined Unknown variant
 #[derive(Debug)]
@@ -138,9 +140,9 @@ pub enum DefinedStruct<'a> {
     EndOfTable(SMBiosEndOfTable<'a>),
     /// OEM-Defined or Unknown Structure
     /// 
-    /// A structure with a type value not yet defined, such as by a DMTF specification
-    /// that supercedes the types known by this library, or an OEM type with a 
-    /// value > 127.
+    /// - A structure with a type value not yet defined, such as by a DMTF specification
+    /// that supercedes the types known by this library
+    /// - An OEM type with a value > 127.
     Unknown(SMBiosUnknown<'a>),
 }
 
@@ -152,7 +154,7 @@ pub enum DefinedStruct<'a> {
 //     }
 // }
 
-/// Represents the three basic parts of an SMBIOS structure
+/// # The three basic parts of an SMBIOS structure
 /// 
 /// Every SMBIOS structure contains three parts or sections: A header, 
 /// structure data, and string data.
@@ -258,9 +260,13 @@ impl<'a> SMBiosStructParts<'a> {
 
     /// Cast to a given structure
     /// 
-    /// This operation is useful when this library does not contain a [DefinedStruct]
-    /// variant. Such would be the case when an OEM structure design is known and
-    /// a type for it implements the [SMBiosStruct] trait.
+    /// When this library does not contain a [DefinedStruct] variant
+    /// matching the SMBiosStruct::STRUCT_TYPE, this function affords a cast to the
+    /// given type. Such would be the case with OEM structure type T 
+    /// (which implements the [SMBiosStruct] trait).
+    /// 
+    /// TODO: This should panic (not be Option) when the STRUCT_TYPE does not match because
+    /// this would be a logic error in code, not a runtime error.
     pub fn as_type<T: SMBiosStruct<'a>>(&'a self) -> Option<T> {
         if T::STRUCT_TYPE == self.header.struct_type() {
             Some(T::new(self))
