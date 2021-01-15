@@ -103,6 +103,8 @@ impl fmt::Debug for SMBiosBaseboardInformation<'_> {
     }
 }
 
+/// # Object Handle Iterator
+/// 
 /// Iterates over the object handles contained within the [SMBiosBaseboardInformation] structure
 pub struct ObjectHandleIterator<'a> {
     data: &'a SMBiosBaseboardInformation<'a>,
@@ -115,6 +117,7 @@ impl<'a> ObjectHandleIterator<'a> {
     const OBJECT_HANDLES_OFFSET: usize = 0x0Fusize;
     const HANDLE_SIZE: usize = 2usize;
 
+    /// Creates an instance of the object handle iterator.
     pub fn new(data: &'a SMBiosBaseboardInformation<'a>) -> Self {
         ObjectHandleIterator {
             data: data,

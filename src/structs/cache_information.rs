@@ -1,5 +1,15 @@
 use super::*;
 
+/// # Cache Information (Type 7)
+///
+/// This structure defines the attributes of CPU cache device in the
+/// system. One structure is specified for each such device, whether the device is internal to or external to
+/// the CPU module. Cache modules can be associated with a processor structure in one or two ways
+/// depending on the SMBIOS version
+/// 
+/// Compliant with:
+/// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
+/// Document Date: 2020-07-17
 pub struct SMBiosCacheInformation<'a> {
     parts: &'a SMBiosStructParts<'a>,
 }
@@ -17,51 +27,64 @@ impl<'a> SMBiosStruct<'a> for SMBiosCacheInformation<'a> {
 }
 
 impl<'a> SMBiosCacheInformation<'a> {
-    fn socket_designation(&self) -> Option<String> {
+    /// String number for reference designation
+    pub fn socket_designation(&self) -> Option<String> {
         self.parts.get_field_string(0x04)
     }
 
-    fn cache_configuration(&self) -> Option<u16> {
+    /// Bit fields describing the cache configuration
+    pub fn cache_configuration(&self) -> Option<u16> {
         self.parts.get_field_word(0x05)
     }
 
-    fn maximum_cache_size(&self) -> Option<u16> {
+    /// Maximum size that can be installed
+    pub fn maximum_cache_size(&self) -> Option<u16> {
         self.parts.get_field_word(0x07)
     }
 
-    fn installed_size(&self) -> Option<u16> {
+    /// Same format as Max Cache Size field; set to 0 if no cache is installed
+    pub fn installed_size(&self) -> Option<u16> {
         self.parts.get_field_word(0x09)
     }
 
-    fn supported_sram_type(&self) -> Option<u16> {
+    /// Supported SRAM type
+    pub fn supported_sram_type(&self) -> Option<u16> {
         self.parts.get_field_word(0x0B)
     }
 
-    fn current_sram_type(&self) -> Option<u16> {
+    /// Current SRAM type
+    pub fn current_sram_type(&self) -> Option<u16> {
         self.parts.get_field_word(0x0D)
     }
 
-    fn cache_speed(&self) -> Option<u8> {
+    /// Cache module speed, in nanoseconds.
+    /// The value is 0 if the speed is unknown.
+    pub fn cache_speed(&self) -> Option<u8> {
         self.parts.get_field_byte(0x0F)
     }
 
-    fn error_correction_type(&self) -> Option<u8> {
+    /// Error-correction scheme supported by this cache component
+    pub fn error_correction_type(&self) -> Option<u8> {
         self.parts.get_field_byte(0x10)
     }
 
-    fn system_cache_type(&self) -> Option<u8> {
+    /// Logical type of cache
+    pub fn system_cache_type(&self) -> Option<u8> {
         self.parts.get_field_byte(0x11)
     }
 
-    fn associativity(&self) -> Option<u8> {
+    /// Associativity of the cache
+    pub fn associativity(&self) -> Option<u8> {
         self.parts.get_field_byte(0x12)
     }
 
-    fn maximum_cache_size_2(&self) -> Option<u32> {
+    /// Maximum cache size
+    pub fn maximum_cache_size_2(&self) -> Option<u32> {
         self.parts.get_field_dword(0x13)
     }
 
-    fn installed_cache_size_2(&self) -> Option<u32> {
+    /// Installed cache size
+    pub fn installed_cache_size_2(&self) -> Option<u32> {
         self.parts.get_field_dword(0x17)
     }
 }

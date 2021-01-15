@@ -1,5 +1,12 @@
 use super::*;
 
+/// # BIOS Language Information (Type 13)
+/// 
+/// The information in this structure defines the installable language attributes of the BIOS.
+/// 
+/// Compliant with:
+/// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
+/// Document Date: 2020-07-17
 pub struct SMBiosBiosLanguageInformation<'a> {
     parts: &'a SMBiosStructParts<'a>,
 }
@@ -17,19 +24,26 @@ impl<'a> SMBiosStruct<'a> for SMBiosBiosLanguageInformation<'a> {
 }
 
 impl<'a> SMBiosBiosLanguageInformation<'a> {
-    fn number_of_installable_languages(&self) -> Option<u8> {
+    /// Number of languages available
+    /// Each available language has a description
+    /// string. This field contains the number of strings
+    /// that follow the formatted area of the structure.
+    pub fn number_of_installable_languages(&self) -> Option<u8> {
         self.parts.get_field_byte(0x4)
     }
 
-    fn flags(&self) -> Option<u8> {
+    /// Bit field indicating the format of the languages.
+    pub fn flags(&self) -> Option<u8> {
         self.parts.get_field_byte(0x5)
     }
 
-    fn current_language(&self) -> Option<String> {
+    /// The currently installed language.
+    pub fn current_language(&self) -> Option<String> {
         self.parts.get_field_string(0x15)
     }
 
-    fn installable_langauges(&self) -> &Strings {
+    /// Iterable collection of the installable languages.
+    pub fn installable_langauges(&self) -> &Strings {
         &self.parts.strings
     }
 }

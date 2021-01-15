@@ -1,5 +1,15 @@
 use super::*;
 
+/// # Management Controller Host Interface (Type 42)
+///
+/// The information in this structure defines the attributes of a Management Controller Host Interface that is
+/// not discoverable by “Plug and Play” mechanisms. The Type 42 structure can
+/// be used to describe a physical management controller host interface and one or more protocols that
+/// share that interface.
+/// 
+/// Compliant with:
+/// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
+/// Document Date: 2020-07-17
 pub struct SMBiosManagementControllerHostInterface<'a> {
     parts: &'a SMBiosStructParts<'a>,
 }
@@ -17,11 +27,13 @@ impl<'a> SMBiosStruct<'a> for SMBiosManagementControllerHostInterface<'a> {
 }
 
 impl<'a> SMBiosManagementControllerHostInterface<'a> {
-    fn interface_type(&self) -> Option<u8> {
+    /// Management Controller Interface Type
+    pub fn interface_type(&self) -> Option<u8> {
         self.parts.get_field_byte(0x04)
     }
 
-    fn interface_type_specific_data_length(&self) -> Option<u8> {
+    /// Interface Type Specific Data Length
+    pub fn interface_type_specific_data_length(&self) -> Option<u8> {
         self.parts.get_field_byte(0x05)
     }
 

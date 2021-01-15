@@ -1,5 +1,13 @@
 use super::*;
 
+/// # Portable Battery (Type 22)
+///
+/// This structure describes the attributes of the portable battery or batteries for the system. The structure
+/// contains the static attributes for the group. Each structure describes a single battery pack’s attributes.
+/// 
+/// Compliant with:
+/// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
+/// Document Date: 2020-07-17
 pub struct SMBiosPortableBattery<'a> {
     parts: &'a SMBiosStructParts<'a>,
 }
@@ -17,63 +25,132 @@ impl<'a> SMBiosStruct<'a> for SMBiosPortableBattery<'a> {
 }
 
 impl<'a> SMBiosPortableBattery<'a> {
-    fn location(&self) -> Option<String> {
+    /// Identifies the location of the battery
+    pub fn location(&self) -> Option<String> {
         self.parts.get_field_string(0x04)
     }
 
-    fn manufacturer(&self) -> Option<String> {
+    /// Names the company that manufactured the battery
+    pub fn manufacturer(&self) -> Option<String> {
         self.parts.get_field_string(0x05)
     }
 
-    fn manufacture_date(&self) -> Option<String> {
+    /// The date on which the battery was manufactured.
+    /// 
+    /// Version 2.2+ implementations that use a Smart
+    /// Battery set this field to 0 (no string) to indicate
+    /// that the SBDS Manufacture Date field contains
+    /// the information.
+    pub fn manufacture_date(&self) -> Option<String> {
         self.parts.get_field_string(0x06)
     }
 
-    fn serial_number(&self) -> Option<String> {
+    /// The serial number for the battery
+    /// 
+    /// Version 2.2+ implementations that use a Smart
+    /// Battery set this field to 0 (no string) to indicate
+    /// that the SBDS Serial Number field contains the
+    /// information.
+    pub fn serial_number(&self) -> Option<String> {
         self.parts.get_field_string(0x07)
     }
 
-    fn device_name(&self) -> Option<String> {
+    /// Names the battery device
+    /// 
+    /// EXAMPLE: "DR-36"
+    pub fn device_name(&self) -> Option<String> {
         self.parts.get_field_string(0x08)
     }
 
-    fn device_chemistry(&self) -> Option<u8> {
+    /// Identifies the battery chemistry
+    /// 
+    /// Version 2.2+ implementations that use a Smart
+    /// Battery set this field to 02h (Unknown) to
+    /// indicate that the SBDS Device Chemistry field
+    /// contains the information.
+    pub fn device_chemistry(&self) -> Option<u8> {
         self.parts.get_field_byte(0x09)
     }
 
-    fn design_capacity(&self) -> Option<u16> {
+    /// Design capacity of the battery in mWatt-hours
+    /// 
+    /// If the value is unknown, the field contains 0.
+    /// 
+    /// For version 2.2+ implementations, this value is
+    /// multiplied by the Design Capacity Multiplier to
+    /// produce the actual value.
+    pub fn design_capacity(&self) -> Option<u16> {
         self.parts.get_field_word(0x0A)
     }
 
-    fn design_voltage(&self) -> Option<u16> {
+    /// Design voltage of the battery in mVolts
+    /// 
+    /// If the value is unknown, the field contains 0.
+    pub fn design_voltage(&self) -> Option<u16> {
         self.parts.get_field_word(0x0C)
     }
 
-    fn sbds_version_number(&self) -> Option<String> {
+    /// Contains the Smart Battery Data Specification version number
+    /// supported by this battery
+    /// 
+    /// If the battery does not support the function, no
+    /// string is supplied.
+    pub fn sbds_version_number(&self) -> Option<String> {
         self.parts.get_field_string(0x0E)
     }
 
-    fn maximum_error_in_battery_data(&self) -> Option<u8> {
+    /// Maximum error (as a percentage in the range 0
+    /// to 100) in the Watt-hour data reported by the
+    /// battery, indicating an upper bound on how much
+    /// additional energy the battery might have above
+    /// the energy it reports having
+    /// 
+    /// If the value is unknown, the field contains FFh.
+    pub fn maximum_error_in_battery_data(&self) -> Option<u8> {
         self.parts.get_field_byte(0x0F)
     }
 
-    fn sbds_serial_number(&self) -> Option<u16> {
+    /// 16-bit value that identifies the battery’s serial
+    /// number
+    /// 
+    /// This value, when combined with the
+    /// Manufacturer, Device Name, and Manufacture
+    /// Date, uniquely identifies the battery. The Serial
+    /// Number field must be set to 0 (no string) for this
+    /// field to be valid.
+    pub fn sbds_serial_number(&self) -> Option<u16> {
         self.parts.get_field_word(0x10)
     }
 
-    fn sbds_manufacture_date(&self) -> Option<u16> {
+    /// Date the cell pack was manufactured, in packed
+    /// format
+    pub fn sbds_manufacture_date(&self) -> Option<u16> {
         self.parts.get_field_word(0x12)
     }
 
-    fn sbds_device_chemistry(&self) -> Option<String> {
+    /// Number of the string that identifies the battery
+    /// chemistry (for example, “PbAc”)
+    /// The Device Chemistry field must be set to 02h
+    /// (Unknown) for this field to be valid.
+    pub fn sbds_device_chemistry(&self) -> Option<String> {
         self.parts.get_field_string(0x14)
     }
 
-    fn design_capacity_multiplier(&self) -> Option<u8> {
+    /// Multiplication factor of the Design Capacity
+    /// value, which assures that the mWatt hours value
+    /// does not overflow for SBDS implementations
+    /// 
+    /// The multiplier default is 1, SBDS
+    /// implementations use the value 10 to correspond
+    /// to the data as returned from the SBDS Function
+    /// 18h.
+    pub fn design_capacity_multiplier(&self) -> Option<u8> {
         self.parts.get_field_byte(0x15)
     }
 
-    fn oem_specific(&self) -> Option<u32> {
+    /// Contains OEM- or BIOS vendor-specific
+    /// information
+    pub fn oem_specific(&self) -> Option<u32> {
         self.parts.get_field_dword(0x16)
     }
 }

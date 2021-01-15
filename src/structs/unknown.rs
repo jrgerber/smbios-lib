@@ -1,15 +1,26 @@
 use super::*;
 
+/// # OEM or Unknown Structure
+/// 
+/// Types 0 through 127 (7Fh) are reserved for and
+/// defined by the DMTF SMBIOS specification.
+/// Types 128 through 256 (80h to FFh) are available for
+/// system- and OEM-specific information.
+/// 
+/// When a structure has a type which is not defined or
+/// its type is an OEM type in the 80h to FFh range,
+/// this structure is used to represent the type.
 pub struct SMBiosUnknown<'a> {
     parts: &'a SMBiosStructParts<'a>,
 }
 
 impl<'a> SMBiosUnknown<'a> {
+    /// Creates an instance of this struct
     pub fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
         SMBiosUnknown { parts: parts }
     }
 
-    pub fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a SMBiosStructParts<'a> {
         self.parts
     }
 }

@@ -1,5 +1,12 @@
 use super::*;
 
+/// # Electrical Current Probe (Type 29)
+/// 
+/// This structure describes the attributes for an electrical current probe in the system. Each structure describes a single electrical current probe.
+/// 
+/// Compliant with:
+/// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
+/// Document Date: 2020-07-17
 pub struct SMBiosElectricalCurrentProbe<'a> {
     parts: &'a SMBiosStructParts<'a>,
 }
@@ -17,39 +24,48 @@ impl<'a> SMBiosStruct<'a> for SMBiosElectricalCurrentProbe<'a> {
 }
 
 impl<'a> SMBiosElectricalCurrentProbe<'a> {
-    fn description(&self) -> Option<String> {
+    ///  A string that contains additional descriptive information about the probe or its location
+    pub fn description(&self) -> Option<String> {
         self.parts.get_field_string(0x04)
     }
 
-    fn location_and_status(&self) -> Option<u8> {
+    /// Probe’s physical location and status of the current monitored by this current probe
+    pub fn location_and_status(&self) -> Option<u8> {
         self.parts.get_field_byte(0x05)
     }
 
-    fn maximum_value(&self) -> Option<u16> {
+    /// Maximum current level readable by this probe, in milliamps
+    pub fn maximum_value(&self) -> Option<u16> {
         self.parts.get_field_word(0x06)
     }
 
-    fn minimum_value(&self) -> Option<u16> {
+    /// Minimum temperature level readable by this probe, in milliamps
+    pub fn minimum_value(&self) -> Option<u16> {
         self.parts.get_field_word(0x08)
     }
 
-    fn resolution(&self) -> Option<u16> {
+    /// Resolution for the probe’s reading, in tenths of milliamps
+    pub fn resolution(&self) -> Option<u16> {
         self.parts.get_field_word(0x0A)
     }
 
-    fn tolerance(&self) -> Option<u16> {
+    /// Tolerance for reading from this probe, in plus/minus milliamps
+    pub fn tolerance(&self) -> Option<u16> {
         self.parts.get_field_word(0x0C)
     }
 
-    fn accuracy(&self) -> Option<u16> {
+    /// Accuracy for reading from this probe, in plus/minus 1/100th of a percent
+    pub fn accuracy(&self) -> Option<u16> {
         self.parts.get_field_word(0x0E)
     }
 
-    fn oem_defined(&self) -> Option<u32> {
+    /// OEM- or BIOS vendor-specific information.
+    pub fn oem_defined(&self) -> Option<u32> {
         self.parts.get_field_dword(0x10)
     }
 
-    fn nominal_value(&self) -> Option<u16> {
+    /// Nominal value for the probe’s reading in milliamps
+    pub fn nominal_value(&self) -> Option<u16> {
         self.parts.get_field_word(0x14)
     }
 }

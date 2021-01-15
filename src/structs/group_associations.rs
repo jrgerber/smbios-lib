@@ -1,5 +1,14 @@
 use super::*;
 
+/// # Group Associations (Type 14) 
+/// 
+/// The Group Associations structure is provided for OEMs who want to specify the arrangement or hierarchy
+/// of certain components (including other Group Associations) within the system. For example, you can use
+/// the Group Associations structure to indicate that two CPUs share a common external cache system.
+/// 
+/// Compliant with:
+/// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
+/// Document Date: 2020-07-17
 pub struct SMBiosGroupAssociations<'a> {
     parts: &'a SMBiosStructParts<'a>,
 }
@@ -17,15 +26,18 @@ impl<'a> SMBiosStruct<'a> for SMBiosGroupAssociations<'a> {
 }
 
 impl<'a> SMBiosGroupAssociations<'a> {
-    fn group_name(&self) -> Option<u8> {
+    /// A string describing the group
+    pub fn group_name(&self) -> Option<u8> {
         self.parts.get_field_byte(0x4)
     }
 
-    fn item_type(&self) -> Option<u8> {
+    /// Item (Structure) Type of this member
+    pub fn item_type(&self) -> Option<u8> {
         self.parts.get_field_byte(0x5)
     }
 
-    fn item_handle(&self) -> Option<Handle> {
+    /// Handle corresponding to this structure
+    pub fn item_handle(&self) -> Option<Handle> {
         self.parts.get_field_handle(0x6)
     }
 

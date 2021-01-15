@@ -17,6 +17,7 @@ mod ffi {
     }
 }
 
+/// Calls the Windows kernel32 function [GetSystemFirmwareTable](https://docs.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-getsystemfirmwaretable)
 pub fn get_raw_smbios_data() -> Option<RawSMBiosData> {
     use std::convert::TryInto;
     use std::ptr;
@@ -53,40 +54,63 @@ pub fn get_raw_smbios_data() -> Option<RawSMBiosData> {
     }
 }
 
+/// # Raw SMBIOS Data
+/// 
+/// When Windows kernel32 [GetSystemFirmwareTable](https://docs.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-getsystemfirmwaretable) function is called for RSMB,
+/// the raw SMBIOS table provider ('RSMB') it retrieves the contents of this 
+/// raw SMBIOS firmware table structure.
 pub struct RawSMBiosData {
     raw_smbios_data: Vec<u8>,
 }
 
 impl RawSMBiosData {
+    /// Creates an instance of [RawSMBiosData]
+    /// 
+    /// To retrieve this structure on a windows system call get_raw_smbios_data().
+    /// 
+    /// The new() is provided publicly to allow loading data from other sources
+    /// such as a file or from memory array such as with testing.
     pub fn new(raw_smbios_data: Vec<u8>) -> Self {
         RawSMBiosData { raw_smbios_data }
     }
 
+    /// The raw SMBIOS data this structure is wrapping
     pub fn raw_smbios_data(&self) -> &[u8] {
         self.raw_smbios_data.as_slice()
     }
 
+    /// Used20CallingMethod
     pub fn used20_calling_method(&self) -> Option<u8> {
         get_field_byte(0, self.raw_smbios_data())
     }
 
+    /// SMBIOS major version
     pub fn smbios_major_version(&self) -> Option<u8> {
         get_field_byte(1, self.raw_smbios_data())
     }
 
+    /// SMBIOS minor version
     pub fn smbios_minor_version(&self) -> Option<u8> {
         get_field_byte(2, self.raw_smbios_data())
     }
 
+    /// DMI revision
     pub fn dmi_revision(&self) -> Option<u8> {
         get_field_byte(3, self.raw_smbios_data())
     }
 
+    /// Length of the data as reported by the structure
+    /// 
+    /// NOTE: It is possible that the length of raw_smbios_data and this length
+    /// could be different (which would indicate an error of some type).
+    /// Especially if reading data from a file and using it
+    /// these lengths should be compared to ensure this data is
+    /// valid.
     pub fn length(&self) -> Option<u32> {
         get_field_dword(4, self.raw_smbios_data())
     }
 
-    // https://depth-first.com/articles/2020/06/22/returning-rust-iterators/
+    /// SMBIOS table data [SMBiosTableData]
     pub fn smbios_table_data(&self) -> Option<SMBiosTableData> {
         match self.raw_smbios_data.get(8..) {
             Some(val) => Some(SMBiosTableData::new(val)),

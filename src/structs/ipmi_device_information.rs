@@ -1,5 +1,13 @@
 use super::*;
 
+/// # IPMI Device Information (Type 38)
+///
+/// The information in this structure defines the attributes of an Intelligent Platform Management Interface
+/// (IPMI) Baseboard Management Controller (BMC).
+/// 
+/// Compliant with:
+/// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
+/// Document Date: 2020-07-17
 pub struct SMBiosIpmiDeviceInformation<'a> {
     parts: &'a SMBiosStructParts<'a>,
 }
@@ -17,31 +25,42 @@ impl<'a> SMBiosStruct<'a> for SMBiosIpmiDeviceInformation<'a> {
 }
 
 impl<'a> SMBiosIpmiDeviceInformation<'a> {
-    fn interface_type(&self) -> Option<u8> {
+    /// Baseboard Management Controller (BMC) interface type.
+    pub fn interface_type(&self) -> Option<u8> {
         self.parts.get_field_byte(0x04)
     }
 
-    fn ipmi_specification_revision(&self) -> Option<u8> {
+    /// IPMI specification revision, in BCD format, to which the BMC was designed
+    pub fn ipmi_specification_revision(&self) -> Option<u8> {
         self.parts.get_field_byte(0x05)
     }
 
-    fn i2c_target_address(&self) -> Option<u8> {
+    /// Slave address on the I2C bus of this BMC
+    pub fn i2c_target_address(&self) -> Option<u8> {
         self.parts.get_field_byte(0x06)
     }
 
-    fn nvstorage_device_address(&self) -> Option<u8> {
+    /// Bus ID of the NV storage device. If no storage device exists for this BMC, the field is set to 0FFh.
+    pub fn nvstorage_device_address(&self) -> Option<u8> {
         self.parts.get_field_byte(0x07)
     }
 
-    fn base_address(&self) -> Option<u64> {
+    /// Base address (either memory-mapped or I/O) of the BMC
+    /// If the least-significant bit of the field is a 1, the address is in
+    /// I/O space; otherwise, the address is memory-mapped. Refer
+    /// to the [IPMI Interface Specification](https://www.intel.com/content/www/us/en/products/docs/servers/ipmi/ipmi-home.html) for usage details.
+    pub fn base_address(&self) -> Option<u64> {
         self.parts.get_field_qword(0x08)
     }
 
-    fn base_address_modifier(&self) -> Option<u8> {
+    /// Bit fields Base Address Modifier and Interrupt Info
+    pub fn base_address_modifier(&self) -> Option<u8> {
         self.parts.get_field_byte(0x10)
     }
 
-    fn interrupt_number(&self) -> Option<u8> {
+    /// Interrupt number for IPMI System Interface
+    /// 00h = unspecified/unsupported
+    pub fn interrupt_number(&self) -> Option<u8> {
         self.parts.get_field_byte(0x11)
     }
 }

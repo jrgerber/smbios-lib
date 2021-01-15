@@ -1,5 +1,11 @@
 use super::*;
 
+/// # Temperature Probe (Type 28)
+///
+/// This structure describes the attributes for a temperature probe in the system. Each structure describes a
+/// single temperature probe.
+/// 
+/// NOTE This structure type was added in version 2.2 of this specification.
 pub struct SMBiosTemperatureProbe<'a> {
     parts: &'a SMBiosStructParts<'a>,
 }
@@ -17,39 +23,79 @@ impl<'a> SMBiosStruct<'a> for SMBiosTemperatureProbe<'a> {
 }
 
 impl<'a> SMBiosTemperatureProbe<'a> {
-    fn description(&self) -> Option<String> {
+    /// Description
+    /// 
+    /// additional descriptive information about the probe or its location
+    pub fn description(&self) -> Option<String> {
         self.parts.get_field_string(0x04)
     }
 
-    fn location_and_status(&self) -> Option<u8> {
+    /// Location and status
+    /// 
+    /// Probe’s physical location and the status of the temperature
+    /// monitored by this temperature probe
+    pub fn location_and_status(&self) -> Option<u8> {
         self.parts.get_field_byte(0x05)
     }
 
-    fn maximum_value(&self) -> Option<u16> {
+    /// Maximum value
+    /// 
+    /// Maximum temperature readable by this probe, in 1/10th degrees C
+    /// 
+    /// If the value is unknown, the field is set to 0x8000.
+    pub fn maximum_value(&self) -> Option<u16> {
         self.parts.get_field_word(0x06)
     }
 
-    fn minimum_value(&self) -> Option<u16> {
+    /// Minimum value
+    /// 
+    /// Minimum temperature readable by this probe, in 1/10th degrees C
+    /// 
+    /// If the value is unknown, the field is set to 0x8000.
+    pub fn minimum_value(&self) -> Option<u16> {
         self.parts.get_field_word(0x08)
     }
 
-    fn resolution(&self) -> Option<u16> {
+    /// Resolution
+    /// 
+    /// Resolution for the probe’s reading, in 1/1000th degrees C
+    /// 
+    /// If the value is unknown, the field is set to 0x8000.
+    pub fn resolution(&self) -> Option<u16> {
         self.parts.get_field_word(0x0A)
     }
 
-    fn tolerance(&self) -> Option<u16> {
+    /// Tolerance
+    /// 
+    /// Tolerance for reading from this probe, in plus/minus 1/10th degrees C
+    /// 
+    /// If the value is unknown, the field is set to 0x8000.
+    pub fn tolerance(&self) -> Option<u16> {
         self.parts.get_field_word(0x0C)
     }
 
-    fn accuracy(&self) -> Option<u16> {
+    /// Accuracy
+    /// 
+    /// Accuracy for reading from this probe, in plus/minus 1/100th of a percent
+    /// 
+    /// If the value is unknown, the field is set to 0x8000.
+    pub fn accuracy(&self) -> Option<u16> {
         self.parts.get_field_word(0x0E)
     }
 
-    fn oem_defined(&self) -> Option<u32> {
+    /// OEM defined
+    /// 
+    /// OEM- or BIOS vendor-specific information
+    pub fn oem_defined(&self) -> Option<u32> {
         self.parts.get_field_dword(0x10)
     }
 
-    fn nominal_value(&self) -> Option<u16> {
+    /// Nominal value for the probe’s reading in 1/10th degrees C
+    /// 
+    /// If the value is unknown, the field is set to 0x8000. This field is
+    /// present in the structure only if the structure’s Length is larger
+    /// than 14h.
+    pub fn nominal_value(&self) -> Option<u16> {
         self.parts.get_field_word(0x14)
     }
 }

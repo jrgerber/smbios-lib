@@ -1,5 +1,14 @@
 use super::*;
 
+/// # Port Connector Information (Type 8)
+///
+/// The information in this structure defines the attributes of a system port connector
+/// (for example, parallel, serial, keyboard, or mouse ports). The port’s type and connector information are
+/// provided. One structure is present for each port provided by the system.
+/// 
+/// Compliant with:
+/// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
+/// Document Date: 2020-07-17
 pub struct SMBiosPortConnectorInformation<'a> {
     parts: &'a SMBiosStructParts<'a>,
 }
@@ -17,23 +26,34 @@ impl<'a> SMBiosStruct<'a> for SMBiosPortConnectorInformation<'a> {
 }
 
 impl<'a> SMBiosPortConnectorInformation<'a> {
-    fn internal_reference_designator(&self) -> Option<String> {
+    ///  Internal reference designator, that is,
+    /// internal to the system enclosure
+    /// 
+    /// EXAMPLE: "J101"
+    pub fn internal_reference_designator(&self) -> Option<String> {
         self.parts.get_field_string(0x04)
     }
 
-    fn internal_connector_type(&self) -> Option<u8> {
+    /// Internal connector type
+    pub fn internal_connector_type(&self) -> Option<u8> {
         self.parts.get_field_byte(0x05)
     }
 
-    fn external_reference_designator(&self) -> Option<String> {
+    /// External reference designation,
+    /// external to the system enclosure
+    /// 
+    /// EXAMPLE: "COM A"
+    pub fn external_reference_designator(&self) -> Option<String> {
         self.parts.get_field_string(0x06)
     }
 
-    fn external_connector_type(&self) -> Option<u8> {
+    /// External connector type
+    pub fn external_connector_type(&self) -> Option<u8> {
         self.parts.get_field_byte(0x07)
     }
 
-    fn port_type(&self) -> Option<u8> {
+    /// Describes the function of the port
+    pub fn port_type(&self) -> Option<u8> {
         self.parts.get_field_byte(0x08)
     }
 }

@@ -1,5 +1,12 @@
 use super::*;
 
+/// # Management Device Threshold Data (Type 36)
+/// 
+/// The information in this structure defines threshold information for a component (probe or cooling-unit) contained within a Management Device
+/// 
+/// Compliant with:
+/// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
+/// Document Date: 2020-07-17
 pub struct SMBiosManagementDeviceThresholdData<'a> {
     parts: &'a SMBiosStructParts<'a>,
 }
@@ -17,27 +24,33 @@ impl<'a> SMBiosStruct<'a> for SMBiosManagementDeviceThresholdData<'a> {
 }
 
 impl<'a> SMBiosManagementDeviceThresholdData<'a> {
-    fn lower_threshold_non_critical(&self) -> Option<u16> {
+    /// Lower non-critical threshold for this component
+    pub fn lower_threshold_non_critical(&self) -> Option<u16> {
         self.parts.get_field_word(0x04)
     }
 
-    fn upper_threshold_non_critical(&self) -> Option<u16> {
+    /// Upper non-critical threshold for this component
+    pub fn upper_threshold_non_critical(&self) -> Option<u16> {
         self.parts.get_field_word(0x06)
     }
 
-    fn lower_threshold_critical(&self) -> Option<u16> {
+    /// Lower critical threshold for this component
+    pub fn lower_threshold_critical(&self) -> Option<u16> {
         self.parts.get_field_word(0x08)
     }
 
-    fn upper_threshold_critical(&self) -> Option<u16> {
+    /// Upper critical threshold for this component
+    pub fn upper_threshold_critical(&self) -> Option<u16> {
         self.parts.get_field_word(0x0A)
     }
 
-    fn lower_threshold_non_recoverable(&self) -> Option<u16> {
+    /// Lower non-recoverable threshold for this component
+    pub fn lower_threshold_non_recoverable(&self) -> Option<u16> {
         self.parts.get_field_word(0x0C)
     }
 
-    fn upper_threshold_non_recoverable(&self) -> Option<u16> {
+    /// Upper non-recoverable threshold for this component
+    pub fn upper_threshold_non_recoverable(&self) -> Option<u16> {
         self.parts.get_field_word(0x0E)
     }
 }
