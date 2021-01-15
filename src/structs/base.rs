@@ -28,6 +28,7 @@ impl fmt::Debug for Handle {
     }
 }
 
+/// Retrieves a handle at the given offset
 pub fn get_field_handle(offset: usize, data: &[u8]) -> Option<Handle> {
     match data.get(offset..offset + 2) {
         Some(val) => Some(Handle(u16::from_le_bytes(
@@ -159,12 +160,15 @@ pub enum DefinedStruct<'a> {
 /// Every SMBIOS structure contains three parts or sections: A header, 
 /// structure data, and string data.
 pub struct SMBiosStructParts<'a> {
+    /// The [Header] of the structure
     pub header: Header<'a>,
     data: &'a [u8],
+    /// The strings of the structure
     pub strings: Strings<'a>,
 }
 
 impl<'a> SMBiosStructParts<'a> {
+    /// Creates a structure instance of the given byte array slice
     pub fn new(data: &'a [u8]) -> Self {
         SMBiosStructParts {
             header: Header::new(
@@ -275,6 +279,7 @@ impl<'a> SMBiosStructParts<'a> {
         }
     }
 
+    /// Casts the current structure to its specific defined BIOS structure type
     pub fn struct_type_name(&self) -> DefinedStruct {
         match self.header.struct_type() {
             SMBiosInformation::STRUCT_TYPE => {
@@ -438,6 +443,9 @@ impl fmt::Debug for SMBiosStructParts<'_> {
     }
 }
 
+/// # SMBIOS Strings
+/// 
+/// The strings part/section of a structure
 pub struct Strings<'a> {
     strings: Vec<&'a [u8]>,
     current_string_index: usize,
@@ -517,6 +525,9 @@ impl<'a> fmt::Debug for Strings<'a> {
     }
 }
 
+/// # SMBIOS Header
+/// 
+/// The header part/section of a structure
 pub struct Header<'a> {
     data: &'a [u8],
 }
@@ -543,14 +554,17 @@ impl<'a> Header<'a> {
         Header { data }
     }
 
+    /// The type of SMBIOS structure
     pub fn struct_type(&self) -> u8 {
         self.data[0] // struct_type is 1 byte at offset 0
     }
 
+    /// The length of the structure not including the strings part/section
     pub fn length(&self) -> u8 {
         self.data[Self::LENGTH_OFFSET] // length is 1 byte at offset 1
     }
 
+    /// The handle of this structure instance
     pub fn handle(&self) -> Handle {
         // handle is 2 bytes at offset 2
         Handle(u16::from_le_bytes(
@@ -561,11 +575,16 @@ impl<'a> Header<'a> {
     }
 }
 
+/// # SMBIOS Raw Table Data
+/// 
+/// Contains the raw data of BIOS and provides iteration of
+/// the structures contained within the raw data.
 pub struct SMBiosTableData<'a> {
     data: &'a [u8],
 }
 
 impl<'a> SMBiosTableData<'a> {
+    /// Creates a wrapper around raw SMBIOS data
     pub fn new(data: &'a [u8]) -> Self {
         Self { data }
     }
@@ -598,20 +617,32 @@ impl<'a> fmt::Debug for SMBiosTableData<'_> {
     }
 }
 
+/// # SMBIOS Structure
+/// 
+/// A type implementing this trait provies a representation of an SMBIOS type.
 pub trait SMBiosStruct<'a> {
+    /// The SMBIOS structure type
+    /// 
+    /// Example: System Information (Type 1) this is set to 1.
     const STRUCT_TYPE: u8;
 
+    /// Creates a new instance of the implementing SMBIOS type
     fn new(parts: &'a SMBiosStructParts<'a>) -> Self;
 
+    /// Contains the standard parts/sections of the implementing SMBIOS type.
     fn parts(&self) -> &'a SMBiosStructParts<'a>;
 }
 
+/// # Iterator of [SMBiosTableData]
+/// 
+/// Allows iteration of [SMBiosTableData] and returns [SMBiosStructParts].
 pub struct RawStructIterator<'a> {
     data: &'a [u8],
     current_index: usize,
 }
 
 impl<'a> RawStructIterator<'a> {
+    /// Creates an instance of this iterator
     pub fn new(data: &'a [u8]) -> Self {
         RawStructIterator {
             data: data,

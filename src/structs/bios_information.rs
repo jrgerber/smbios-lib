@@ -1,5 +1,6 @@
 use super::*;
 
+/// #  BIOS Information (Type 0)
 pub struct SMBiosInformation<'a> {
     parts: &'a SMBiosStructParts<'a>,
 }
@@ -17,63 +18,162 @@ impl<'a> SMBiosStruct<'a> for SMBiosInformation<'a> {
 }
 
 impl<'a> SMBiosInformation<'a> {
-    fn vendor(&self) -> Option<String> {
+    /// BIOS vendor's name
+    pub fn vendor(&self) -> Option<String> {
         self.parts.get_field_string(0x4)
     }
 
-    fn version(&self) -> Option<String> {
+    /// BIOS version
+    /// 
+    /// This value is a free-form string that may contain
+    /// Core and OEM version information. 
+    pub fn version(&self) -> Option<String> {
         self.parts.get_field_string(0x5)
     }
 
-    fn starting_address_segment(&self) -> Option<u16> {
+    /// BIOS starting address segment
+    /// 
+    /// Segment location of BIOS starting address
+    /// (for example, 0E800h).
+    /// 
+    /// NOTE: The size of the runtime BIOS image can
+    /// be computed by subtracting the Starting
+    /// Address Segment from 10000h and
+    /// multiplying the result by 16.
+    pub fn starting_address_segment(&self) -> Option<u16> {
         self.parts.get_field_word(0x6)
     }
 
-    fn release_date(&self) -> Option<String> {
+    /// BIOS release date
+    /// 
+    /// The date string, if supplied, is in either
+    /// mm/dd/yy or mm/dd/yyyy format. If the year
+    /// portion of the string is two digits, the year is
+    /// assumed to be 19yy.
+    /// 
+    /// NOTE: The mm/dd/yyyy format is required for
+    /// SMBIOS version 2.3 and later.
+    pub fn release_date(&self) -> Option<String> {
         self.parts.get_field_string(0x8)
     }
 
-    fn rom_size(&self) -> Option<u8> {
+    /// BIOS ROM size
+    /// 
+    /// Size (n) where 64K * (n+1) is the size of the
+    /// physical device containing the BIOS, in
+    /// bytes.
+    /// 
+    /// FFh - size is 16MB or greater, see Extended
+    /// BIOS ROM Size for actual size
+    pub fn rom_size(&self) -> Option<u8> {
         self.parts.get_field_byte(0x9)
     }
 
-    fn characteristics(&self) -> Option<u32> {
+    /// BIOS characteristics
+    /// 
+    /// Defines which functions the BIOS supports:
+    /// PCI, PCMCIA, Flash, etc
+    pub fn characteristics(&self) -> Option<u32> {
         self.parts.get_field_dword(0xA)
     }
 
-    fn bios_vendor_reserved_characteristics(&self) -> Option<u16> {
+    /// BIOS vendor reserved characteristics
+    pub fn bios_vendor_reserved_characteristics(&self) -> Option<u16> {
         self.parts.get_field_word(0xE)
     }
 
-    fn system_vendor_reserved_characteristics(&self) -> Option<u16> {
+    /// System vendor reserved characteristics
+    pub fn system_vendor_reserved_characteristics(&self) -> Option<u16> {
         self.parts.get_field_word(0x10)
     }
 
-    fn characteristics_extension0(&self) -> Option<u8> {
+    /// Characteristics extension byte 0
+    pub fn characteristics_extension0(&self) -> Option<u8> {
         self.parts.get_field_byte(0x12)
     }
 
-    fn characteristics_extension1(&self) -> Option<u8> {
+    /// Characteristics extension byte 1
+    pub fn characteristics_extension1(&self) -> Option<u8> {
         self.parts.get_field_byte(0x13)
     }
 
-    fn system_bios_major_release(&self) -> Option<u8> {
+    /// System BIOS major release
+    /// 
+    /// Identifies the major release of the System
+    /// BIOS; for example, the value is 0Ah for
+    /// revision 10.22 and 02h for revision 2.1.
+    /// 
+    /// This field or the System BIOS Minor
+    /// Release field or both are updated each time
+    /// a System BIOS update for a given system is
+    /// released.
+    /// 
+    /// If the system does not support the use of
+    /// this field, the value is 0FFh for both this field
+    /// and the System BIOS Minor Release field.
+    pub fn system_bios_major_release(&self) -> Option<u8> {
         self.parts.get_field_byte(0x14)
     }
 
-    fn system_bios_minor_release(&self) -> Option<u8> {
+    /// System BIOS minor release
+    /// 
+    /// Identifies the minor release of the System
+    /// BIOS; for example, the value is 16h for
+    /// revision 10.22 and 01h for revision 2.1.
+    pub fn system_bios_minor_release(&self) -> Option<u8> {
         self.parts.get_field_byte(0x15)
     }
 
-    fn e_c_firmware_major_release(&self) -> Option<u8> {
+    /// Embedded controller firmware major release
+    /// 
+    /// Identifies the major release of the
+    /// embedded controller firmware; for example,
+    /// the value would be 0Ah for revision 10.22
+    /// and 02h for revision 2.1.
+    /// 
+    /// This field or the Embedded Controller
+    /// Firmware Minor Release field or both are
+    /// updated each time an embedded controller
+    /// firmware update for a given system is
+    /// released.
+    /// 
+    /// If the system does not have field
+    /// upgradeable embedded controller firmware,
+    /// the value is 0FFh.
+    pub fn e_c_firmware_major_release(&self) -> Option<u8> {
         self.parts.get_field_byte(0x16)
     }
 
-    fn e_c_firmware_minor_release(&self) -> Option<u8> {
+    /// Embedded controller firmware minor release
+    /// 
+    /// Identifies the minor release of the
+    /// embedded controller firmware; for example,
+    /// the value is 16h for revision 10.22 and 01h
+    /// for revision 2.1.
+    /// If the system does not have field
+    /// upgradeable embedded controller firmware,
+    /// the value is 0FFh.
+    pub fn e_c_firmware_minor_release(&self) -> Option<u8> {
         self.parts.get_field_byte(0x17)
     }
 
-    fn extended_rom_size(&self) -> Option<u8> {
+    /// Extended BIOS ROM size
+    /// 
+    /// Extended size of the physical device(s)
+    /// containing the BIOS, rounded up if needed.
+    /// 
+    /// Bits 15:14 Unit
+    /// 00b - megabytes
+    /// 01b - gigabytes
+    /// 10b - reserved
+    /// 11b - reserved
+    /// Bits 13:0 Size
+    /// 
+    /// Examples: a 16 MB device would be
+    /// represented as 0010h. A 48 GB device set
+    /// would be represented as
+    /// 0100_0000_0011_0000b or 4030h.
+    pub fn extended_rom_size(&self) -> Option<u8> {
         self.parts.get_field_byte(0x18)
     }
 }
