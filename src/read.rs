@@ -14,7 +14,7 @@ mod tests {
 
     #[test]
     fn test_load_smbios_data_file() {
-        let filename = ".\\tests\\jeffgerlap_3_2_0.dat";
+        let filename = r".\tests\jeffgerlap_3_2_0.dat";
         let data = load_smbios_data_file(&filename);
         match data {
             Ok(thing) => {
