@@ -5,7 +5,7 @@ use super::*;
 /// The information in this structure defines attributes of the overall system and is intended to be associated
 /// with the Component ID group of the system’s MIF. An SMBIOS implementation is associated with a single
 /// system instance and contains one and only one System Information (Type 1) structure.
-/// 
+///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
@@ -51,14 +51,14 @@ impl<'a> SMBiosSystemInformation<'a> {
     // }
 
     /// Wake-up type
-    /// 
+    ///
     /// Identifies the event that caused the system to power up.
     pub fn wakeup_type(&self) -> Option<u8> {
         self.parts.get_field_byte(0x18)
     }
 
     /// SKU Number
-    /// 
+    ///
     /// This text string identifies a particular computer
     /// configuration for sale. It is sometimes also
     /// called a product ID or purchase order number.
@@ -73,7 +73,7 @@ impl<'a> SMBiosSystemInformation<'a> {
     }
 
     /// Family
-    /// 
+    ///
     /// This text string identifies the family to which a
     /// particular computer belongs. A family refers to
     /// a set of computers that are similar but not

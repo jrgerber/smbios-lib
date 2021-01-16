@@ -6,7 +6,7 @@ use super::*;
 /// not discoverable by “Plug and Play” mechanisms. The Type 42 structure can
 /// be used to describe a physical management controller host interface and one or more protocols that
 /// share that interface.
-/// 
+///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17

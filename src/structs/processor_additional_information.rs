@@ -1,17 +1,17 @@
 use super::*;
 
 /// # Processor Additional Information (Type 44)
-/// 
+///
 /// The information in this structure defines the processor additional information in case SMBIOS type 4 [SMBiosProcessorInformation] is
 /// not sufficient to describe processor characteristics. The SMBIOS type 44 structure has a reference
 /// handle field to link back to the related SMBIOS type 4 structure. There may be multiple SMBIOS type 44
 /// structures linked to the same SMBIOS type 4 structure. For example, when cores are not identical in a
 /// processor, SMBIOS type 44 structures describe different core-specific information.
-/// 
+///
 /// SMBIOS type 44 defines the standard header for the processor-specific block, while the
 /// contents of processor-specific data are maintained by processor architecture workgroups or vendors in
 /// separate documents.
-/// 
+///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17

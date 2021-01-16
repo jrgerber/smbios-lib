@@ -1,9 +1,9 @@
 use super::*;
 
 /// # Management Device Threshold Data (Type 36)
-/// 
+///
 /// The information in this structure defines threshold information for a component (probe or cooling-unit) contained within a Management Device
-/// 
+///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17

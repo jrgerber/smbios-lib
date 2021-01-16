@@ -1,11 +1,11 @@
 use super::*;
 
-/// # Group Associations (Type 14) 
-/// 
+/// # Group Associations (Type 14)
+///
 /// The Group Associations structure is provided for OEMs who want to specify the arrangement or hierarchy
 /// of certain components (including other Group Associations) within the system. For example, you can use
 /// the Group Associations structure to indicate that two CPUs share a common external cache system.
-/// 
+///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17

@@ -1,9 +1,9 @@
 use super::*;
 
 /// # Cooling Device (Type 27)
-/// 
+///
 /// This structure describes the attributes for a cooling device in the system. Each structure describes a single cooling device.
-/// 
+///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17

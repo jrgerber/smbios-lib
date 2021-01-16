@@ -3,11 +3,11 @@ use super::*;
 /// # System Reset (Type 23)
 ///
 /// This structure describes whether Automatic System Reset functions are enabled (Status).
-/// 
+///
 /// If the system has a watchdog timer and the timer is not reset (Timer Reset) before the Interval elapses,
 /// an automatic system reset occurs. The system re-boots according to the Boot Option. This function may
 /// repeat until the Limit is reached, at which time the system re-boots according to the Boot Option at Limit.
-/// 
+///
 /// NOTE This structure type was added for version 2.2 of this specification.
 ///
 /// Compliant with:
@@ -31,35 +31,35 @@ impl<'a> SMBiosStruct<'a> for SMBiosSystemReset<'a> {
 
 impl<'a> SMBiosSystemReset<'a> {
     /// Capabilities bit-field
-    /// 
+    ///
     /// Identifies the system-reset capabilities for the system
     pub fn capabilities(&self) -> Option<u8> {
         self.parts.get_field_byte(0x04)
     }
 
     /// Reset count
-    /// 
+    ///
     /// Number of automatic system resets since the last intentional
     /// reset
-    /// 
+    ///
     /// A value of 0FFFFh indicates unknown.
     pub fn reset_count(&self) -> Option<u16> {
         self.parts.get_field_word(0x05)
     }
 
     /// Reset limit
-    /// 
+    ///
     /// Number of consecutive times the system reset is attempted
-    /// 
+    ///
     /// A value of 0FFFFh indicates unknown.
     pub fn reset_limit(&self) -> Option<u16> {
         self.parts.get_field_word(0x07)
     }
 
     /// Timer interval
-    /// 
+    ///
     /// Number of minutes to use for the watchdog timer
-    /// 
+    ///
     /// If the timer is not reset within this interval, the system reset
     /// timeout begins. A value of 0FFFFh indicates unknown.
     pub fn timer_interval(&self) -> Option<u16> {
@@ -67,9 +67,9 @@ impl<'a> SMBiosSystemReset<'a> {
     }
 
     /// Timeout
-    /// 
+    ///
     /// Number of minutes before the reboot is initiated
-    /// 
+    ///
     /// It is used after a system power cycle, system reset (local or
     /// remote), and automatic system reset. A value of 0FFFFh
     /// indicates unknown.

@@ -104,7 +104,7 @@ impl fmt::Debug for SMBiosBaseboardInformation<'_> {
 }
 
 /// # Object Handle Iterator
-/// 
+///
 /// Iterates over the object handles contained within the [SMBiosBaseboardInformation] structure
 pub struct ObjectHandleIterator<'a> {
     data: &'a SMBiosBaseboardInformation<'a>,

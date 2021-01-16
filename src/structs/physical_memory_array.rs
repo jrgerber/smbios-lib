@@ -3,7 +3,7 @@ use super::*;
 /// # Physical Memory Array (Type 16)
 ///
 /// This structure describes a collection of memory devices that operate together to form a memory address space.
-/// 
+///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17

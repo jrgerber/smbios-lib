@@ -4,9 +4,9 @@ use super::*;
 ///
 /// This structure identifies attributes of a system power supply. Table 116 provides details. One instance of
 /// this structure is present for each possible power supply in a system.
-/// 
+///
 /// NOTE This structure type was added in version 2.3.1 of this specification.
-/// 
+///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
@@ -28,10 +28,10 @@ impl<'a> SMBiosStruct<'a> for SMBiosSystemPowerSupply<'a> {
 
 impl<'a> SMBiosSystemPowerSupply<'a> {
     /// Power unit group
-    /// 
+    ///
     /// Power unit group to which this power supply is
     /// associated
-    /// 
+    ///
     /// Specifying the same Power Unit Group value for more
     /// than one System Power Supply structure indicates a
     /// redundant power supply configuration. The field’s value is
@@ -44,9 +44,9 @@ impl<'a> SMBiosSystemPowerSupply<'a> {
     }
 
     /// Location
-    /// 
+    ///
     /// Identifies the location of the power supply.
-    /// 
+    ///
     /// EXAMPLES: "in the back, on the left-hand side" or
     /// "Left Supply Bay"
     pub fn location(&self) -> Option<String> {
@@ -54,23 +54,23 @@ impl<'a> SMBiosSystemPowerSupply<'a> {
     }
 
     /// Device name
-    /// 
+    ///
     /// Number of the string that names the power supply device
-    /// 
+    ///
     /// EXAMPLE: "DR-36"
     pub fn device_name(&self) -> Option<String> {
         self.parts.get_field_string(0x06)
     }
 
     /// Manufacturer
-    /// 
+    ///
     /// Names the company that manufactured the supply
     pub fn manufacturer(&self) -> Option<String> {
         self.parts.get_field_string(0x07)
     }
 
     /// Serial number
-    /// 
+    ///
     /// The serial number for the power supply
     pub fn serial_number(&self) -> Option<String> {
         self.parts.get_field_string(0x08)
@@ -82,25 +82,25 @@ impl<'a> SMBiosSystemPowerSupply<'a> {
     }
 
     /// Model part number
-    /// 
+    ///
     /// The OEM part order number
     pub fn model_part_number(&self) -> Option<String> {
         self.parts.get_field_string(0x0A)
     }
 
     /// Revision level
-    /// 
+    ///
     /// Power supply revision string
-    /// 
+    ///
     /// EXAMPLE: "2.30"
     pub fn revision_level(&self) -> Option<String> {
         self.parts.get_field_string(0x0B)
     }
 
     /// Max power capacity
-    /// 
+    ///
     /// Maximum sustained power output in Watts
-    /// 
+    ///
     /// Set to 0x8000 if unknown. Note that the units specified by
     /// the DMTF for this field are milliWatts.
     pub fn max_power_capacity(&self) -> Option<u16> {
@@ -113,20 +113,20 @@ impl<'a> SMBiosSystemPowerSupply<'a> {
     }
 
     /// Input voltage probe handle
-    /// 
+    ///
     /// Handle, or instance number, of a [SMBiosVoltageProbe] (Type 26)
     /// monitoring this power supply's input voltage
-    /// 
+    ///
     /// A value of 0xFFFF indicates that no probe is provided
     pub fn input_voltage_probe_handle(&self) -> Option<Handle> {
         self.parts.get_field_handle(0x10)
     }
 
     /// Cooling device handle
-    /// 
+    ///
     /// Handle, or instance number, of a [SMBiosCoolingDevice] (Type
     /// 27) associated with this power supply
-    /// 
+    ///
     /// A value of 0xFFFF indicates that no cooling device is
     /// provided.
     pub fn cooling_device_handle(&self) -> Option<Handle> {
@@ -134,11 +134,11 @@ impl<'a> SMBiosSystemPowerSupply<'a> {
     }
 
     /// Input current probe handle
-    /// 
+    ///
     /// Handle, or instance number, of the [SMBiosElectricalCurrentProbe]
     /// (Type 29) monitoring this power supply’s input
     /// current
-    /// 
+    ///
     /// A value of 0xFFFF indicates that no current probe is
     /// provided.
     pub fn input_current_probe_handle(&self) -> Option<Handle> {

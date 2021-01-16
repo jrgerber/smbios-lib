@@ -5,7 +5,7 @@ use super::*;
 /// The information in this structure defines the attributes of a system port connector
 /// (for example, parallel, serial, keyboard, or mouse ports). The port’s type and connector information are
 /// provided. One structure is present for each port provided by the system.
-/// 
+///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
@@ -28,7 +28,7 @@ impl<'a> SMBiosStruct<'a> for SMBiosPortConnectorInformation<'a> {
 impl<'a> SMBiosPortConnectorInformation<'a> {
     ///  Internal reference designator, that is,
     /// internal to the system enclosure
-    /// 
+    ///
     /// EXAMPLE: "J101"
     pub fn internal_reference_designator(&self) -> Option<String> {
         self.parts.get_field_string(0x04)
@@ -41,7 +41,7 @@ impl<'a> SMBiosPortConnectorInformation<'a> {
 
     /// External reference designation,
     /// external to the system enclosure
-    /// 
+    ///
     /// EXAMPLE: "COM A"
     pub fn external_reference_designator(&self) -> Option<String> {
         self.parts.get_field_string(0x06)

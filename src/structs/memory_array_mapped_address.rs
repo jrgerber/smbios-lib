@@ -1,9 +1,9 @@
 use super::*;
 
 /// # Memory Array Mapped Address (Type 19)
-/// 
+///
 /// This structure provides the address mapping for a Physical Memory Array.
-/// 
+///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17

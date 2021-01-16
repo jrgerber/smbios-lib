@@ -6,7 +6,7 @@ use super::*;
 /// system. One structure is specified for each such device, whether the device is internal to or external to
 /// the CPU module. Cache modules can be associated with a processor structure in one or two ways
 /// depending on the SMBIOS version
-/// 
+///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17

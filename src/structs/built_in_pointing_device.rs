@@ -1,12 +1,12 @@
 use super::*;
 
 /// # Built-in Pointing Device (Type 21)
-/// 
+///
 /// This structure describes the attributes of the built-in pointing device for the system.
 /// Details are provided in Table 87.
 /// The presence of this structure does not imply that the built-in pointing device is active
 /// for the system’s use.
-/// 
+///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17

@@ -5,10 +5,10 @@ use std::{convert::TryInto, ops::Deref};
 // use super::SMBiosUnknown;
 
 /// # Structure Handle
-/// 
+///
 /// Each SMBIOS structure has a handle or instance value associated with it.
 /// Some structures will reference other structures by using this value.
-/// 
+///
 /// Dereference a handle (*handle) to access its u16 value.
 pub struct Handle(u16);
 
@@ -40,7 +40,7 @@ pub fn get_field_handle(offset: usize, data: &[u8]) -> Option<Handle> {
 }
 
 /// # SMBIOS Standard Defined Structure
-/// 
+///
 /// Represents one of the SMBIOS defined structures or, in the case
 /// of an OEM defined structure, as a generically defined Unknown variant
 #[derive(Debug)]
@@ -140,7 +140,7 @@ pub enum DefinedStruct<'a> {
     /// End-of-Table (Type 127)
     EndOfTable(SMBiosEndOfTable<'a>),
     /// OEM-Defined or Unknown Structure
-    /// 
+    ///
     /// - A structure with a type value not yet defined, such as by a DMTF specification
     /// that supercedes the types known by this library
     /// - An OEM type with a value > 127.
@@ -156,8 +156,8 @@ pub enum DefinedStruct<'a> {
 // }
 
 /// # The three basic parts of an SMBIOS structure
-/// 
-/// Every SMBIOS structure contains three parts or sections: A header, 
+///
+/// Every SMBIOS structure contains three parts or sections: A header,
 /// structure data, and string data.
 pub struct SMBiosStructParts<'a> {
     /// The [Header] of the structure
@@ -242,7 +242,7 @@ impl<'a> SMBiosStructParts<'a> {
     }
 
     /// Retrieve a String of the given offset
-    /// 
+    ///
     /// Retrieval of strings is a two part operation. The given offset
     /// contains a byte whose value is a 1 based index into the strings section.
     /// The string is thus retrieved from the strings section based on the
@@ -263,12 +263,12 @@ impl<'a> SMBiosStructParts<'a> {
     }
 
     /// Cast to a given structure
-    /// 
+    ///
     /// When this library does not contain a [DefinedStruct] variant
     /// matching the SMBiosStruct::STRUCT_TYPE, this function affords a cast to the
-    /// given type. Such would be the case with OEM structure type T 
+    /// given type. Such would be the case with OEM structure type T
     /// (which implements the [SMBiosStruct] trait).
-    /// 
+    ///
     /// TODO: This should panic (not be Option) when the STRUCT_TYPE does not match because
     /// this would be a logic error in code, not a runtime error.
     pub fn as_type<T: SMBiosStruct<'a>>(&'a self) -> Option<T> {
@@ -444,7 +444,7 @@ impl fmt::Debug for SMBiosStructParts<'_> {
 }
 
 /// # SMBIOS Strings
-/// 
+///
 /// The strings part/section of a structure
 pub struct Strings<'a> {
     strings: Vec<&'a [u8]>,
@@ -526,7 +526,7 @@ impl<'a> fmt::Debug for Strings<'a> {
 }
 
 /// # SMBIOS Header
-/// 
+///
 /// The header part/section of a structure
 pub struct Header<'a> {
     data: &'a [u8],
@@ -576,7 +576,7 @@ impl<'a> Header<'a> {
 }
 
 /// # SMBIOS Raw Table Data
-/// 
+///
 /// Contains the raw data of BIOS and provides iteration of
 /// the structures contained within the raw data.
 pub struct SMBiosTableData<'a> {
@@ -618,11 +618,11 @@ impl<'a> fmt::Debug for SMBiosTableData<'_> {
 }
 
 /// # SMBIOS Structure
-/// 
+///
 /// A type implementing this trait provies a representation of an SMBIOS type.
 pub trait SMBiosStruct<'a> {
     /// The SMBIOS structure type
-    /// 
+    ///
     /// Example: System Information (Type 1) this is set to 1.
     const STRUCT_TYPE: u8;
 
@@ -634,7 +634,7 @@ pub trait SMBiosStruct<'a> {
 }
 
 /// # Iterator of [SMBiosTableData]
-/// 
+///
 /// Allows iteration of [SMBiosTableData] and returns [SMBiosStructParts].
 pub struct RawStructIterator<'a> {
     data: &'a [u8],

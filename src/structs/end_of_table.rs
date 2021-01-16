@@ -3,7 +3,7 @@ use super::*;
 /// # End-of-Table (Type 127)
 ///
 /// This structure type identifies the end of the structure table that might be earlier than the last byte within the buffer specified by the structure.
-/// 
+///
 /// To ensure backward compatibility with management software written to previous versions of this
 /// specification, a system implementation should use the end-of-table indicator in a manner similar to the
 /// [SMBiosInactive] (Type 126) structure type; the structure table is still reported as a fixed-length, and the entire
@@ -12,7 +12,7 @@ use super::*;
 ///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
-/// Document Date: 2020-07-17 
+/// Document Date: 2020-07-17
 pub struct SMBiosEndOfTable<'a> {
     parts: &'a SMBiosStructParts<'a>,
 }

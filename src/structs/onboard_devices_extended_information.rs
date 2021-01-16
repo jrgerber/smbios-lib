@@ -4,7 +4,7 @@ use super::*;
 ///
 /// The information in this structure defines the attributes of devices that are onboard (soldered onto) a
 /// system element, usually the baseboard.
-/// 
+///
 /// In general, an entry in this table implies that the BIOS has some level of control over the enablement of
 /// the associated device for use by the system.
 ///

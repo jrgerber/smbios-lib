@@ -1,7 +1,7 @@
 use super::*;
 
 /// # System Configuration Options (Type 12)
-/// 
+///
 /// This structure contains information required to configure the baseboard’s Jumpers and Switches.
 ///
 /// Compliant with:
@@ -30,7 +30,7 @@ impl<'a> SMBiosSystemConfigurationOptions<'a> {
     }
 
     /// Iterable collection of OEM strings
-    /// 
+    ///
     /// EXAMPLES:
     /// "JP2: 1-2 Cache Size is 256K, 2-3 Cache Size is 512K"
     /// "SW1-1: Close to Disable On Board Video"

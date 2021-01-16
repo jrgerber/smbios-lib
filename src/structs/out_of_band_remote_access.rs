@@ -5,9 +5,9 @@ use super::*;
 /// This structure describes the attributes and policy settings of a hardware facility that may be used to gain
 /// remote access to a hardware system when the operating system is not available due to power-down
 /// status, hardware failures, or boot failures.
-/// 
+///
 /// NOTE: This structure type was added in version 2.2 of this specification.
-/// 
+///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17

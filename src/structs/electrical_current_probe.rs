@@ -1,9 +1,9 @@
 use super::*;
 
 /// # Electrical Current Probe (Type 29)
-/// 
+///
 /// This structure describes the attributes for an electrical current probe in the system. Each structure describes a single electrical current probe.
-/// 
+///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17

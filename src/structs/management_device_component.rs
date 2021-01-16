@@ -4,7 +4,7 @@ use super::*;
 ///
 /// This structure associates a cooling device or environmental probe with structures that define the
 /// controlling hardware device and (optionally) the component’s thresholds.
-/// 
+///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17

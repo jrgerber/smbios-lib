@@ -1,9 +1,9 @@
 use super::*;
 
 /// # Memory Device (Type 17)
-/// 
+///
 /// This structure describes a single memory device that is part of a larger [SMBiosPhysicalMemoryArray] (Type 16) structure.
-/// 
+///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
@@ -36,7 +36,7 @@ impl<'a> SMBiosMemoryDevice<'a> {
     /// structure, the field contains FFFEh; otherwise, the
     /// field contains either FFFFh (if no error was
     /// detected) or the handle of the error-information
-    /// structure ([SMBiosMemoryErrorInformation32] or 
+    /// structure ([SMBiosMemoryErrorInformation32] or
     /// [SMBiosMemoryErrorInformation64]).
     pub fn memory_error_information_handle(&self) -> Option<u16> {
         self.parts.get_field_word(0x06)
@@ -96,7 +96,7 @@ impl<'a> SMBiosMemoryDevice<'a> {
         self.parts.get_field_byte(0x0F)
     }
 
-    /// Identifies the physically-labeled socket or board position where 
+    /// Identifies the physically-labeled socket or board position where
     /// the memory device is located
     /// EXAMPLE: “SIMM 3”
     pub fn device_locator(&self) -> Option<String> {

@@ -34,7 +34,7 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
     }
 
     /// Chassis type
-    /// 
+    ///
     /// Bit 7 Chassis lock is present if 1.
     /// Otherwise, either a lock is not present or it is
     /// unknown if the enclosure has a lock.
@@ -59,14 +59,14 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
     }
 
     /// Boot-up State
-    /// 
+    ///
     /// State of the enclosure when it was last booted.
     pub fn bootup_state(&self) -> Option<u8> {
         self.parts.get_field_byte(0x09)
     }
 
     /// Power supply state
-    /// 
+    ///
     /// State of the enclosure’s power supply (or
     /// supplies) when last booted
     pub fn power_supply_state(&self) -> Option<u8> {
@@ -74,7 +74,7 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
     }
 
     /// Thermal state
-    /// 
+    ///
     /// Thermal state of the enclosure when last
     /// booted.
     pub fn thermal_state(&self) -> Option<u8> {
@@ -82,7 +82,7 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
     }
 
     /// Security status
-    /// 
+    ///
     /// Physical security status of the enclosure when
     /// last booted.
     pub fn security_status(&self) -> Option<u8> {
@@ -90,14 +90,14 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
     }
 
     /// OEM-defined
-    /// 
+    ///
     /// OEM- or BIOS vendor-specific information
     pub fn oem_defined(&self) -> Option<u32> {
         self.parts.get_field_dword(0x0D)
     }
 
     /// Height
-    /// 
+    ///
     /// Height of the enclosure, in 'U's
     /// A U is a standard unit of measure for the
     /// height of a rack or rack-mountable component
@@ -109,7 +109,7 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
     }
 
     /// Number of power cords
-    /// 
+    ///
     /// Number of power cords associated with the
     /// enclosure or chassis
     /// A value of 00h indicates that the number is
@@ -119,7 +119,7 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
     }
 
     /// Contained element count (n)
-    /// 
+    ///
     /// Number of Contained Element records that
     /// follow, in the range 0 to 255
     /// Each Contained Element group comprises m
@@ -132,7 +132,7 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
     }
 
     /// Contained element record length (m)
-    /// 
+    ///
     /// Byte length of each Contained Element record
     /// that follows, in the range 0 to 255
     /// If no Contained Elements are included, this
@@ -148,7 +148,7 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
     // }
 
     /// SKU number
-    /// 
+    ///
     /// Number of null-terminated string describing the
     /// chassis or enclosure SKU number
     fn sku_number(&self) -> Option<String> {

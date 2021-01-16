@@ -1,9 +1,9 @@
 use super::*;
 
 /// # Hardware Security (Type 24)
-/// 
+///
 /// This structure describes the system-wide hardware security settings.
-/// 
+///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17

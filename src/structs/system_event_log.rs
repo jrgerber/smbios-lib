@@ -6,7 +6,7 @@ use super::*;
 /// supports an event log. An event log is a fixed-length area within a non-volatile
 /// storage element, starting with a fixed-length (and vendor-specific) header record, followed by one or more
 /// variable-length log records.
-/// 
+///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
@@ -38,7 +38,7 @@ impl<'a> SMBiosSystemEventLog<'a> {
     /// from the Access Method Address
     /// For single-byte indexed I/O accesses, the
     /// most-significant byte of the start offset is set
-    /// to 00h. 
+    /// to 00h.
     pub fn log_header_start_offset(&self) -> Option<u16> {
         self.parts.get_field_word(0x06)
     }
@@ -49,7 +49,7 @@ impl<'a> SMBiosSystemEventLog<'a> {
     /// For single-byte indexed I/O accesses, the
     /// most-significant byte of the start offset is set
     /// to 00h.
-    /// 
+    ///
     /// NOTE: The data directly follows any header
     /// information. Therefore, the header length
     /// can be determined by subtracting the
