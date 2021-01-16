@@ -162,7 +162,7 @@ pub enum DefinedStruct<'a> {
 pub struct SMBiosStructParts<'a> {
     /// The [Header] of the structure
     pub header: Header<'a>,
-    data: &'a [u8],
+    pub data: &'a [u8],
     /// The strings of the structure
     pub strings: Strings<'a>,
 }
