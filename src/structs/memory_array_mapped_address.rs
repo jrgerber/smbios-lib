@@ -111,3 +111,27 @@ impl fmt::Debug for SMBiosMemoryArrayMappedAddress<'_> {
             .finish()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unit_test() {
+        let struct_type19 = vec![
+            0x13, 0x1F, 0x3F, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00, 0x3E, 0x00,
+            0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00,
+        ];
+
+        let parts = SMBiosStructParts::new(struct_type19.as_slice());
+        let test_struct = SMBiosMemoryArrayMappedAddress::new(&parts);
+
+        assert_eq!(test_struct.starting_address(), Some(0));
+        assert_eq!(test_struct.ending_address(), Some(16777215));
+        //assert_eq!(test_struct.physical_memory_array_handle(), Some(Handle(62)));
+        assert_eq!(test_struct.partition_width(), Some(4));
+        assert_eq!(test_struct.extended_starting_address(), Some(0));
+        assert_eq!(test_struct.extended_ending_address(), Some(0));
+    }
+}

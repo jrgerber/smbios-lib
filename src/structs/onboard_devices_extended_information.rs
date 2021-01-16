@@ -76,3 +76,29 @@ impl fmt::Debug for SMBiosOnboardDevicesExtendedInformation<'_> {
             .finish()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unit_test() {
+        let struct_type41 = vec![
+            0x29, 0x0B, 0x3B, 0x00, 0x01, 0x85, 0x01, 0x00, 0x00, 0x00, 0xFE, 0x69, 0x32, 0x31,
+            0x39, 0x00, 0x00,
+        ];
+
+        let parts = SMBiosStructParts::new(struct_type41.as_slice());
+        let test_struct = SMBiosOnboardDevicesExtendedInformation::new(&parts);
+
+        assert_eq!(
+            test_struct.reference_designation(),
+            Some("i219".to_string())
+        );
+        assert_eq!(test_struct.device_type(), Some(133));
+        assert_eq!(test_struct.device_type_instance(), Some(1));
+        assert_eq!(test_struct.segment_group_number(), Some(0));
+        assert_eq!(test_struct.bus_number(), Some(0));
+        assert_eq!(test_struct.device_function_number(), Some(254));
+    }
+}

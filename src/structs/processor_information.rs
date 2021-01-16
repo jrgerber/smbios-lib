@@ -309,3 +309,59 @@ impl fmt::Debug for SMBiosProcessorInformation<'_> {
             .finish()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unit_test() {
+        let struct_type4 = vec![
+            0x04, 0x30, 0x56, 0x00, 0x01, 0x03, 0xB3, 0x02, 0x54, 0x06, 0x05, 0x00, 0xFF, 0xFB,
+            0xEB, 0xBF, 0x03, 0x90, 0x64, 0x00, 0x3C, 0x0F, 0x10, 0x0E, 0x41, 0x01, 0x53, 0x00,
+            0x54, 0x00, 0x55, 0x00, 0x00, 0x04, 0x00, 0x06, 0x06, 0x0C, 0xFC, 0x00, 0xB3, 0x00,
+            0x06, 0x00, 0x06, 0x00, 0x0C, 0x00, 0x43, 0x50, 0x55, 0x30, 0x00, 0x49, 0x6E, 0x74,
+            0x65, 0x6C, 0x28, 0x52, 0x29, 0x20, 0x43, 0x6F, 0x72, 0x70, 0x6F, 0x72, 0x61, 0x74,
+            0x69, 0x6F, 0x6E, 0x00, 0x49, 0x6E, 0x74, 0x65, 0x6C, 0x28, 0x52, 0x29, 0x20, 0x58,
+            0x65, 0x6F, 0x6E, 0x28, 0x52, 0x29, 0x20, 0x57, 0x2D, 0x32, 0x31, 0x33, 0x33, 0x20,
+            0x43, 0x50, 0x55, 0x20, 0x40, 0x20, 0x33, 0x2E, 0x36, 0x30, 0x47, 0x48, 0x7A, 0x00,
+            0x55, 0x4E, 0x4B, 0x4E, 0x4F, 0x57, 0x4E, 0x00, 0x00,
+        ];
+
+        let parts = SMBiosStructParts::new(struct_type4.as_slice());
+        let test_struct = SMBiosProcessorInformation::new(&parts);
+
+        assert_eq!(test_struct.socket_designation(), Some("CPU0".to_string()));
+        assert_eq!(test_struct.processor_type(), Some(3));
+        assert_eq!(test_struct.processor_family(), Some(179));
+        assert_eq!(
+            test_struct.processor_manufacturer(),
+            Some("Intel(R.to_string()) Corporation".to_string())
+        );
+        assert_eq!(test_struct.processor_id(), Some(13829424153406801492));
+        assert_eq!(
+            test_struct.processor_version(),
+            Some("Intel(R.to_string()) Xeon(R.to_string()) W-2133 CPU @ 3.60GHz".to_string())
+        );
+        assert_eq!(test_struct.voltage(), Some(144));
+        assert_eq!(test_struct.external_clock(), Some(100));
+        assert_eq!(test_struct.max_speed(), Some(3900));
+        assert_eq!(test_struct.current_speed(), Some(3600));
+        assert_eq!(test_struct.status(), Some(65));
+        assert_eq!(test_struct.processor_upgrade(), Some(1));
+        assert_eq!(test_struct.l1cache_handle(), Some(83));
+        assert_eq!(test_struct.l2cache_handle(), Some(84));
+        assert_eq!(test_struct.l3cache_handle(), Some(85));
+        assert_eq!(test_struct.serial_number(), None);
+        assert_eq!(test_struct.asset_tag(), Some("UNKNOWN".to_string()));
+        assert_eq!(test_struct.part_number(), None);
+        assert_eq!(test_struct.core_count(), Some(6));
+        assert_eq!(test_struct.core_enabled(), Some(6));
+        assert_eq!(test_struct.thread_count(), Some(12));
+        assert_eq!(test_struct.processor_characteristics(), Some(252));
+        assert_eq!(test_struct.processor_family_2(), Some(179));
+        assert_eq!(test_struct.core_count_2(), Some(6));
+        assert_eq!(test_struct.core_enabled_2(), Some(6));
+        assert_eq!(test_struct.thread_count_2(), Some(12));
+    }
+}

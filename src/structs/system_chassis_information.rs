@@ -182,3 +182,38 @@ impl fmt::Debug for SMBiosSystemChassisInformation<'_> {
             .finish()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unit_test() {
+        let struct_type3 = vec![
+            0x03, 0x16, 0x03, 0x00, 0x01, 0x03, 0x02, 0x03, 0x04, 0x03, 0x03, 0x03, 0x03, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x03, 0x05, 0x4C, 0x45, 0x4E, 0x4F, 0x56, 0x4F,
+            0x00, 0x4E, 0x6F, 0x6E, 0x65, 0x00, 0x4D, 0x4A, 0x30, 0x36, 0x55, 0x52, 0x44, 0x5A,
+            0x00, 0x34, 0x30, 0x38, 0x39, 0x39, 0x38, 0x35, 0x00, 0x44, 0x65, 0x66, 0x61, 0x75,
+            0x6C, 0x74, 0x20, 0x73, 0x74, 0x72, 0x69, 0x6E, 0x67, 0x00, 0x00,
+        ];
+
+        let parts = SMBiosStructParts::new(struct_type3.as_slice());
+        let test_struct = SMBiosSystemChassisInformation::new(&parts);
+
+        assert_eq!(test_struct.manufacturer(), Some("LENOVO".to_string()));
+        assert_eq!(test_struct.chassis_type(), Some(3));
+        assert_eq!(test_struct.version(), Some("None".to_string()));
+        assert_eq!(test_struct.serial_number(), Some("MJ06URDZ".to_string()));
+        assert_eq!(test_struct.asset_tag_number(), Some("4089985".to_string()));
+        assert_eq!(test_struct.bootup_state(), Some(3));
+        assert_eq!(test_struct.power_supply_state(), Some(3));
+        assert_eq!(test_struct.thermal_state(), Some(3));
+        assert_eq!(test_struct.security_status(), Some(3));
+        assert_eq!(test_struct.oem_defined(), Some(0));
+        assert_eq!(test_struct.height(), Some(0));
+        assert_eq!(test_struct.number_of_power_cords(), Some(1));
+        assert_eq!(test_struct.contained_element_count(), Some(0));
+        assert_eq!(test_struct.contained_element_record_length(), Some(3));
+        assert_eq!(test_struct.sku_number(), Some("Default string".to_string()));
+    }
+}

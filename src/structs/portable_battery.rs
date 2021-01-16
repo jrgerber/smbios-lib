@@ -183,3 +183,37 @@ impl fmt::Debug for SMBiosPortableBattery<'_> {
             .finish()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unit_test() {
+        let struct_type22 = vec![
+            0x16, 0x1A, 0x2E, 0x00, 0x01, 0x02, 0x00, 0x00, 0x03, 0x02, 0xFB, 0x11, 0xD0, 0x39,
+            0x04, 0xFF, 0xC7, 0x02, 0x7A, 0x42, 0x05, 0x0A, 0x00, 0x00, 0x00, 0x00, 0x52, 0x65,
+            0x61, 0x72, 0x00, 0x53, 0x4D, 0x50, 0x00, 0x34, 0x35, 0x4E, 0x31, 0x30, 0x37, 0x31,
+            0x00, 0x30, 0x33, 0x2E, 0x30, 0x31, 0x00, 0x4C, 0x69, 0x50, 0x00, 0x00,
+        ];
+
+        let parts = SMBiosStructParts::new(struct_type22.as_slice());
+        let test_struct = SMBiosPortableBattery::new(&parts);
+
+        assert_eq!(test_struct.location(), Some("Rear".to_string()));
+        assert_eq!(test_struct.manufacturer(), Some("SMP".to_string()));
+        assert_eq!(test_struct.manufacture_date(), None);
+        assert_eq!(test_struct.serial_number(), None);
+        assert_eq!(test_struct.device_name(), Some("45N1071".to_string()));
+        assert_eq!(test_struct.device_chemistry(), Some(2));
+        assert_eq!(test_struct.design_capacity(), Some(4603));
+        assert_eq!(test_struct.design_voltage(), Some(14800));
+        assert_eq!(test_struct.sbds_version_number(), Some("03.01".to_string()));
+        assert_eq!(test_struct.maximum_error_in_battery_data(), Some(255));
+        assert_eq!(test_struct.sbds_serial_number(), Some(711));
+        assert_eq!(test_struct.sbds_manufacture_date(), Some(17018));
+        assert_eq!(test_struct.sbds_device_chemistry(), Some("LiP".to_string()));
+        assert_eq!(test_struct.design_capacity_multiplier(), Some(10));
+        assert_eq!(test_struct.oem_specific(), Some(0));
+    }
+}

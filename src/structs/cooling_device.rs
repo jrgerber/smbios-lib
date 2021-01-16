@@ -84,3 +84,27 @@ impl fmt::Debug for SMBiosCoolingDevice<'_> {
             .finish()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unit_test() {
+        let struct_type27 = vec![
+            0x1B, 0x0F, 0x2D, 0x00, 0x2A, 0x00, 0x67, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80,
+            0x01, 0x43, 0x6F, 0x6F, 0x6C, 0x69, 0x6E, 0x67, 0x20, 0x44, 0x65, 0x76, 0x20, 0x31,
+            0x00, 0x00,
+        ];
+
+        let parts = SMBiosStructParts::new(struct_type27.as_slice());
+        let test_struct = SMBiosCoolingDevice::new(&parts);
+
+        //assert_eq!(test_struct.temperature_probe_handle(), Some(Handle(42)));
+        assert_eq!(test_struct.device_type_and_status(), Some(103));
+        assert_eq!(test_struct.cooling_unit_group(), Some(1));
+        assert_eq!(test_struct.oem_defined(), Some(0));
+        assert_eq!(test_struct.nominal_speed(), Some(32768));
+        assert_eq!(test_struct.description(), Some("Cooling Dev 1".to_string()));
+    }
+}

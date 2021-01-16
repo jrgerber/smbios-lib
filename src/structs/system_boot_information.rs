@@ -47,3 +47,19 @@ impl fmt::Debug for SMBiosSystemBootInformation<'_> {
             .finish()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unit_test() {
+        let struct_type32 = vec![
+            0x20, 0x14, 0x25, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        ];
+
+        let parts = SMBiosStructParts::new(struct_type32.as_slice());
+        let test_struct = SMBiosSystemBootInformation::new(&parts);
+    }
+}

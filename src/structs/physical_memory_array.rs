@@ -101,3 +101,27 @@ impl fmt::Debug for SMBiosPhysicalMemoryArray<'_> {
             .finish()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unit_test() {
+        let struct_type16 = vec![
+            0x10, 0x17, 0x3E, 0x00, 0x03, 0x03, 0x05, 0x00, 0x00, 0x00, 0x60, 0xFE, 0xFF, 0x04,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        ];
+
+        let parts = SMBiosStructParts::new(struct_type16.as_slice());
+        let test_struct = SMBiosPhysicalMemoryArray::new(&parts);
+
+        assert_eq!(test_struct.location(), Some(3));
+        assert_eq!(test_struct.usage(), Some(3));
+        assert_eq!(test_struct.memory_error_correction(), Some(5));
+        assert_eq!(test_struct.maximum_capacity(), Some(1610612736));
+        assert_eq!(test_struct.memory_error_information_handle(), Some(65534));
+        assert_eq!(test_struct.number_of_memory_devices(), Some(4));
+        assert_eq!(test_struct.extended_maximum_capacity(), Some(0));
+    }
+}

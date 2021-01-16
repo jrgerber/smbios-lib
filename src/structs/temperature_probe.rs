@@ -116,3 +116,30 @@ impl fmt::Debug for SMBiosTemperatureProbe<'_> {
             .finish()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unit_test() {
+        let struct_type28 = vec![
+            0x1C, 0x16, 0x2A, 0x00, 0x01, 0x67, 0x00, 0x80, 0x00, 0x80, 0x00, 0x80, 0x00, 0x80,
+            0x00, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x4C, 0x4D, 0x37, 0x38, 0x41, 0x00,
+            0x00,
+        ];
+
+        let parts = SMBiosStructParts::new(struct_type28.as_slice());
+        let test_struct = SMBiosTemperatureProbe::new(&parts);
+
+        assert_eq!(test_struct.description(), Some("LM78A".to_string()));
+        assert_eq!(test_struct.location_and_status(), Some(103));
+        assert_eq!(test_struct.maximum_value(), Some(32768));
+        assert_eq!(test_struct.minimum_value(), Some(32768));
+        assert_eq!(test_struct.resolution(), Some(32768));
+        assert_eq!(test_struct.tolerance(), Some(32768));
+        assert_eq!(test_struct.accuracy(), Some(32768));
+        assert_eq!(test_struct.oem_defined(), Some(0));
+        assert_eq!(test_struct.nominal_value(), Some(32768));
+    }
+}

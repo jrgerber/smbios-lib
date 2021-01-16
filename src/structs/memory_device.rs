@@ -341,3 +341,73 @@ impl fmt::Debug for SMBiosMemoryDevice<'_> {
             .finish()
     }
 }
+
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test() {
+        let struct_type17 = vec![
+            0x11, 0x28, 0x40, 0x00, 0x3E, 0x00, 0xFE, 0xFF, 0x48, 0x00, 0x40, 0x00, 0x00, 0x20,
+            0x09, 0x00, 0x01, 0x02, 0x1A, 0x80, 0x00, 0x6A, 0x0A, 0x03, 0x04, 0x05, 0x06, 0x01,
+            0x00, 0x00, 0x00, 0x00, 0x6A, 0x0A, 0xB0, 0x04, 0xB0, 0x04, 0xB0, 0x04, 0x43, 0x50,
+            0x55, 0x31, 0x5F, 0x44, 0x49, 0x4D, 0x4D, 0x5F, 0x31, 0x00, 0x4E, 0x4F, 0x44, 0x45,
+            0x20, 0x31, 0x00, 0x48, 0x79, 0x6E, 0x69, 0x78, 0x00, 0x37, 0x32, 0x30, 0x39, 0x31,
+            0x30, 0x30, 0x33, 0x00, 0x20, 0x00, 0x48, 0x4D, 0x41, 0x38, 0x31, 0x47, 0x52, 0x37,
+            0x41, 0x46, 0x52, 0x38, 0x4E, 0x2D, 0x56, 0x4B, 0x20, 0x20, 0x20, 0x20, 0x00, 0x00,
+        ];
+
+        let parts = SMBiosStructParts::new(struct_type17.as_slice());
+        let test_struct = SMBiosMemoryDevice::new(&parts);
+        assert_eq!(test_struct.physical_memory_array_handle(), Some(62));
+        assert_eq!(test_struct.memory_error_information_handle(), Some(65534));
+        assert_eq!(test_struct.total_width(), Some(72));
+        assert_eq!(test_struct.data_width(), Some(64));
+        assert_eq!(test_struct.size(), Some(8192));
+        assert_eq!(test_struct.form_factor(), Some(9));
+        assert_eq!(test_struct.device_set(), Some(0));
+        assert_eq!(
+            test_struct.device_locator(),
+            Some("CPU1_DIMM_1".to_string())
+        );
+        assert_eq!(test_struct.bank_locator(), Some("NODE 1".to_string()));
+        assert_eq!(test_struct.memory_type(), Some(26));
+        assert_eq!(test_struct.type_detail(), Some(128));
+        assert_eq!(test_struct.speed(), Some(2666));
+        assert_eq!(test_struct.manufacturer(), Some("Hynix".to_string()));
+        assert_eq!(test_struct.serial_number(), Some("72091003".to_string()));
+        assert_eq!(test_struct.asset_tag(), Some(" ".to_string()));
+        assert_eq!(
+            test_struct.part_number(),
+            Some("HMA81GR7AFR8N-VK    ".to_string())
+        );
+        assert_eq!(test_struct.attributes(), Some(1));
+        assert_eq!(test_struct.extended_size(), Some(0));
+        assert_eq!(test_struct.configured_memory_speed(), Some(2666));
+        assert_eq!(test_struct.minimum_voltage(), Some(1200));
+        assert_eq!(test_struct.maximum_voltage(), Some(1200));
+        assert_eq!(test_struct.configured_voltage(), Some(1200));
+        assert_eq!(test_struct.memory_technology(), Some(67));
+        assert_eq!(test_struct.memory_operating_mode_capability(), Some(21840));
+        assert_eq!(test_struct.firmware_version(), None);
+        assert_eq!(test_struct.module_manufacturer_id(), Some(17503));
+        assert_eq!(test_struct.module_product_id(), Some(19785));
+        assert_eq!(
+            test_struct.memory_subsystem_controller_manufacturer_id(),
+            Some(24397)
+        );
+        assert_eq!(
+            test_struct.memory_subsystem_controller_product_id(),
+            Some(49)
+        );
+        assert_eq!(test_struct.non_volatile_size(), Some(5188200785401630542));
+        assert_eq!(test_struct.volatile_size(), Some(3472898737815776889));
+        assert_eq!(test_struct.cache_size(), Some(9007419106537785));
+        assert_eq!(test_struct.logical_size(), Some(3986326896899083592));
+        assert_eq!(test_struct.extended_speed(), Some(944916033));
+        assert_eq!(
+            test_struct.extended_configured_memory_speed(),
+            Some(1263938894)
+        );
+    }
+}

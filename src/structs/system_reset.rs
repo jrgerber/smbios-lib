@@ -90,3 +90,25 @@ impl fmt::Debug for SMBiosSystemReset<'_> {
             .finish()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unit_test() {
+        let struct_type23 = vec![
+            0x17, 0x0D, 0x4F, 0x01, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00,
+            0x00,
+        ];
+
+        let parts = SMBiosStructParts::new(struct_type23.as_slice());
+        let test_struct = SMBiosSystemReset::new(&parts);
+
+        assert_eq!(test_struct.capabilities(), Some(0));
+        assert_eq!(test_struct.reset_count(), Some(65535));
+        assert_eq!(test_struct.reset_limit(), Some(65535));
+        assert_eq!(test_struct.timer_interval(), Some(65535));
+        assert_eq!(test_struct.timeout(), Some(65535));
+    }
+}

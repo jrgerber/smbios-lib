@@ -98,3 +98,24 @@ impl fmt::Debug for SMBiosSystemPowerControls<'_> {
             .finish()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unit_test() {
+        let struct_type25 = vec![
+            0x19, 0x09, 0x27, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        ];
+
+        let parts = SMBiosStructParts::new(struct_type25.as_slice());
+        let test_struct = SMBiosSystemPowerControls::new(&parts);
+
+        assert_eq!(test_struct.next_scheduled_power_on_month(), Some(0));
+        assert_eq!(test_struct.next_scheduled_power_on_day_of_month(), Some(0));
+        assert_eq!(test_struct.next_scheduled_power_on_hour(), Some(0));
+        assert_eq!(test_struct.next_scheduled_power_on_minute(), Some(0));
+        assert_eq!(test_struct.next_scheduled_power_on_second(), Some(0));
+    }
+}

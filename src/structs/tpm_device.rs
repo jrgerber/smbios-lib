@@ -113,3 +113,30 @@ impl fmt::Debug for SMBiosTpmDevice<'_> {
             .finish()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unit_test() {
+        let struct_type43 = vec![
+            0x2B, 0x1F, 0x3C, 0x00, 0x00, 0x58, 0x46, 0x49, 0x02, 0x00, 0x3E, 0x00, 0x05, 0x00,
+            0x00, 0x36, 0x0C, 0x00, 0x02, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x54, 0x50, 0x4D, 0x20, 0x32, 0x2E, 0x30, 0x00, 0x49, 0x4E, 0x46,
+            0x49, 0x4E, 0x45, 0x4F, 0x4E, 0x00, 0x00,
+        ];
+
+        let parts = SMBiosStructParts::new(struct_type43.as_slice());
+        let test_struct = SMBiosTpmDevice::new(&parts);
+
+        assert_eq!(test_struct.vendor_id(), Some(1229346816));
+        assert_eq!(test_struct.major_spec_version(), Some(2));
+        assert_eq!(test_struct.minor_spec_version(), Some(0));
+        assert_eq!(test_struct.firmware_version_1(), Some(327742));
+        assert_eq!(test_struct.firmware_version_2(), Some(800256));
+        assert_eq!(test_struct.description(), Some("INFINEON".to_string()));
+        assert_eq!(test_struct.characteristics(), Some(16));
+        assert_eq!(test_struct.oem_defined(), Some(0));
+    }
+}

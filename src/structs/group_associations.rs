@@ -57,3 +57,24 @@ impl fmt::Debug for SMBiosGroupAssociations<'_> {
             .finish()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unit_test() {
+        let struct_type14 = vec![
+            0x0E, 0x08, 0x5F, 0x00, 0x01, 0xDD, 0x5B, 0x00, 0x46, 0x69, 0x72, 0x6D, 0x77, 0x61,
+            0x72, 0x65, 0x20, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6F, 0x6E, 0x20, 0x49, 0x6E, 0x66,
+            0x6F, 0x00, 0x00,
+        ];
+
+        let parts = SMBiosStructParts::new(struct_type14.as_slice());
+        let test_struct = SMBiosGroupAssociations::new(&parts);
+
+        assert_eq!(test_struct.group_name(), Some(1));
+        assert_eq!(test_struct.item_type(), Some(221));
+        // assert_eq!(test_struct.item_handle(), Some(Handle(91));
+    }
+}

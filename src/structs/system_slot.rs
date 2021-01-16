@@ -37,3 +37,19 @@ impl fmt::Debug for SMBiosSystemSlot<'_> {
             .finish()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unit_test() {
+        let struct_type9 = vec![
+            0x09, 0x11, 0x1C, 0x00, 0x01, 0xA5, 0x0D, 0x04, 0x04, 0x00, 0x00, 0x0C, 0x01, 0x00,
+            0x00, 0x00, 0x08, 0x4A, 0x36, 0x42, 0x32, 0x00, 0x00,
+        ];
+
+        let parts = SMBiosStructParts::new(struct_type9.as_slice());
+        let test_struct = SMBiosSystemSlot::new(&parts);
+    }
+}
