@@ -336,12 +336,12 @@ mod tests {
         assert_eq!(test_struct.processor_family(), Some(179));
         assert_eq!(
             test_struct.processor_manufacturer(),
-            Some("Intel(R.to_string()) Corporation".to_string())
+            Some("Intel(R) Corporation".to_string())
         );
         assert_eq!(test_struct.processor_id(), Some(13829424153406801492));
         assert_eq!(
             test_struct.processor_version(),
-            Some("Intel(R.to_string()) Xeon(R.to_string()) W-2133 CPU @ 3.60GHz".to_string())
+            Some("Intel(R) Xeon(R) W-2133 CPU @ 3.60GHz".to_string())
         );
         assert_eq!(test_struct.voltage(), Some(144));
         assert_eq!(test_struct.external_clock(), Some(100));
