@@ -1,4 +1,4 @@
-use super::*;
+use super::{fmt, SMBiosStruct, SMBiosStructParts, Strings};
 
 /// # BIOS Language Information (Type 13)
 ///
@@ -63,6 +63,7 @@ impl fmt::Debug for SMBiosBiosLanguageInformation<'_> {
     }
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
 

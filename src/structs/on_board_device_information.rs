@@ -30,32 +30,234 @@ impl<'a> SMBiosStruct<'a> for SMBiosOnBoardDeviceInformation<'a> {
 }
 
 impl<'a> SMBiosOnBoardDeviceInformation<'a> {
-    // TODO: This is an array of structures to be implemented
+    /// The number of [OnBoardDevice] entries
+    pub fn number_of_devices(&self) -> usize {
+        let struct_length = self.parts().header.length() as usize;
 
-    // fn device_type(&self) -> Option<u8> {
-    //     self.parts.get_field_byte(0x4)
-    // }
+        (struct_length - Header::SIZE) / OnBoardDevice::SIZE
+    }
 
-    // fn device_description(&self) -> Option<u8> {
-    //     self.parts.get_field_byte(0x5)
-    // }
-
-    // fn minimum_ending_offset(&self) -> Option<FixMe> {
-    //     self.parts.get_field_undefined(0x6)
-    // }
+    /// Iterates over the [OnBoardDevice] entries
+    pub fn onboard_device_iterator(&'a self) -> OnBoardDeviceIterator<'a> {
+        OnBoardDeviceIterator::new(self)
+    }
 }
 
 impl fmt::Debug for SMBiosOnBoardDeviceInformation<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosOnBoardDeviceInformation>())
             .field("header", &self.parts.header)
-            // .field("device_type", &self.device_type())
-            // .field("device_description", &self.device_description())
-            // .field("minimum_ending_offset", &self.minimum_ending_offset())
+            .field("number_of_devices", &self.number_of_devices())
+            .field("onboard_device_iterator", &self.onboard_device_iterator())
             .finish()
     }
 }
 
+/// # On Board Device entry within [SMBiosOnBoardDeviceInformation]
+pub struct OnBoardDevice<'a> {
+    onboard_device_information: &'a SMBiosOnBoardDeviceInformation<'a>,
+    entry_offset: usize,
+}
+
+impl<'a> OnBoardDevice<'a> {
+    /// Size in bytes for this structure
+    ///
+    /// This structure is composed of:
+    /// _device_type_ (byte) at offset 0,
+    /// and _description_ (byte) at offset 1
+    /// for a total size of two bytes.
+    const SIZE: usize = 2;
+
+    fn new(
+        onboard_device_information: &'a SMBiosOnBoardDeviceInformation<'a>,
+        entry_offset: usize,
+    ) -> Self {
+        Self {
+            onboard_device_information,
+            entry_offset,
+        }
+    }
+
+    /// Device type
+    pub fn device_type(&self) -> Option<OnBoardDeviceType> {
+        self.onboard_device_information
+            .parts()
+            .get_field_byte(self.entry_offset)
+            .and_then(|raw| Some(OnBoardDeviceType { raw }))
+    }
+
+    /// Device description
+    pub fn description(&self) -> Option<String> {
+        self.onboard_device_information
+            .parts()
+            .get_field_string(self.entry_offset + 1)
+    }
+}
+
+impl fmt::Debug for OnBoardDevice<'_> {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<OnBoardDevice>())
+            .field("device_type", &self.device_type())
+            .field("description", &self.description())
+            .finish()
+    }
+}
+
+/// # On Board Device Type
+pub struct OnBoardDeviceType {
+    /// Raw value
+    pub raw: u8,
+}
+
+impl OnBoardDeviceType {
+    /// One of the onboard device types
+    pub fn type_of_device(&self) -> TypeOfDevice {
+        let result = self.raw & 0x7F;
+        match result {
+            0x01 => TypeOfDevice::Other,
+            0x02 => TypeOfDevice::Unknown,
+            0x03 => TypeOfDevice::Video,
+            0x04 => TypeOfDevice::ScsiController,
+            0x05 => TypeOfDevice::Ethernet,
+            0x06 => TypeOfDevice::TokenRing,
+            0x07 => TypeOfDevice::Sound,
+            0x08 => TypeOfDevice::PataController,
+            0x09 => TypeOfDevice::SataController,
+            0x0A => TypeOfDevice::SasController,
+            _ => TypeOfDevice::None,
+        }
+    }
+
+    /// Enabled/disabled device status
+    pub fn status(&self) -> OnBoardDeviceStatus {
+        if self.raw & 0x80 == 0x80 {
+            OnBoardDeviceStatus::Enabled
+        } else {
+            OnBoardDeviceStatus::Disabled
+        }
+    }
+}
+
+impl fmt::Debug for OnBoardDeviceType {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<OnBoardDevice>())
+            .field("raw", &self.raw)
+            .field("type_of_device", &self.type_of_device())
+            .field("status", &self.status())
+            .finish()
+    }
+}
+
+/// # Onboard Device Types
+#[derive(Debug, PartialEq, Eq)]
+pub enum TypeOfDevice {
+    /// Other
+    Other,
+    /// Unknown
+    Unknown,
+    /// Video
+    Video,
+    /// SCSI Controller
+    ScsiController,
+    /// Ethernet
+    Ethernet,
+    /// Token Ring
+    TokenRing,
+    /// Sound
+    Sound,
+    /// PATA Controller
+    PataController,
+    /// SATA Controller
+    SataController,
+    /// SAS Controller
+    SasController,
+    /// A value unknown to this standard, check the raw value
+    None,
+}
+
+/// # Enabled/Disabled Device Status
+#[derive(Debug, PartialEq, Eq)]
+pub enum OnBoardDeviceStatus {
+    /// Device is enabled
+    Enabled,
+    /// Device is disabled
+    Disabled,
+}
+
+/// # On-board Device Itereator for [OnBoardDevice]s contained within [SMBiosOnBoardDeviceInformation]
+pub struct OnBoardDeviceIterator<'a> {
+    data: &'a SMBiosOnBoardDeviceInformation<'a>,
+    current_index: usize,
+    current_entry: usize,
+    number_of_entries: usize,
+}
+
+impl<'a> OnBoardDeviceIterator<'a> {
+    const DEVICES_OFFSET: usize = 4usize;
+
+    fn new(data: &'a SMBiosOnBoardDeviceInformation<'a>) -> Self {
+        OnBoardDeviceIterator {
+            data: data,
+            current_index: Self::DEVICES_OFFSET,
+            current_entry: 0,
+            number_of_entries: data.number_of_devices(),
+        }
+    }
+
+    fn reset(&mut self) {
+        self.current_index = Self::DEVICES_OFFSET;
+        self.current_entry = 0;
+    }
+}
+
+impl<'a> IntoIterator for &'a OnBoardDeviceIterator<'a> {
+    type Item = OnBoardDevice<'a>;
+    type IntoIter = OnBoardDeviceIterator<'a>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        OnBoardDeviceIterator {
+            data: self.data,
+            current_index: OnBoardDeviceIterator::DEVICES_OFFSET,
+            current_entry: 0,
+            number_of_entries: self.data.number_of_devices(),
+        }
+    }
+}
+
+impl<'a> Iterator for OnBoardDeviceIterator<'a> {
+    type Item = OnBoardDevice<'a>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.current_entry == self.number_of_entries {
+            self.reset();
+            return None;
+        }
+
+        let next_index = self.current_index + OnBoardDevice::SIZE;
+        match self
+            .data
+            .parts()
+            .get_field_data(self.current_index, next_index)
+        {
+            Some(_) => {
+                let result = OnBoardDevice::new(self.data, self.current_index);
+                self.current_index = next_index;
+                self.current_entry = self.current_entry + 1;
+                Some(result)
+            }
+            None => {
+                self.reset();
+                None
+            }
+        }
+    }
+}
+
+impl<'a> fmt::Debug for OnBoardDeviceIterator<'a> {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_list().entries(self.into_iter()).finish()
+    }
+}
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -70,5 +272,7 @@ mod tests {
 
         let parts = SMBiosStructParts::new(struct_type10.as_slice());
         let test_struct = SMBiosOnBoardDeviceInformation::new(&parts);
+
+        println!("{:?}", test_struct);
     }
 }

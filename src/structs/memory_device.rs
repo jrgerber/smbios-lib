@@ -342,6 +342,7 @@ impl fmt::Debug for SMBiosMemoryDevice<'_> {
     }
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
 

@@ -34,6 +34,7 @@ impl fmt::Debug for SMBiosUnknown<'_> {
     }
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
 

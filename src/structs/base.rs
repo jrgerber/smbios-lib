@@ -544,7 +544,13 @@ impl fmt::Debug for Header<'_> {
 }
 
 impl<'a> Header<'a> {
-    const SIZE: usize = 4;
+    /// Total size of a Header (4)
+    ///
+    /// A header has a byte for the _struct_type_ at offset 0,
+    /// a byte for the _length_ at offset 1,
+    /// and a word for the _handle_ at offset 2 for a total of
+    /// 4 bytes.
+    pub const SIZE: usize = 4;
     const LENGTH_OFFSET: usize = 1;
 
     fn new(data: &'a [u8]) -> Self {

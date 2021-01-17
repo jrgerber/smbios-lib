@@ -9,10 +9,7 @@ use std::fs;
 use std::io;
 
 // TODO:
-// 1. Write a function to iterate through a folder full of windows DAT files
-// 2. Write a function to iterate through a folder full of non-windows DAT files
-// 3. Write a test function to output rust code for unit tests of each type by
-//    finding candidates from a file collection.
+// Write a function to iterate through a folder full of non-windows DAT files
 
 fn load_windows_raw_files(folder: &str) -> Vec<RawSMBiosData> {
     let mut result = Vec::new();
