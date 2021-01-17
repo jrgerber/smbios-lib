@@ -129,11 +129,11 @@ impl OnBoardDeviceType {
     }
 
     /// Enabled/disabled device status
-    pub fn status(&self) -> OnBoardDeviceStatus {
+    pub fn status(&self) -> DeviceStatus {
         if self.raw & 0x80 == 0x80 {
-            OnBoardDeviceStatus::Enabled
+            DeviceStatus::Enabled
         } else {
-            OnBoardDeviceStatus::Disabled
+            DeviceStatus::Disabled
         }
     }
 }
@@ -177,7 +177,7 @@ pub enum TypeOfDevice {
 
 /// # Enabled/Disabled Device Status
 #[derive(Debug, PartialEq, Eq)]
-pub enum OnBoardDeviceStatus {
+pub enum DeviceStatus {
     /// Device is enabled
     Enabled,
     /// Device is disabled
@@ -274,5 +274,22 @@ mod tests {
         let test_struct = SMBiosOnBoardDeviceInformation::new(&parts);
 
         println!("{:?}", test_struct);
+
+        assert_eq!(test_struct.number_of_devices(), 1);
+
+        let mut iterator = test_struct.onboard_device_iterator().into_iter();
+
+        let item = iterator.next().unwrap();
+
+        assert_eq!(
+            item.description(),
+            Some("   To Be Filled By O.E.M.".to_string())
+        );
+
+        let device_type = item.device_type().unwrap();
+        assert_eq!(device_type.type_of_device(), TypeOfDevice::Video);
+        assert_eq!(device_type.status(), DeviceStatus::Enabled);
+
+        assert!(iterator.next().is_none());
     }
 }
