@@ -1,7 +1,11 @@
-use crate::fields::*;
+//! Standard structures.
+//!
+//! Contains implementations for all standard structures found in
+//! the DMTF SMBIOS specification.
+
 use std::fmt;
 
-pub mod base;
+mod base;
 pub use base::*;
 
 mod unknown;

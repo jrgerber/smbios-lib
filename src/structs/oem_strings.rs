@@ -1,10 +1,10 @@
 use super::*;
 
 /// # OEM Strings (Type 11)
-/// 
+///
 /// This structure contains free-form strings defined by the OEM. Examples of this are
 /// part numbers for system reference documents, contact information for the manufacturer, etc.
-/// 
+///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17

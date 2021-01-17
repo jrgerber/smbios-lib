@@ -4,7 +4,7 @@ use super::*;
 ///
 /// The information in this structure defines the attributes of the system’s memory controller(s) and the
 /// supported attributes of any memory-modules present in the sockets controlled by this controller.
-/// 
+///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
@@ -45,32 +45,32 @@ impl<'a> SMBiosMemoryControllerInformation<'a> {
         self.parts.get_field_byte(0x07)
     }
 
-    /// 
+    ///
     pub fn maximum_memory_module_size(&self) -> Option<u8> {
         self.parts.get_field_byte(0x08)
     }
 
-    /// 
+    ///
     pub fn supported_speeds(&self) -> Option<u16> {
         self.parts.get_field_word(0x09)
     }
 
-    /// 
+    ///
     pub fn supported_memory_types(&self) -> Option<u16> {
         self.parts.get_field_word(0x0B)
     }
 
-    /// 
+    ///
     pub fn memory_module_voltage(&self) -> Option<u8> {
         self.parts.get_field_byte(0x0D)
     }
 
-    /// 
+    ///
     pub fn number_of_associated_memory_slots(&self) -> Option<u8> {
         self.parts.get_field_byte(0x0E)
     }
 
-    /// 
+    ///
     pub fn memory_module_configuration_handles(&self) -> Option<u8> {
         self.parts.get_field_byte(0x0F)
     }

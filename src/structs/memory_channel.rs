@@ -3,7 +3,7 @@ use super::*;
 /// # Memory Channel (Type 37)
 ///
 /// The information in this structure provides the correlation between a Memory Channel and its associated [SMBiosMemoryDevice]s.
-/// 
+///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
@@ -45,12 +45,12 @@ impl<'a> SMBiosMemoryChannel<'a> {
 
     // TODO: this is an array
 
-    // /// 
+    // ///
     // pub fn memory_device_load(&self) -> Option<u8> {
     //     self.parts.get_field_byte(0x07)
     // }
 
-    // /// 
+    // ///
     // pub fn memory_device_handle(&self) -> Option<u16> {
     //     self.parts.get_field_word(0x08)
     // }

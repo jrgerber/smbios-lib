@@ -4,7 +4,7 @@ use super::*;
 ///
 /// This structure associates a cooling device or environmental probe with structures that define the
 /// controlling hardware device and (optionally) the component’s thresholds.
-/// 
+///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
@@ -58,5 +58,29 @@ impl fmt::Debug for SMBiosManagementDeviceComponent<'_> {
             .field("component_handle", &self.component_handle())
             .field("threshold_handle", &self.threshold_handle())
             .finish()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unit_test() {
+        let struct_type35 = vec![
+            0x23, 0x0B, 0x29, 0x00, 0x01, 0x26, 0x00, 0x27, 0x00, 0x28, 0x00, 0x44, 0x65, 0x66,
+            0x61, 0x75, 0x6C, 0x74, 0x20, 0x73, 0x74, 0x72, 0x69, 0x6E, 0x67, 0x00, 0x00,
+        ];
+
+        let parts = SMBiosStructParts::new(struct_type35.as_slice());
+        let test_struct = SMBiosManagementDeviceComponent::new(&parts);
+
+        assert_eq!(
+            test_struct.description(),
+            Some("Default string".to_string())
+        );
+        // assert_eq!(test_struct.management_device_handle(), Some(Handle(38)));
+        // assert_eq!(test_struct.component_handle(), Some(Handle(39)));
+        // assert_eq!(test_struct.threshold_handle(), Some(Handle(40)));
     }
 }

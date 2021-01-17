@@ -4,7 +4,7 @@ use super::*;
 ///
 /// This structure describes the attributes of the portable battery or batteries for the system. The structure
 /// contains the static attributes for the group. Each structure describes a single battery pack’s attributes.
-/// 
+///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
@@ -36,7 +36,7 @@ impl<'a> SMBiosPortableBattery<'a> {
     }
 
     /// The date on which the battery was manufactured.
-    /// 
+    ///
     /// Version 2.2+ implementations that use a Smart
     /// Battery set this field to 0 (no string) to indicate
     /// that the SBDS Manufacture Date field contains
@@ -46,7 +46,7 @@ impl<'a> SMBiosPortableBattery<'a> {
     }
 
     /// The serial number for the battery
-    /// 
+    ///
     /// Version 2.2+ implementations that use a Smart
     /// Battery set this field to 0 (no string) to indicate
     /// that the SBDS Serial Number field contains the
@@ -56,14 +56,14 @@ impl<'a> SMBiosPortableBattery<'a> {
     }
 
     /// Names the battery device
-    /// 
+    ///
     /// EXAMPLE: "DR-36"
     pub fn device_name(&self) -> Option<String> {
         self.parts.get_field_string(0x08)
     }
 
     /// Identifies the battery chemistry
-    /// 
+    ///
     /// Version 2.2+ implementations that use a Smart
     /// Battery set this field to 02h (Unknown) to
     /// indicate that the SBDS Device Chemistry field
@@ -73,9 +73,9 @@ impl<'a> SMBiosPortableBattery<'a> {
     }
 
     /// Design capacity of the battery in mWatt-hours
-    /// 
+    ///
     /// If the value is unknown, the field contains 0.
-    /// 
+    ///
     /// For version 2.2+ implementations, this value is
     /// multiplied by the Design Capacity Multiplier to
     /// produce the actual value.
@@ -84,7 +84,7 @@ impl<'a> SMBiosPortableBattery<'a> {
     }
 
     /// Design voltage of the battery in mVolts
-    /// 
+    ///
     /// If the value is unknown, the field contains 0.
     pub fn design_voltage(&self) -> Option<u16> {
         self.parts.get_field_word(0x0C)
@@ -92,7 +92,7 @@ impl<'a> SMBiosPortableBattery<'a> {
 
     /// Contains the Smart Battery Data Specification version number
     /// supported by this battery
-    /// 
+    ///
     /// If the battery does not support the function, no
     /// string is supplied.
     pub fn sbds_version_number(&self) -> Option<String> {
@@ -104,7 +104,7 @@ impl<'a> SMBiosPortableBattery<'a> {
     /// battery, indicating an upper bound on how much
     /// additional energy the battery might have above
     /// the energy it reports having
-    /// 
+    ///
     /// If the value is unknown, the field contains FFh.
     pub fn maximum_error_in_battery_data(&self) -> Option<u8> {
         self.parts.get_field_byte(0x0F)
@@ -112,7 +112,7 @@ impl<'a> SMBiosPortableBattery<'a> {
 
     /// 16-bit value that identifies the battery’s serial
     /// number
-    /// 
+    ///
     /// This value, when combined with the
     /// Manufacturer, Device Name, and Manufacture
     /// Date, uniquely identifies the battery. The Serial
@@ -139,7 +139,7 @@ impl<'a> SMBiosPortableBattery<'a> {
     /// Multiplication factor of the Design Capacity
     /// value, which assures that the mWatt hours value
     /// does not overflow for SBDS implementations
-    /// 
+    ///
     /// The multiplier default is 1, SBDS
     /// implementations use the value 10 to correspond
     /// to the data as returned from the SBDS Function
@@ -181,5 +181,39 @@ impl fmt::Debug for SMBiosPortableBattery<'_> {
             )
             .field("oem_specific", &self.oem_specific())
             .finish()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unit_test() {
+        let struct_type22 = vec![
+            0x16, 0x1A, 0x2E, 0x00, 0x01, 0x02, 0x00, 0x00, 0x03, 0x02, 0xFB, 0x11, 0xD0, 0x39,
+            0x04, 0xFF, 0xC7, 0x02, 0x7A, 0x42, 0x05, 0x0A, 0x00, 0x00, 0x00, 0x00, 0x52, 0x65,
+            0x61, 0x72, 0x00, 0x53, 0x4D, 0x50, 0x00, 0x34, 0x35, 0x4E, 0x31, 0x30, 0x37, 0x31,
+            0x00, 0x30, 0x33, 0x2E, 0x30, 0x31, 0x00, 0x4C, 0x69, 0x50, 0x00, 0x00,
+        ];
+
+        let parts = SMBiosStructParts::new(struct_type22.as_slice());
+        let test_struct = SMBiosPortableBattery::new(&parts);
+
+        assert_eq!(test_struct.location(), Some("Rear".to_string()));
+        assert_eq!(test_struct.manufacturer(), Some("SMP".to_string()));
+        assert_eq!(test_struct.manufacture_date(), None);
+        assert_eq!(test_struct.serial_number(), None);
+        assert_eq!(test_struct.device_name(), Some("45N1071".to_string()));
+        assert_eq!(test_struct.device_chemistry(), Some(2));
+        assert_eq!(test_struct.design_capacity(), Some(4603));
+        assert_eq!(test_struct.design_voltage(), Some(14800));
+        assert_eq!(test_struct.sbds_version_number(), Some("03.01".to_string()));
+        assert_eq!(test_struct.maximum_error_in_battery_data(), Some(255));
+        assert_eq!(test_struct.sbds_serial_number(), Some(711));
+        assert_eq!(test_struct.sbds_manufacture_date(), Some(17018));
+        assert_eq!(test_struct.sbds_device_chemistry(), Some("LiP".to_string()));
+        assert_eq!(test_struct.design_capacity_multiplier(), Some(10));
+        assert_eq!(test_struct.oem_specific(), Some(0));
     }
 }

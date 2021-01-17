@@ -2,11 +2,11 @@ use super::*;
 
 /// # System Boot Information (Type 32)
 ///
-/// The client system firmware (for example, BIOS) communicates the 
+/// The client system firmware (for example, BIOS) communicates the
 /// System Boot Status to the client’s Pre1864 boot Execution Environment
 /// (PXE) boot image or OS-present management application through this
 /// structure.
-/// 
+///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
@@ -28,7 +28,7 @@ impl<'a> SMBiosStruct<'a> for SMBiosSystemBootInformation<'a> {
 
 impl<'a> SMBiosSystemBootInformation<'a> {
     // TODO:
-    
+
     // fn reserved(&self) -> Option<FixMe> {
     //     self.parts.get_field_undefined(0x04)
     // }
@@ -45,5 +45,21 @@ impl fmt::Debug for SMBiosSystemBootInformation<'_> {
             // .field("reserved", &self.reserved())
             // .field("boot_status", &self.boot_status())
             .finish()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unit_test() {
+        let struct_type32 = vec![
+            0x20, 0x14, 0x25, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        ];
+
+        let parts = SMBiosStructParts::new(struct_type32.as_slice());
+        let test_struct = SMBiosSystemBootInformation::new(&parts);
     }
 }

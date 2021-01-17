@@ -6,7 +6,7 @@ use super::*;
 /// supports an event log. An event log is a fixed-length area within a non-volatile
 /// storage element, starting with a fixed-length (and vendor-specific) header record, followed by one or more
 /// variable-length log records.
-/// 
+///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
@@ -38,7 +38,7 @@ impl<'a> SMBiosSystemEventLog<'a> {
     /// from the Access Method Address
     /// For single-byte indexed I/O accesses, the
     /// most-significant byte of the start offset is set
-    /// to 00h. 
+    /// to 00h.
     pub fn log_header_start_offset(&self) -> Option<u16> {
         self.parts.get_field_word(0x06)
     }
@@ -49,7 +49,7 @@ impl<'a> SMBiosSystemEventLog<'a> {
     /// For single-byte indexed I/O accesses, the
     /// most-significant byte of the start offset is set
     /// to 00h.
-    /// 
+    ///
     /// NOTE: The data directly follows any header
     /// information. Therefore, the header length
     /// can be determined by subtracting the
@@ -137,5 +137,39 @@ impl fmt::Debug for SMBiosSystemEventLog<'_> {
             )
             // .field("list_of_supported_event_log_type_descriptors", &self.list_of_supported_event_log_type_descriptors())
             .finish()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unit_test() {
+        let struct_type15 = vec![
+            0x0F, 0x49, 0x3D, 0x00, 0x00, 0x10, 0x00, 0x00, 0x10, 0x00, 0x03, 0x01, 0x05, 0x00,
+            0x00, 0x00, 0x18, 0x20, 0xAE, 0x6A, 0x01, 0x19, 0x02, 0x01, 0x03, 0x02, 0x03, 0x03,
+            0x00, 0x04, 0x00, 0x05, 0x00, 0x06, 0x00, 0x07, 0x00, 0x08, 0x04, 0x09, 0x03, 0x0A,
+            0x03, 0x0B, 0x00, 0x0C, 0x00, 0x0D, 0x00, 0x0E, 0x00, 0x10, 0x00, 0x11, 0x00, 0x12,
+            0x00, 0x13, 0x00, 0x14, 0x00, 0x15, 0x00, 0x16, 0x00, 0x17, 0x00, 0xFF, 0x00, 0xE0,
+            0xE0, 0xE1, 0xE1, 0x00, 0x00,
+        ];
+
+        let parts = SMBiosStructParts::new(struct_type15.as_slice());
+        let test_struct = SMBiosSystemEventLog::new(&parts);
+
+        assert_eq!(test_struct.log_area_length(), Some(4096));
+        assert_eq!(test_struct.log_header_start_offset(), Some(0));
+        assert_eq!(test_struct.log_data_start_offset(), Some(16));
+        assert_eq!(test_struct.access_method(), Some(3));
+        assert_eq!(test_struct.log_status(), Some(1));
+        assert_eq!(test_struct.log_change_token(), Some(5));
+        assert_eq!(test_struct.access_method_address(), Some(1789796376));
+        assert_eq!(test_struct.log_header_format(), Some(1));
+        assert_eq!(
+            test_struct.number_of_supported_log_type_descriptors(),
+            Some(25)
+        );
+        assert_eq!(test_struct.length_of_each_log_type_descriptor(), Some(2));
     }
 }

@@ -3,7 +3,7 @@ use super::*;
 /// # Memory Device Mapped Address (Type 20)
 ///
 /// This structure maps memory address space usually to a device-level granularity.
-/// 
+///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
@@ -150,5 +150,32 @@ impl fmt::Debug for SMBiosMemoryDeviceMappedAddress<'_> {
             )
             .field("extended_ending_address", &self.extended_ending_address())
             .finish()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unit_test() {
+        let struct_type20 = vec![
+            0x14, 0x23, 0x41, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x7F, 0x00, 0x40, 0x00,
+            0x3F, 0x00, 0x01, 0x01, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        ];
+
+        let parts = SMBiosStructParts::new(struct_type20.as_slice());
+        let test_struct = SMBiosMemoryDeviceMappedAddress::new(&parts);
+
+        assert_eq!(test_struct.starting_address(), Some(0));
+        assert_eq!(test_struct.ending_address(), Some(8388607));
+        //assert_eq!(test_struct.memory_device_handle(), Some(Handle(64)));
+        //assert_eq!(test_struct.memory_array_mapped_address_handle(), Some(Handle(63)));
+        assert_eq!(test_struct.partition_row_position(), Some(1));
+        assert_eq!(test_struct.interleave_position(), Some(1));
+        assert_eq!(test_struct.interleaved_data_depth(), Some(2));
+        assert_eq!(test_struct.extended_starting_address(), Some(0));
+        assert_eq!(test_struct.extended_ending_address(), Some(0));
     }
 }

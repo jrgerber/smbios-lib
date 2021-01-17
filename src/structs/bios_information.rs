@@ -24,18 +24,18 @@ impl<'a> SMBiosInformation<'a> {
     }
 
     /// BIOS version
-    /// 
+    ///
     /// This value is a free-form string that may contain
-    /// Core and OEM version information. 
+    /// Core and OEM version information.
     pub fn version(&self) -> Option<String> {
         self.parts.get_field_string(0x5)
     }
 
     /// BIOS starting address segment
-    /// 
+    ///
     /// Segment location of BIOS starting address
     /// (for example, 0E800h).
-    /// 
+    ///
     /// NOTE: The size of the runtime BIOS image can
     /// be computed by subtracting the Starting
     /// Address Segment from 10000h and
@@ -45,12 +45,12 @@ impl<'a> SMBiosInformation<'a> {
     }
 
     /// BIOS release date
-    /// 
+    ///
     /// The date string, if supplied, is in either
     /// mm/dd/yy or mm/dd/yyyy format. If the year
     /// portion of the string is two digits, the year is
     /// assumed to be 19yy.
-    /// 
+    ///
     /// NOTE: The mm/dd/yyyy format is required for
     /// SMBIOS version 2.3 and later.
     pub fn release_date(&self) -> Option<String> {
@@ -58,11 +58,11 @@ impl<'a> SMBiosInformation<'a> {
     }
 
     /// BIOS ROM size
-    /// 
+    ///
     /// Size (n) where 64K * (n+1) is the size of the
     /// physical device containing the BIOS, in
     /// bytes.
-    /// 
+    ///
     /// FFh - size is 16MB or greater, see Extended
     /// BIOS ROM Size for actual size
     pub fn rom_size(&self) -> Option<u8> {
@@ -70,7 +70,7 @@ impl<'a> SMBiosInformation<'a> {
     }
 
     /// BIOS characteristics
-    /// 
+    ///
     /// Defines which functions the BIOS supports:
     /// PCI, PCMCIA, Flash, etc
     pub fn characteristics(&self) -> Option<u32> {
@@ -98,16 +98,16 @@ impl<'a> SMBiosInformation<'a> {
     }
 
     /// System BIOS major release
-    /// 
+    ///
     /// Identifies the major release of the System
     /// BIOS; for example, the value is 0Ah for
     /// revision 10.22 and 02h for revision 2.1.
-    /// 
+    ///
     /// This field or the System BIOS Minor
     /// Release field or both are updated each time
     /// a System BIOS update for a given system is
     /// released.
-    /// 
+    ///
     /// If the system does not support the use of
     /// this field, the value is 0FFh for both this field
     /// and the System BIOS Minor Release field.
@@ -116,7 +116,7 @@ impl<'a> SMBiosInformation<'a> {
     }
 
     /// System BIOS minor release
-    /// 
+    ///
     /// Identifies the minor release of the System
     /// BIOS; for example, the value is 16h for
     /// revision 10.22 and 01h for revision 2.1.
@@ -125,18 +125,18 @@ impl<'a> SMBiosInformation<'a> {
     }
 
     /// Embedded controller firmware major release
-    /// 
+    ///
     /// Identifies the major release of the
     /// embedded controller firmware; for example,
     /// the value would be 0Ah for revision 10.22
     /// and 02h for revision 2.1.
-    /// 
+    ///
     /// This field or the Embedded Controller
     /// Firmware Minor Release field or both are
     /// updated each time an embedded controller
     /// firmware update for a given system is
     /// released.
-    /// 
+    ///
     /// If the system does not have field
     /// upgradeable embedded controller firmware,
     /// the value is 0FFh.
@@ -145,7 +145,7 @@ impl<'a> SMBiosInformation<'a> {
     }
 
     /// Embedded controller firmware minor release
-    /// 
+    ///
     /// Identifies the minor release of the
     /// embedded controller firmware; for example,
     /// the value is 16h for revision 10.22 and 01h
@@ -158,17 +158,17 @@ impl<'a> SMBiosInformation<'a> {
     }
 
     /// Extended BIOS ROM size
-    /// 
+    ///
     /// Extended size of the physical device(s)
     /// containing the BIOS, rounded up if needed.
-    /// 
+    ///
     /// Bits 15:14 Unit
     /// 00b - megabytes
     /// 01b - gigabytes
     /// 10b - reserved
     /// 11b - reserved
     /// Bits 13:0 Size
-    /// 
+    ///
     /// Examples: a 16 MB device would be
     /// represented as 0010h. A 48 GB device set
     /// would be represented as
@@ -230,121 +230,34 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_bios_information() {
-        let bios_information_bytes = vec![
-            // struct_type(0), length(0x1A), handle(0x0D)
-            0x00, 0x1A, 0x0D, 0x00,
-            // vendor: Some("Microsoft Corporation"), version: Some("1.2547.140"), starting_address_segment: Some(0), release_date: Some("09/14/2020"),
-            // rom_size: Some(255), characteristics: Some(202971264), bios_vendor_reserved_characteristics: Some(0),
-            // system_vendor_reserved_characteristics: Some(0), characteristics_extension0: Some(3), characteristics_extension1: Some(13),
-            // system_bios_major_release: Some(255), system_bios_minor_release: Some(255), e_c_firmware_major_release: Some(255),
-            // e_c_firmware_minor_release: Some(255), extended_rom_size: Some(16) })
-            0x01, 0x02, 0x00, 0x00, 0x03, 0xFF, 0x80, 0x18, 0x19, 0x0C, 0x00, 0x00, 0x00, 0x00,
-            0x03, 0x0D, 0xFF, 0xFF, 0xFF, 0xFF, 0x10, 0x00,
-            // "Microsoft Corporation" (1)
-            0x4D, 0x69, 0x63, 0x72, 0x6F, 0x73, 0x6F, 0x66, 0x74, 0x20, 0x43, 0x6F, 0x72, 0x70,
-            0x6F, 0x72, 0x61, 0x74, 0x69, 0x6F, 0x6E, 0x00, // "1.2547.140" (2)
-            0x31, 0x2E, 0x32, 0x35, 0x34, 0x37, 0x2E, 0x31, 0x34, 0x30, 0x00,
-            // "09/14/2020" (3)
-            0x30, 0x39, 0x2F, 0x31, 0x34, 0x2F, 0x32, 0x30, 0x32, 0x30, 0x00,
-            // end of structure
-            0x00,
+    fn unit_test() {
+        let struct_type0 = vec![
+            0x00, 0x18, 0x00, 0x00, 0x01, 0x02, 0x00, 0xF0, 0x03, 0xFF, 0x80, 0x98, 0x8B, 0x3F,
+            0x01, 0x00, 0x11, 0x00, 0x03, 0x0D, 0x00, 0x21, 0x11, 0x2D, 0x4C, 0x45, 0x4E, 0x4F,
+            0x56, 0x4F, 0x00, 0x53, 0x30, 0x33, 0x4B, 0x54, 0x33, 0x33, 0x41, 0x00, 0x30, 0x38,
+            0x2F, 0x30, 0x36, 0x2F, 0x32, 0x30, 0x31, 0x39, 0x00, 0x00,
         ];
 
-        let parts = SMBiosStructParts::new(bios_information_bytes.as_slice());
-        let bios_information = SMBiosInformation::new(&parts);
+        let parts = SMBiosStructParts::new(struct_type0.as_slice());
+        let test_struct = SMBiosInformation::new(&parts);
 
-        // header tests
-        assert_eq!(*bios_information.parts().header.handle(), 0x000D);
-        assert_eq!(bios_information.parts().header.length(), 0x1A);
-
-        // basic field tests
+        assert_eq!(test_struct.vendor(), Some("LENOVO".to_string()));
+        assert_eq!(test_struct.version(), Some("S03KT33A".to_string()));
+        assert_eq!(test_struct.starting_address_segment(), Some(61440));
+        assert_eq!(test_struct.release_date(), Some("08/06/2019".to_string()));
+        assert_eq!(test_struct.rom_size(), Some(255));
+        assert_eq!(test_struct.characteristics(), Some(1066113152));
+        assert_eq!(test_struct.bios_vendor_reserved_characteristics(), Some(1));
         assert_eq!(
-            bios_information.vendor().expect("vendor field exists"),
-            "Microsoft Corporation".to_string()
+            test_struct.system_vendor_reserved_characteristics(),
+            Some(17)
         );
-        assert_eq!(
-            bios_information.version().expect("version field exists"),
-            "1.2547.140".to_string()
-        );
-        assert_eq!(
-            bios_information
-                .starting_address_segment()
-                .expect("starting_address_segment field exists"),
-            0
-        );
-        assert_eq!(
-            bios_information
-                .release_date()
-                .expect("release_date field exists"),
-            "09/14/2020".to_string()
-        );
-        assert_eq!(
-            bios_information.rom_size().expect("rom_size field exists"),
-            0xFF
-        );
-        assert_eq!(
-            bios_information
-                .characteristics()
-                .expect("characteristics field exists"),
-            202971264
-        );
-        assert_eq!(
-            bios_information
-                .bios_vendor_reserved_characteristics()
-                .expect("bios_vendor_reserved_characteristics field exists"),
-            0
-        );
-        assert_eq!(
-            bios_information
-                .system_vendor_reserved_characteristics()
-                .expect("system_vendor_reserved_characteristics field exists"),
-            0
-        );
-        assert_eq!(
-            bios_information
-                .characteristics_extension0()
-                .expect("characteristics_extension0 field exists"),
-            3
-        );
-        assert_eq!(
-            bios_information
-                .characteristics_extension1()
-                .expect("characteristics_extension1 field exists"),
-            13
-        );
-        assert_eq!(
-            bios_information
-                .system_bios_major_release()
-                .expect("system_bios_major_release field exists"),
-            255
-        );
-        assert_eq!(
-            bios_information
-                .system_bios_minor_release()
-                .expect("system_bios_minor_release field exists"),
-            255
-        );
-        assert_eq!(
-            bios_information
-                .e_c_firmware_major_release()
-                .expect("e_c_firmware_major_release field exists"),
-            255
-        );
-        assert_eq!(
-            bios_information
-                .e_c_firmware_minor_release()
-                .expect("e_c_firmware_minor_release field exists"),
-            255
-        );
-        assert_eq!(
-            bios_information
-                .extended_rom_size()
-                .expect("extended_rom_size field exists"),
-            16
-        );
-
-        // debug print test
-        println!("bios_information: {:?}", bios_information);
+        assert_eq!(test_struct.characteristics_extension0(), Some(3));
+        assert_eq!(test_struct.characteristics_extension1(), Some(13));
+        assert_eq!(test_struct.system_bios_major_release(), Some(0));
+        assert_eq!(test_struct.system_bios_minor_release(), Some(33));
+        assert_eq!(test_struct.e_c_firmware_major_release(), Some(17));
+        assert_eq!(test_struct.e_c_firmware_minor_release(), Some(45));
+        assert_eq!(test_struct.extended_rom_size(), Some(76));
     }
 }

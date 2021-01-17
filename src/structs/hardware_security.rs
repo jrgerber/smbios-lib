@@ -1,9 +1,9 @@
 use super::*;
 
 /// # Hardware Security (Type 24)
-/// 
+///
 /// This structure describes the system-wide hardware security settings.
-/// 
+///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
@@ -39,5 +39,20 @@ impl fmt::Debug for SMBiosHardwareSecurity<'_> {
                 &self.hardware_security_settings(),
             )
             .finish()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unit_test() {
+        let struct_type24 = vec![0x18, 0x05, 0x24, 0x00, 0x16, 0x00, 0x00];
+
+        let parts = SMBiosStructParts::new(struct_type24.as_slice());
+        let test_struct = SMBiosHardwareSecurity::new(&parts);
+
+        assert_eq!(test_struct.hardware_security_settings(), Some(22));
     }
 }

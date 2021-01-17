@@ -34,7 +34,7 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
     }
 
     /// Chassis type
-    /// 
+    ///
     /// Bit 7 Chassis lock is present if 1.
     /// Otherwise, either a lock is not present or it is
     /// unknown if the enclosure has a lock.
@@ -59,14 +59,14 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
     }
 
     /// Boot-up State
-    /// 
+    ///
     /// State of the enclosure when it was last booted.
     pub fn bootup_state(&self) -> Option<u8> {
         self.parts.get_field_byte(0x09)
     }
 
     /// Power supply state
-    /// 
+    ///
     /// State of the enclosure’s power supply (or
     /// supplies) when last booted
     pub fn power_supply_state(&self) -> Option<u8> {
@@ -74,7 +74,7 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
     }
 
     /// Thermal state
-    /// 
+    ///
     /// Thermal state of the enclosure when last
     /// booted.
     pub fn thermal_state(&self) -> Option<u8> {
@@ -82,7 +82,7 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
     }
 
     /// Security status
-    /// 
+    ///
     /// Physical security status of the enclosure when
     /// last booted.
     pub fn security_status(&self) -> Option<u8> {
@@ -90,14 +90,14 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
     }
 
     /// OEM-defined
-    /// 
+    ///
     /// OEM- or BIOS vendor-specific information
     pub fn oem_defined(&self) -> Option<u32> {
         self.parts.get_field_dword(0x0D)
     }
 
     /// Height
-    /// 
+    ///
     /// Height of the enclosure, in 'U's
     /// A U is a standard unit of measure for the
     /// height of a rack or rack-mountable component
@@ -109,7 +109,7 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
     }
 
     /// Number of power cords
-    /// 
+    ///
     /// Number of power cords associated with the
     /// enclosure or chassis
     /// A value of 00h indicates that the number is
@@ -119,7 +119,7 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
     }
 
     /// Contained element count (n)
-    /// 
+    ///
     /// Number of Contained Element records that
     /// follow, in the range 0 to 255
     /// Each Contained Element group comprises m
@@ -132,7 +132,7 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
     }
 
     /// Contained element record length (m)
-    /// 
+    ///
     /// Byte length of each Contained Element record
     /// that follows, in the range 0 to 255
     /// If no Contained Elements are included, this
@@ -148,7 +148,7 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
     // }
 
     /// SKU number
-    /// 
+    ///
     /// Number of null-terminated string describing the
     /// chassis or enclosure SKU number
     fn sku_number(&self) -> Option<String> {
@@ -180,5 +180,40 @@ impl fmt::Debug for SMBiosSystemChassisInformation<'_> {
             // .field("contained_elements", &self.contained_elements())
             .field("sku_number", &self.sku_number())
             .finish()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unit_test() {
+        let struct_type3 = vec![
+            0x03, 0x16, 0x03, 0x00, 0x01, 0x03, 0x02, 0x03, 0x04, 0x03, 0x03, 0x03, 0x03, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x03, 0x05, 0x4C, 0x45, 0x4E, 0x4F, 0x56, 0x4F,
+            0x00, 0x4E, 0x6F, 0x6E, 0x65, 0x00, 0x4D, 0x4A, 0x30, 0x36, 0x55, 0x52, 0x44, 0x5A,
+            0x00, 0x34, 0x30, 0x38, 0x39, 0x39, 0x38, 0x35, 0x00, 0x44, 0x65, 0x66, 0x61, 0x75,
+            0x6C, 0x74, 0x20, 0x73, 0x74, 0x72, 0x69, 0x6E, 0x67, 0x00, 0x00,
+        ];
+
+        let parts = SMBiosStructParts::new(struct_type3.as_slice());
+        let test_struct = SMBiosSystemChassisInformation::new(&parts);
+
+        assert_eq!(test_struct.manufacturer(), Some("LENOVO".to_string()));
+        assert_eq!(test_struct.chassis_type(), Some(3));
+        assert_eq!(test_struct.version(), Some("None".to_string()));
+        assert_eq!(test_struct.serial_number(), Some("MJ06URDZ".to_string()));
+        assert_eq!(test_struct.asset_tag_number(), Some("4089985".to_string()));
+        assert_eq!(test_struct.bootup_state(), Some(3));
+        assert_eq!(test_struct.power_supply_state(), Some(3));
+        assert_eq!(test_struct.thermal_state(), Some(3));
+        assert_eq!(test_struct.security_status(), Some(3));
+        assert_eq!(test_struct.oem_defined(), Some(0));
+        assert_eq!(test_struct.height(), Some(0));
+        assert_eq!(test_struct.number_of_power_cords(), Some(1));
+        assert_eq!(test_struct.contained_element_count(), Some(0));
+        assert_eq!(test_struct.contained_element_record_length(), Some(3));
+        assert_eq!(test_struct.sku_number(), Some("Default string".to_string()));
     }
 }

@@ -1,9 +1,9 @@
 use super::*;
 
 /// # Memory Module Information (Type 6, Obsolete)
-/// 
+///
 /// One Memory Module Information structure is included for each memory-module socket in the system.
-/// 
+///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17

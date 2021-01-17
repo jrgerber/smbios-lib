@@ -1,9 +1,9 @@
 use super::*;
 
 /// # 64-Bit Memory Error Information (Type 33)
-/// 
+///
 /// This structure describes an error within a [SMBiosPhysicalMemoryArray], when the error address is above 4G (0xFFFFFFFF).
-/// 
+///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17

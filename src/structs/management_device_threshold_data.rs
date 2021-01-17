@@ -1,9 +1,9 @@
 use super::*;
 
 /// # Management Device Threshold Data (Type 36)
-/// 
+///
 /// The information in this structure defines threshold information for a component (probe or cooling-unit) contained within a Management Device
-/// 
+///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
@@ -78,5 +78,28 @@ impl fmt::Debug for SMBiosManagementDeviceThresholdData<'_> {
                 &self.upper_threshold_non_recoverable(),
             )
             .finish()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unit_test() {
+        let struct_type36 = vec![
+            0x24, 0x10, 0x28, 0x00, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04, 0x00, 0x05, 0x00,
+            0x06, 0x00, 0x00, 0x00,
+        ];
+
+        let parts = SMBiosStructParts::new(struct_type36.as_slice());
+        let test_struct = SMBiosManagementDeviceThresholdData::new(&parts);
+
+        assert_eq!(test_struct.lower_threshold_non_critical(), Some(1));
+        assert_eq!(test_struct.upper_threshold_non_critical(), Some(2));
+        assert_eq!(test_struct.lower_threshold_critical(), Some(3));
+        assert_eq!(test_struct.upper_threshold_critical(), Some(4));
+        assert_eq!(test_struct.lower_threshold_non_recoverable(), Some(5));
+        assert_eq!(test_struct.upper_threshold_non_recoverable(), Some(6));
     }
 }

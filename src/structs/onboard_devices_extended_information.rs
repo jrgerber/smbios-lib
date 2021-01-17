@@ -4,7 +4,7 @@ use super::*;
 ///
 /// The information in this structure defines the attributes of devices that are onboard (soldered onto) a
 /// system element, usually the baseboard.
-/// 
+///
 /// In general, an entry in this table implies that the BIOS has some level of control over the enablement of
 /// the associated device for use by the system.
 ///
@@ -74,5 +74,31 @@ impl fmt::Debug for SMBiosOnboardDevicesExtendedInformation<'_> {
             .field("bus_number", &self.bus_number())
             .field("device_function_number", &self.device_function_number())
             .finish()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unit_test() {
+        let struct_type41 = vec![
+            0x29, 0x0B, 0x3B, 0x00, 0x01, 0x85, 0x01, 0x00, 0x00, 0x00, 0xFE, 0x69, 0x32, 0x31,
+            0x39, 0x00, 0x00,
+        ];
+
+        let parts = SMBiosStructParts::new(struct_type41.as_slice());
+        let test_struct = SMBiosOnboardDevicesExtendedInformation::new(&parts);
+
+        assert_eq!(
+            test_struct.reference_designation(),
+            Some("i219".to_string())
+        );
+        assert_eq!(test_struct.device_type(), Some(133));
+        assert_eq!(test_struct.device_type_instance(), Some(1));
+        assert_eq!(test_struct.segment_group_number(), Some(0));
+        assert_eq!(test_struct.bus_number(), Some(0));
+        assert_eq!(test_struct.device_function_number(), Some(254));
     }
 }

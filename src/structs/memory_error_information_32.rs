@@ -3,7 +3,7 @@ use super::*;
 /// # 32-Bit Memory Error Information (Type 18)
 ///
 /// This structure identifies the specifics of an error that might be detected within a [SMBiosPhysicalMemoryArray].
-/// 
+///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
@@ -90,5 +90,29 @@ impl fmt::Debug for SMBiosMemoryErrorInformation32<'_> {
             .field("device_error_address", &self.device_error_address())
             .field("error_resolution", &self.error_resolution())
             .finish()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unit_test() {
+        let struct_type18 = vec![
+            0x12, 0x17, 0x50, 0x00, 0x03, 0x02, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x80, 0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00, 0x80, 0x00, 0x00,
+        ];
+
+        let parts = SMBiosStructParts::new(struct_type18.as_slice());
+        let test_struct = SMBiosMemoryErrorInformation32::new(&parts);
+
+        assert_eq!(test_struct.error_type(), Some(3));
+        assert_eq!(test_struct.error_granularity(), Some(2));
+        assert_eq!(test_struct.error_operation(), Some(2));
+        assert_eq!(test_struct.vendor_syndrome(), Some(0));
+        assert_eq!(test_struct.memory_array_error_address(), Some(2147483648));
+        assert_eq!(test_struct.device_error_address(), Some(2147483648));
+        assert_eq!(test_struct.error_resolution(), Some(2147483648));
     }
 }

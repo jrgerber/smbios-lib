@@ -5,7 +5,7 @@ use super::*;
 /// The information in this structure defines the attributes of a system port connector
 /// (for example, parallel, serial, keyboard, or mouse ports). The port’s type and connector information are
 /// provided. One structure is present for each port provided by the system.
-/// 
+///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
@@ -28,7 +28,7 @@ impl<'a> SMBiosStruct<'a> for SMBiosPortConnectorInformation<'a> {
 impl<'a> SMBiosPortConnectorInformation<'a> {
     ///  Internal reference designator, that is,
     /// internal to the system enclosure
-    /// 
+    ///
     /// EXAMPLE: "J101"
     pub fn internal_reference_designator(&self) -> Option<String> {
         self.parts.get_field_string(0x04)
@@ -41,7 +41,7 @@ impl<'a> SMBiosPortConnectorInformation<'a> {
 
     /// External reference designation,
     /// external to the system enclosure
-    /// 
+    ///
     /// EXAMPLE: "COM A"
     pub fn external_reference_designator(&self) -> Option<String> {
         self.parts.get_field_string(0x06)
@@ -74,5 +74,33 @@ impl fmt::Debug for SMBiosPortConnectorInformation<'_> {
             .field("external_connector_type", &self.external_connector_type())
             .field("port_type", &self.port_type())
             .finish()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unit_test() {
+        let struct_type8 = vec![
+            0x08, 0x09, 0x04, 0x00, 0x01, 0x00, 0x02, 0x0F, 0x0E, 0x4A, 0x31, 0x41, 0x31, 0x00,
+            0x50, 0x53, 0x32, 0x4D, 0x6F, 0x75, 0x73, 0x65, 0x00, 0x00,
+        ];
+
+        let parts = SMBiosStructParts::new(struct_type8.as_slice());
+        let test_struct = SMBiosPortConnectorInformation::new(&parts);
+
+        assert_eq!(
+            test_struct.internal_reference_designator(),
+            Some("J1A1".to_string())
+        );
+        assert_eq!(test_struct.internal_connector_type(), Some(0));
+        assert_eq!(
+            test_struct.external_reference_designator(),
+            Some("PS2Mouse".to_string())
+        );
+        assert_eq!(test_struct.external_connector_type(), Some(15));
+        assert_eq!(test_struct.port_type(), Some(14));
     }
 }
