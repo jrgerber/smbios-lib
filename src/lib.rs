@@ -14,4 +14,5 @@ pub mod read;
 pub mod structs;
 pub mod windows;
 
-mod dev_tools;
+// Temporary tools
+pub mod dev_tools;

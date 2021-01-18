@@ -1,4 +1,5 @@
 use super::*;
+use std::ops::Deref;
 
 /// # System Slots (Type 9)
 ///
@@ -27,25 +28,31 @@ impl<'a> SMBiosSystemSlot<'a> {
     }
 
     /// Slot Type
-    pub fn system_slot_type_data(&self) -> Option<SystemSlotTypeData> {
+    pub fn system_slot_type(&self) -> Option<SystemSlotTypeData> {
         self.parts
             .get_field_byte(0x05)
-            .and_then(|raw| Some(SystemSlotTypeData { raw }))
+            .and_then(|raw| Some(SystemSlotTypeData::from(raw)))
     }
 
     /// Slot Data Bus Width
-    pub fn slot_data_bus_width(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x06)
+    pub fn slot_data_bus_width(&self) -> Option<SlotDataBusWidthData> {
+        self.parts
+            .get_field_byte(0x06)
+            .and_then(|raw| Some(SlotDataBusWidthData::from(raw)))
     }
 
     /// Current Usage
-    pub fn current_usage(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x07)
+    pub fn current_usage(&self) -> Option<SlotCurrentUsageData> {
+        self.parts
+            .get_field_byte(0x07)
+            .and_then(|raw| Some(SlotCurrentUsageData::from(raw)))
     }
 
     /// Slot Length
-    pub fn slot_length(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x08)
+    pub fn slot_length(&self) -> Option<SlotLengthData> {
+        self.parts
+            .get_field_byte(0x08)
+            .and_then(|raw| Some(SlotLengthData::from(raw)))
     }
 
     /// Slot Id
@@ -89,7 +96,7 @@ impl fmt::Debug for SMBiosSystemSlot<'_> {
         fmt.debug_struct(std::any::type_name::<SMBiosSystemSlot>())
             .field("header", &self.parts.header)
             .field("slot_designation", &self.slot_designation())
-            .field("system_slot_type_data", &self.system_slot_type_data())
+            .field("system_slot_type", &self.system_slot_type())
             .field("slot_data_bus_width", &self.slot_data_bus_width())
             .field("current_usage", &self.current_usage())
             .field("slot_length", &self.slot_length())
@@ -106,90 +113,109 @@ impl fmt::Debug for SMBiosSystemSlot<'_> {
 
 /// # System Slot Type Data
 pub struct SystemSlotTypeData {
+    /// Raw value
+    ///
+    /// _raw_ is most useful when _value_ is None.
+    /// This is most likely to occur when the standard was updated but
+    /// this library code has not been updated to match the current
+    /// standard.
     raw: u8,
+    /// The contained [SystemSlotType] value
+    value: SystemSlotType,
 }
 
-impl SystemSlotTypeData {
+impl Deref for SystemSlotTypeData {
+    type Target = SystemSlotType;
+
+    fn deref(&self) -> &Self::Target {
+        &self.value
+    }
+}
+
+impl From<u8> for SystemSlotTypeData {
     /// System Slot Type
-    pub fn system_slot_type(&self) -> SystemSlotType {
-        match self.raw {
-            0x01 => SystemSlotType::Other,
-            0x02 => SystemSlotType::Unknown,
-            0x03 => SystemSlotType::Isa,
-            0x04 => SystemSlotType::Mca,
-            0x05 => SystemSlotType::Eisa,
-            0x06 => SystemSlotType::Pci,
-            0x07 => SystemSlotType::Pcmcia,
-            0x08 => SystemSlotType::VlVesa,
-            0x09 => SystemSlotType::Proprietary,
-            0x0A => SystemSlotType::ProcessorCardSlot,
-            0x0B => SystemSlotType::ProprietaryMemoryCardSlot,
-            0x0C => SystemSlotType::IORiserCardSlot,
-            0x0D => SystemSlotType::NuBus,
-            0x0E => SystemSlotType::Pci66MhzCapable,
-            0x0F => SystemSlotType::Agp,
-            0x10 => SystemSlotType::Agp2x,
-            0x11 => SystemSlotType::Agp4x,
-            0x12 => SystemSlotType::PciX,
-            0x13 => SystemSlotType::Agp8X,
-            0x14 => SystemSlotType::M2Socket1DP,
-            0x15 => SystemSlotType::M2Socket1SD,
-            0x16 => SystemSlotType::M2Socket2,
-            0x17 => SystemSlotType::M2Socket3,
-            0x18 => SystemSlotType::MxmTypeI,
-            0x19 => SystemSlotType::MxmTypeII,
-            0x1A => SystemSlotType::MxmTypeIIIStandard,
-            0x1B => SystemSlotType::MxmTypeIIIHE,
-            0x1C => SystemSlotType::MxmTypeIV,
-            0x1D => SystemSlotType::Mxm3TypeA,
-            0x1E => SystemSlotType::Mxm3TypeB,
-            0x1F => SystemSlotType::PciExpressGen2Sff8639,
-            0x20 => SystemSlotType::PciExpressGen3Sff8639,
-            0x21 => SystemSlotType::PciExpressMini52WithKeepouts,
-            0x22 => SystemSlotType::PciExpressMini52WithoutKeepouts,
-            0x23 => SystemSlotType::PciExpressMini76,
-            0x24 => SystemSlotType::PciExpressGen4Sff8639,
-            0x25 => SystemSlotType::PciExpressGen5Sff8639,
-            0x30 => SystemSlotType::CxlFlexbus1,
-            0xA0 => SystemSlotType::PC98C20,
-            0xA1 => SystemSlotType::PC98C24,
-            0xA2 => SystemSlotType::PC98E,
-            0xA3 => SystemSlotType::PC98LocalBus,
-            0xA4 => SystemSlotType::PC98Card,
-            0xA5 => SystemSlotType::PciExpress,
-            0xA6 => SystemSlotType::PciExpressx1,
-            0xA7 => SystemSlotType::PciExpressx2,
-            0xA8 => SystemSlotType::PciExpressx4,
-            0xA9 => SystemSlotType::PciExpressx8,
-            0xAA => SystemSlotType::PciExpressx16,
-            0xAB => SystemSlotType::PciExpressGen2,
-            0xAC => SystemSlotType::PciExpressGen2x1,
-            0xAD => SystemSlotType::PciExpressGen2x2,
-            0xAE => SystemSlotType::PciExpressGen2x4,
-            0xAF => SystemSlotType::PciExpressGen2x8,
-            0xB0 => SystemSlotType::PciExpressGen2x16,
-            0xB1 => SystemSlotType::PciExpressGen3,
-            0xB2 => SystemSlotType::PciExpressGen3x1,
-            0xB3 => SystemSlotType::PciExpressGen3x2,
-            0xB4 => SystemSlotType::PciExpressGen3x4,
-            0xB5 => SystemSlotType::PciExpressGen3x8,
-            0xB6 => SystemSlotType::PciExpressGen3x16,
-            0xB8 => SystemSlotType::PciExpressGen4,
-            0xB9 => SystemSlotType::PciExpressGen4x1,
-            0xBA => SystemSlotType::PciExpressGen4x2,
-            0xBB => SystemSlotType::PciExpressGen4x4,
-            0xBC => SystemSlotType::PciExpressGen4x8,
-            0xBD => SystemSlotType::PciExpressGen4x16,
-            0xBE => SystemSlotType::PciExpressGen5,
-            0xBF => SystemSlotType::PciExpressGen5x1,
-            0xC0 => SystemSlotType::PciExpressGen5x2,
-            0xC1 => SystemSlotType::PciExpressGen5x4,
-            0xC2 => SystemSlotType::PciExpressGen5x8,
-            0xC3 => SystemSlotType::PciExpressGen5x16,
-            0xC4 => SystemSlotType::PciExpressGen6,
-            0xC5 => SystemSlotType::EnterpriseAndDataCenter1UE1,
-            0xC6 => SystemSlotType::EnterpriseAndDataCenter3InE3,
-            _ => SystemSlotType::None,
+    fn from(raw: u8) -> Self {
+        SystemSlotTypeData {
+            value: match raw {
+                0x01 => SystemSlotType::Other,
+                0x02 => SystemSlotType::Unknown,
+                0x03 => SystemSlotType::Isa,
+                0x04 => SystemSlotType::Mca,
+                0x05 => SystemSlotType::Eisa,
+                0x06 => SystemSlotType::Pci,
+                0x07 => SystemSlotType::Pcmcia,
+                0x08 => SystemSlotType::VlVesa,
+                0x09 => SystemSlotType::Proprietary,
+                0x0A => SystemSlotType::ProcessorCardSlot,
+                0x0B => SystemSlotType::ProprietaryMemoryCardSlot,
+                0x0C => SystemSlotType::IORiserCardSlot,
+                0x0D => SystemSlotType::NuBus,
+                0x0E => SystemSlotType::Pci66MhzCapable,
+                0x0F => SystemSlotType::Agp,
+                0x10 => SystemSlotType::Agp2x,
+                0x11 => SystemSlotType::Agp4x,
+                0x12 => SystemSlotType::PciX,
+                0x13 => SystemSlotType::Agp8X,
+                0x14 => SystemSlotType::M2Socket1DP,
+                0x15 => SystemSlotType::M2Socket1SD,
+                0x16 => SystemSlotType::M2Socket2,
+                0x17 => SystemSlotType::M2Socket3,
+                0x18 => SystemSlotType::MxmTypeI,
+                0x19 => SystemSlotType::MxmTypeII,
+                0x1A => SystemSlotType::MxmTypeIIIStandard,
+                0x1B => SystemSlotType::MxmTypeIIIHE,
+                0x1C => SystemSlotType::MxmTypeIV,
+                0x1D => SystemSlotType::Mxm3TypeA,
+                0x1E => SystemSlotType::Mxm3TypeB,
+                0x1F => SystemSlotType::PciExpressGen2Sff8639,
+                0x20 => SystemSlotType::PciExpressGen3Sff8639,
+                0x21 => SystemSlotType::PciExpressMini52WithKeepouts,
+                0x22 => SystemSlotType::PciExpressMini52WithoutKeepouts,
+                0x23 => SystemSlotType::PciExpressMini76,
+                0x24 => SystemSlotType::PciExpressGen4Sff8639,
+                0x25 => SystemSlotType::PciExpressGen5Sff8639,
+                0x30 => SystemSlotType::CxlFlexbus1,
+                0xA0 => SystemSlotType::PC98C20,
+                0xA1 => SystemSlotType::PC98C24,
+                0xA2 => SystemSlotType::PC98E,
+                0xA3 => SystemSlotType::PC98LocalBus,
+                0xA4 => SystemSlotType::PC98Card,
+                0xA5 => SystemSlotType::PciExpress,
+                0xA6 => SystemSlotType::PciExpressx1,
+                0xA7 => SystemSlotType::PciExpressx2,
+                0xA8 => SystemSlotType::PciExpressx4,
+                0xA9 => SystemSlotType::PciExpressx8,
+                0xAA => SystemSlotType::PciExpressx16,
+                0xAB => SystemSlotType::PciExpressGen2,
+                0xAC => SystemSlotType::PciExpressGen2x1,
+                0xAD => SystemSlotType::PciExpressGen2x2,
+                0xAE => SystemSlotType::PciExpressGen2x4,
+                0xAF => SystemSlotType::PciExpressGen2x8,
+                0xB0 => SystemSlotType::PciExpressGen2x16,
+                0xB1 => SystemSlotType::PciExpressGen3,
+                0xB2 => SystemSlotType::PciExpressGen3x1,
+                0xB3 => SystemSlotType::PciExpressGen3x2,
+                0xB4 => SystemSlotType::PciExpressGen3x4,
+                0xB5 => SystemSlotType::PciExpressGen3x8,
+                0xB6 => SystemSlotType::PciExpressGen3x16,
+                0xB8 => SystemSlotType::PciExpressGen4,
+                0xB9 => SystemSlotType::PciExpressGen4x1,
+                0xBA => SystemSlotType::PciExpressGen4x2,
+                0xBB => SystemSlotType::PciExpressGen4x4,
+                0xBC => SystemSlotType::PciExpressGen4x8,
+                0xBD => SystemSlotType::PciExpressGen4x16,
+                0xBE => SystemSlotType::PciExpressGen5,
+                0xBF => SystemSlotType::PciExpressGen5x1,
+                0xC0 => SystemSlotType::PciExpressGen5x2,
+                0xC1 => SystemSlotType::PciExpressGen5x4,
+                0xC2 => SystemSlotType::PciExpressGen5x8,
+                0xC3 => SystemSlotType::PciExpressGen5x16,
+                0xC4 => SystemSlotType::PciExpressGen6,
+                0xC5 => SystemSlotType::EnterpriseAndDataCenter1UE1,
+                0xC6 => SystemSlotType::EnterpriseAndDataCenter3InE3,
+                _ => SystemSlotType::None,
+            },
+            raw,
         }
     }
 }
@@ -198,7 +224,7 @@ impl fmt::Debug for SystemSlotTypeData {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SystemSlotTypeData>())
             .field("raw", &self.raw)
-            .field("slot_designation", &self.system_slot_type())
+            .field("value", &self.value)
             .finish()
     }
 }
@@ -362,6 +388,225 @@ pub enum SystemSlotType {
     None,
 }
 
+/// # Data Bus Width Data
+pub struct SlotDataBusWidthData {
+    /// Raw value
+    ///
+    /// _raw_ is most useful when _value_ is None.
+    /// This is most likely to occur when the standard was updated but
+    /// this library code has not been updated to match the current
+    /// standard.
+    pub raw: u8,
+    /// The contained [SlotDataBusWidth] value
+    pub value: SlotDataBusWidth,
+}
+
+impl Deref for SlotDataBusWidthData {
+    type Target = SlotDataBusWidth;
+
+    fn deref(&self) -> &Self::Target {
+        &self.value
+    }
+}
+
+impl From<u8> for SlotDataBusWidthData {
+    fn from(raw: u8) -> Self {
+        SlotDataBusWidthData {
+            value: match raw {
+                0x01 => SlotDataBusWidth::Other,
+                0x02 => SlotDataBusWidth::Unknown,
+                0x03 => SlotDataBusWidth::Bit8,
+                0x04 => SlotDataBusWidth::Bit16,
+                0x05 => SlotDataBusWidth::Bit32,
+                0x06 => SlotDataBusWidth::Bit64,
+                0x07 => SlotDataBusWidth::Bit128,
+                0x08 => SlotDataBusWidth::X1,
+                0x09 => SlotDataBusWidth::X2,
+                0x0A => SlotDataBusWidth::X4,
+                0x0B => SlotDataBusWidth::X8,
+                0x0C => SlotDataBusWidth::X12,
+                0x0D => SlotDataBusWidth::X16,
+                0x0E => SlotDataBusWidth::X32,
+                _ => SlotDataBusWidth::None,
+            },
+            raw,
+        }
+    }
+}
+
+impl fmt::Debug for SlotDataBusWidthData {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SlotDataBusWidthData>())
+            .field("raw", &self.raw)
+            .field("value", &self.value)
+            .finish()
+    }
+}
+
+/// # System Slot Data Bus Width
+#[derive(Debug, PartialEq, Eq)]
+pub enum SlotDataBusWidth {
+    /// Other
+    Other,
+    /// Unknown
+    Unknown,
+    /// 8 bit
+    Bit8,
+    /// 16 bit
+    Bit16,
+    /// 32 bit
+    Bit32,
+    /// 64 bit
+    Bit64,
+    /// 128 bit
+    Bit128,
+    /// 1x or x1
+    X1,
+    /// 2x or x2
+    X2,
+    /// 4x or x4
+    X4,
+    /// 8x or x8
+    X8,
+    /// 12x or x12
+    X12,
+    /// 16x or x16
+    X16,
+    /// 32x or x32
+    X32,
+    /// A value unknown to this standard, check the raw value
+    None,
+}
+
+/// # System Slot Current Usage Data
+pub struct SlotCurrentUsageData {
+    /// Raw value
+    ///
+    /// _raw_ is most useful when _value_ is None.
+    /// This is most likely to occur when the standard was updated but
+    /// this library code has not been updated to match the current
+    /// standard.
+    pub raw: u8,
+    /// The contained [SlotCurrentUsage] value
+    pub value: SlotCurrentUsage,
+}
+
+impl Deref for SlotCurrentUsageData {
+    type Target = SlotCurrentUsage;
+
+    fn deref(&self) -> &Self::Target {
+        &self.value
+    }
+}
+
+impl From<u8> for SlotCurrentUsageData {
+    fn from(raw: u8) -> Self {
+        SlotCurrentUsageData {
+            value: match raw {
+                0x01 => SlotCurrentUsage::Other,
+                0x02 => SlotCurrentUsage::Unknown,
+                0x03 => SlotCurrentUsage::Available,
+                0x04 => SlotCurrentUsage::InUse,
+                0x05 => SlotCurrentUsage::Unavailable,
+                _ => SlotCurrentUsage::None,
+            },
+            raw,
+        }
+    }
+}
+
+impl fmt::Debug for SlotCurrentUsageData {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SlotCurrentUsageData>())
+            .field("raw", &self.raw)
+            .field("value", &self.value)
+            .finish()
+    }
+}
+
+/// # System Slot Current Usage
+#[derive(Debug, PartialEq, Eq)]
+pub enum SlotCurrentUsage {
+    /// Other
+    Other,
+    /// Unknown
+    Unknown,
+    /// Available
+    Available,
+    /// In use
+    InUse,
+    /// Unavailable
+    Unavailable,
+    /// A value unknown to this standard, check the raw value
+    None,
+}
+
+/// # System Slot Current Usage Data
+pub struct SlotLengthData {
+    /// Raw value
+    ///
+    /// _raw_ is most useful when _value_ is None.
+    /// This is most likely to occur when the standard was updated but
+    /// this library code has not been updated to match the current
+    /// standard.
+    pub raw: u8,
+    /// The contained [SlotLength] value
+    pub value: SlotLength,
+}
+
+impl Deref for SlotLengthData {
+    type Target = SlotLength;
+
+    fn deref(&self) -> &Self::Target {
+        &self.value
+    }
+}
+
+impl From<u8> for SlotLengthData {
+    fn from(raw: u8) -> Self {
+        SlotLengthData {
+            value: match raw {
+                0x01 => SlotLength::Other,
+                0x02 => SlotLength::Unknown,
+                0x03 => SlotLength::ShortLength,
+                0x04 => SlotLength::LongLength,
+                0x05 => SlotLength::DriveFormFactor25,
+                0x06 => SlotLength::DriveFormFactor35,
+                _ => SlotLength::None,
+            },
+            raw,
+        }
+    }
+}
+
+impl fmt::Debug for SlotLengthData {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SlotLengthData>())
+            .field("raw", &self.raw)
+            .field("value", &self.value)
+            .finish()
+    }
+}
+
+/// # System Slot Length
+#[derive(Debug, PartialEq, Eq)]
+pub enum SlotLength {
+    /// Other
+    Other,
+    /// Unknown
+    Unknown,
+    /// Short Length
+    ShortLength,
+    /// Long Length
+    LongLength,
+    /// 2.5" drive form factor
+    DriveFormFactor25,
+    /// 3.5" drive form factor
+    DriveFormFactor35,
+    /// A value unknown to this standard, check the raw value
+    None,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -375,6 +620,16 @@ mod tests {
 
         let parts = SMBiosStructParts::new(struct_type9.as_slice());
         let test_struct = SMBiosSystemSlot::new(&parts);
+
+        assert_eq!(
+            *test_struct.system_slot_type().unwrap(),
+            SystemSlotType::PciExpress
+        );
+
+        assert_eq!(
+            *test_struct.slot_data_bus_width().unwrap(),
+            SlotDataBusWidth::X16
+        );
 
         println!("{:?}", test_struct);
     }

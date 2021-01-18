@@ -11,7 +11,8 @@ use std::io;
 // TODO:
 // Write a function to iterate through a folder full of non-windows DAT files
 
-fn load_windows_raw_files(folder: &str) -> Vec<RawSMBiosData> {
+/// Temporary function for loading raw files from a folder
+pub fn load_windows_raw_files(folder: &str) -> Vec<RawSMBiosData> {
     let mut result = Vec::new();
 
     let entries = fs::read_dir(folder)
@@ -109,7 +110,7 @@ mod tests {
                     let parts = non_header.split(": ");
 
                     let mut field_name = String::new();
-                    let mut field_value = String::new();
+                    let mut field_value: String;
                     for part in parts {
                         let mut field_and_value = part.split(", ");
                         field_value = field_and_value.next().unwrap().to_string();

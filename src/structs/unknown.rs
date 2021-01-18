@@ -20,7 +20,10 @@ impl<'a> SMBiosUnknown<'a> {
         SMBiosUnknown { parts: parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    /// Structure parts of this unknown structure
+    ///
+    /// Use this to inspect the structure in more detail.
+    pub fn parts(&self) -> &'a SMBiosStructParts<'a> {
         self.parts
     }
 }
