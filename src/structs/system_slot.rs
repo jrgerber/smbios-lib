@@ -61,13 +61,17 @@ impl<'a> SMBiosSystemSlot<'a> {
     }
 
     /// Slot Characteristics 1
-    pub fn slot_characteristics_1(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x0B)
+    pub fn slot_characteristics_1(&self) -> Option<SystemSlotCharacteristics1> {
+        self.parts
+            .get_field_byte(0x0B)
+            .and_then(|raw| Some(SystemSlotCharacteristics1::from(raw)))
     }
 
     /// Slot Characteristics 2
-    pub fn slot_characteristics_2(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x0C)
+    pub fn slot_characteristics_2(&self) -> Option<SystemSlotCharacteristics2> {
+        self.parts
+            .get_field_byte(0x0C)
+            .and_then(|raw| Some(SystemSlotCharacteristics2::from(raw)))
     }
 
     /// Segment Group Number (Base)
@@ -605,6 +609,175 @@ pub enum SlotLength {
     DriveFormFactor35,
     /// A value unknown to this standard, check the raw value
     None,
+}
+
+/// # System Slot Characteristics 1
+pub struct SystemSlotCharacteristics1 {
+    raw: u8,
+}
+
+impl Deref for SystemSlotCharacteristics1 {
+    type Target = u8;
+
+    fn deref(&self) -> &Self::Target {
+        &self.raw
+    }
+}
+
+impl From<u8> for SystemSlotCharacteristics1 {
+    fn from(raw: u8) -> Self {
+        SystemSlotCharacteristics1 { raw }
+    }
+}
+
+impl SystemSlotCharacteristics1 {
+    /// Characteristics unknown.
+    pub fn unknown(&self) -> bool {
+        self.raw & 0x01 == 0x01
+    }
+
+    /// Provides 5.0 volts.
+    pub fn provides5_volts(&self) -> bool {
+        self.raw & 0x02 == 0x02
+    }
+
+    /// Provides 3.3 volts.
+    pub fn provides33_volts(&self) -> bool {
+        self.raw & 0x04 == 0x04
+    }
+
+    /// Slot’s opening is shared with another slot (for example, PCI/EISA shared slot).
+    pub fn shared(&self) -> bool {
+        self.raw & 0x08 == 0x08
+    }
+
+    /// PC Card slot supports PC Card-16.
+    pub fn supports_pc_card16(&self) -> bool {
+        self.raw & 0x10 == 0x10
+    }
+
+    /// PC Card slot supports CardBus.
+    pub fn supports_card_bus(&self) -> bool {
+        self.raw & 0x20 == 0x20
+    }
+
+    /// PC Card slot supports Zoom Video.
+    pub fn supports_zoom_video(&self) -> bool {
+        self.raw & 0x40 == 0x40
+    }
+
+    /// PC Card slot supports Modem Ring Resume.
+    pub fn supports_modem_ring_resume(&self) -> bool {
+        self.raw & 0x80 == 0x80
+    }
+}
+
+impl fmt::Debug for SystemSlotCharacteristics1 {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SlotLengthData>())
+            .field("raw", &self.raw)
+            .field("unknown", &self.unknown())
+            .field("provides5_volts", &self.provides5_volts())
+            .field("provides33_volts", &self.provides33_volts())
+            .field("shared", &self.shared())
+            .field("supports_pc_card16", &self.supports_pc_card16())
+            .field("supports_card_bus", &self.supports_card_bus())
+            .field("supports_zoom_video", &self.supports_zoom_video())
+            .field(
+                "supports_modem_ring_resume",
+                &self.supports_modem_ring_resume(),
+            )
+            .finish()
+    }
+}
+
+/// # System Slot Characteristics 2
+pub struct SystemSlotCharacteristics2 {
+    raw: u8,
+}
+
+impl Deref for SystemSlotCharacteristics2 {
+    type Target = u8;
+
+    fn deref(&self) -> &Self::Target {
+        &self.raw
+    }
+}
+
+impl From<u8> for SystemSlotCharacteristics2 {
+    fn from(raw: u8) -> Self {
+        SystemSlotCharacteristics2 { raw }
+    }
+}
+
+impl SystemSlotCharacteristics2 {
+    /// PCI slot supports Power Management Event (PME#) signal.
+    pub fn supports_power_management_event(&self) -> bool {
+        self.raw & 0x01 == 0x01
+    }
+
+    /// Slot supports hot-plug devices.
+    pub fn supports_hot_plug_devices(&self) -> bool {
+        self.raw & 0x02 == 0x02
+    }
+
+    /// PCI slot supports SMBus signal.
+    pub fn supports_smbus_signal(&self) -> bool {
+        self.raw & 0x04 == 0x04
+    }
+
+    /// PCIe slot supports bifurcation.
+    ///
+    /// This slot can partition its lanes into two or more PCIe devices plugged into the slot.
+    /// Note: This field does not indicate complete details on what levels of bifurcation
+    /// are supported by the slot, but only that the slot supports some level of bifurcation.
+    pub fn supports_bifurcation(&self) -> bool {
+        self.raw & 0x08 == 0x08
+    }
+
+    /// Slot supports async/surprise removal.
+    ///
+    /// i.e., removal without prior notification to the operating system, device driver, or applications.
+    pub fn supports_suprise_removal(&self) -> bool {
+        self.raw & 0x10 == 0x10
+    }
+
+    /// Flexbus slot, CXL 1.0 capable.
+    pub fn flexbus_slot_cxl10_capable(&self) -> bool {
+        self.raw & 0x20 == 0x20
+    }
+
+    /// Flexbus slot, CXL 2.0 capable.
+    pub fn flexbus_slot_cxl20_capable(&self) -> bool {
+        self.raw & 0x40 == 0x40
+    }
+}
+
+impl fmt::Debug for SystemSlotCharacteristics2 {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SlotLengthData>())
+            .field("raw", &self.raw)
+            .field(
+                "supports_power_management_event",
+                &self.supports_power_management_event(),
+            )
+            .field(
+                "supports_hot_plug_devices",
+                &self.supports_hot_plug_devices(),
+            )
+            .field("supports_smbus_signal", &self.supports_smbus_signal())
+            .field("supports_bifurcation", &self.supports_bifurcation())
+            .field("supports_suprise_removal", &self.supports_suprise_removal())
+            .field(
+                "flexbus_slot_cxl10_capable",
+                &self.flexbus_slot_cxl10_capable(),
+            )
+            .field(
+                "flexbus_slot_cxl20_capable",
+                &self.flexbus_slot_cxl20_capable(),
+            )
+            .finish()
+    }
 }
 
 #[cfg(test)]
