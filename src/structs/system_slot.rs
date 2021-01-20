@@ -1,5 +1,4 @@
 use super::*;
-use std::ops::Deref;
 
 /// # System Slots (Type 9)
 ///
@@ -673,6 +672,7 @@ pub enum SlotLength {
 }
 
 /// # System Slot Characteristics 1
+#[derive(PartialEq, Eq)]
 pub struct SystemSlotCharacteristics1 {
     raw: u8,
 }
@@ -753,6 +753,7 @@ impl fmt::Debug for SystemSlotCharacteristics1 {
 }
 
 /// # System Slot Characteristics 2
+#[derive(PartialEq, Eq)]
 pub struct SystemSlotCharacteristics2 {
     raw: u8,
 }
