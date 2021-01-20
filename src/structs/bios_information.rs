@@ -231,6 +231,31 @@ mod tests {
 
     #[test]
     fn unit_test() {
+        // BIOS Information structure is sensitive to BIOS specification versions
+        // and prone to bugs.  Therefore, it is important to test different
+        // structure versions.
+        //
+        // The length field specifies:
+        // 12h + number of BIOS Characteristics
+        // Extension Bytes. If no Extension Bytes are
+        // used the Length is 12h.
+        //
+        // For version 2.1 and 2.2 implementations, the length is 13h
+        // because one extension byte is defined.
+        //
+        // For version 2.3 and later implementations, the
+        // length is at least 14h because two extension
+        // bytes are defined.
+        //
+        // For version 2.4 to 3.0, implementations, the length
+        // is at least 18h because bytes 14-17h are defined.
+        //
+        // For version 3.1 and later implementations, the
+        // length is at least 1Ah because bytes 14-19h
+        // are defined.
+
+        // 2.4 to 3.0 BIOS Information structure.  Does not include _extended_rom_size()_
+        // field or fields beyond.
         let struct_type0 = vec![
             0x00, 0x18, 0x00, 0x00, 0x01, 0x02, 0x00, 0xF0, 0x03, 0xFF, 0x80, 0x98, 0x8B, 0x3F,
             0x01, 0x00, 0x11, 0x00, 0x03, 0x0D, 0x00, 0x21, 0x11, 0x2D, 0x4C, 0x45, 0x4E, 0x4F,
@@ -258,6 +283,9 @@ mod tests {
         assert_eq!(test_struct.system_bios_minor_release(), Some(33));
         assert_eq!(test_struct.e_c_firmware_major_release(), Some(17));
         assert_eq!(test_struct.e_c_firmware_minor_release(), Some(45));
-        assert_eq!(test_struct.extended_rom_size(), Some(76));
+
+        // 2.4 to 3.0 BIOS Information does not include _extended_rom_size()_ or
+        // fields beyond.
+        assert!(test_struct.extended_rom_size().is_none());
     }
 }

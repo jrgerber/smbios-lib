@@ -23,8 +23,8 @@ impl<'a> SMBiosStruct<'a> for SMBiosSystemSlot<'a> {
 
 impl<'a> SMBiosSystemSlot<'a> {
     /// Slot Designation
-    pub fn slot_designation(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x04)
+    pub fn slot_designation(&self) -> Option<String> {
+        self.parts.get_field_string(0x04)
     }
 
     /// Slot Type
@@ -35,10 +35,10 @@ impl<'a> SMBiosSystemSlot<'a> {
     }
 
     /// Slot Data Bus Width
-    pub fn slot_data_bus_width(&self) -> Option<SlotDataBusWidthData> {
+    pub fn slot_data_bus_width(&self) -> Option<SlotWidthData> {
         self.parts
             .get_field_byte(0x06)
-            .and_then(|raw| Some(SlotDataBusWidthData::from(raw)))
+            .and_then(|raw| Some(SlotWidthData::from(raw)))
     }
 
     /// Current Usage
@@ -93,6 +93,62 @@ impl<'a> SMBiosSystemSlot<'a> {
     pub fn data_bus_width(&self) -> Option<u8> {
         self.parts.get_field_byte(0x11)
     }
+
+    /// Number of peer Segment/Bus/Device/Function/Width groups that follow
+    pub fn peer_group_count(&self) -> Option<usize> {
+        self.parts
+            .get_field_byte(0x12)
+            .and_then(|count| Some(count as usize))
+    }
+
+    /// 5*n
+    fn peer_group_size(&self) -> Option<usize> {
+        self.peer_group_count()
+            .and_then(|count| Some(count as usize * SlotPeerGroup::SIZE))
+    }
+
+    /// Iterates over the [SlotPeerGroup] entries
+    pub fn peer_group_iterator(&'a self) -> SlotPeerGroupIterator<'a> {
+        SlotPeerGroupIterator::new(self)
+    }
+
+    /// Slot Information
+    pub fn slot_information(&self) -> Option<u8> {
+        self.peer_group_size()
+            .and_then(|size| self.parts.get_field_byte(size + 0x13)) // TODO: watch for an errata, 0x13 is 0x14 in the 3.4.0 spec.
+    }
+
+    /// Slot Physical Width
+    ///
+    /// This field indicates the physical width of the slot whereas _slot_data_bus_width()_ indicates the
+    /// electrical width of the slot.
+    ///
+    /// The possible values of both fields are listed in Table 46 – System Slots: Slot Width field.
+    pub fn slot_physical_width(&self) -> Option<SlotWidthData> {
+        self.peer_group_size().and_then(|size| {
+            self.parts
+                .get_field_byte(size + 0x14)
+                .and_then(|raw| Some(SlotWidthData::from(raw)))
+        })
+    }
+
+    /// Slot Pitch
+    ///
+    /// The Slot Pitch field contains a numeric value that indicates the pitch of the slot in units of 1/100 millimeter.
+    ///
+    /// The pitch is defined by each slot/card specification, but typically describes add-in card to add-in card
+    /// pitch.
+    ///
+    /// For EDSFF slots, the pitch is defined in SFF-TA-1006 table 7.1, SFF-TA-1007 table 7.1 (add-in card to
+    /// add-in card pitch), and SFF-TA-1008 table 6-1 (SSD to SSD pitch).
+    ///
+    /// For example, if the pitch for the slot is 12.5 mm, the value 1250 would be used.
+    ///
+    /// A value of 0 implies that the slot pitch is not given or is unknown.
+    pub fn slot_pitch(&self) -> Option<u16> {
+        self.peer_group_size()
+            .and_then(|size| self.parts.get_field_word(size + 0x15))
+    }
 }
 
 impl fmt::Debug for SMBiosSystemSlot<'_> {
@@ -111,6 +167,11 @@ impl fmt::Debug for SMBiosSystemSlot<'_> {
             .field("bus_number", &self.bus_number())
             .field("device_function_number", &self.device_function_number())
             .field("data_bus_width", &self.data_bus_width())
+            .field("peer_group_count", &self.peer_group_count())
+            .field("peer_group_iterator", &self.peer_group_iterator())
+            .field("slot_information", &self.slot_information())
+            .field("slot_physical_width", &self.slot_physical_width())
+            .field("slot_pitch", &self.slot_pitch())
             .finish()
     }
 }
@@ -393,7 +454,7 @@ pub enum SystemSlotType {
 }
 
 /// # Data Bus Width Data
-pub struct SlotDataBusWidthData {
+pub struct SlotWidthData {
     /// Raw value
     ///
     /// _raw_ is most useful when _value_ is None.
@@ -401,55 +462,55 @@ pub struct SlotDataBusWidthData {
     /// this library code has not been updated to match the current
     /// standard.
     pub raw: u8,
-    /// The contained [SlotDataBusWidth] value
-    pub value: SlotDataBusWidth,
+    /// The contained [SlotWidth] value
+    pub value: SlotWidth,
 }
 
-impl Deref for SlotDataBusWidthData {
-    type Target = SlotDataBusWidth;
+impl Deref for SlotWidthData {
+    type Target = SlotWidth;
 
     fn deref(&self) -> &Self::Target {
         &self.value
     }
 }
 
-impl From<u8> for SlotDataBusWidthData {
+impl From<u8> for SlotWidthData {
     fn from(raw: u8) -> Self {
-        SlotDataBusWidthData {
+        SlotWidthData {
             value: match raw {
-                0x01 => SlotDataBusWidth::Other,
-                0x02 => SlotDataBusWidth::Unknown,
-                0x03 => SlotDataBusWidth::Bit8,
-                0x04 => SlotDataBusWidth::Bit16,
-                0x05 => SlotDataBusWidth::Bit32,
-                0x06 => SlotDataBusWidth::Bit64,
-                0x07 => SlotDataBusWidth::Bit128,
-                0x08 => SlotDataBusWidth::X1,
-                0x09 => SlotDataBusWidth::X2,
-                0x0A => SlotDataBusWidth::X4,
-                0x0B => SlotDataBusWidth::X8,
-                0x0C => SlotDataBusWidth::X12,
-                0x0D => SlotDataBusWidth::X16,
-                0x0E => SlotDataBusWidth::X32,
-                _ => SlotDataBusWidth::None,
+                0x01 => SlotWidth::Other,
+                0x02 => SlotWidth::Unknown,
+                0x03 => SlotWidth::Bit8,
+                0x04 => SlotWidth::Bit16,
+                0x05 => SlotWidth::Bit32,
+                0x06 => SlotWidth::Bit64,
+                0x07 => SlotWidth::Bit128,
+                0x08 => SlotWidth::X1,
+                0x09 => SlotWidth::X2,
+                0x0A => SlotWidth::X4,
+                0x0B => SlotWidth::X8,
+                0x0C => SlotWidth::X12,
+                0x0D => SlotWidth::X16,
+                0x0E => SlotWidth::X32,
+                _ => SlotWidth::None,
             },
             raw,
         }
     }
 }
 
-impl fmt::Debug for SlotDataBusWidthData {
+impl fmt::Debug for SlotWidthData {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SlotDataBusWidthData>())
+        fmt.debug_struct(std::any::type_name::<SlotWidthData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()
     }
 }
 
-/// # System Slot Data Bus Width
+/// # Slot Width
 #[derive(Debug, PartialEq, Eq)]
-pub enum SlotDataBusWidth {
+pub enum SlotWidth {
     /// Other
     Other,
     /// Unknown
@@ -674,7 +735,7 @@ impl SystemSlotCharacteristics1 {
 
 impl fmt::Debug for SystemSlotCharacteristics1 {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SlotLengthData>())
+        fmt.debug_struct(std::any::type_name::<SystemSlotCharacteristics1>())
             .field("raw", &self.raw)
             .field("unknown", &self.unknown())
             .field("provides5_volts", &self.provides5_volts())
@@ -755,7 +816,7 @@ impl SystemSlotCharacteristics2 {
 
 impl fmt::Debug for SystemSlotCharacteristics2 {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SlotLengthData>())
+        fmt.debug_struct(std::any::type_name::<SystemSlotCharacteristics2>())
             .field("raw", &self.raw)
             .field(
                 "supports_power_management_event",
@@ -780,12 +841,157 @@ impl fmt::Debug for SystemSlotCharacteristics2 {
     }
 }
 
+/// # Slot Peer Group entry within [SMBiosSystemSlot]
+pub struct SlotPeerGroup<'a> {
+    system_slot: &'a SMBiosSystemSlot<'a>,
+    entry_offset: usize,
+}
+
+impl<'a> SlotPeerGroup<'a> {
+    /// Size in bytes for this structure
+    const SIZE: usize = 5;
+    const SEGMENT_GROUP_NUMBER_OFFSET: usize = 0;
+    const BUS_NUMBER_OFFSET: usize = 2;
+    const DEVICE_FUNCTION_NUMBER_OFFSET: usize = 3;
+    const DATA_BUS_WIDTH_OFFSET: usize = 4;
+
+    fn new(system_slot: &'a SMBiosSystemSlot<'a>, entry_offset: usize) -> Self {
+        Self {
+            system_slot,
+            entry_offset,
+        }
+    }
+
+    /// Segment Group Number (Peer)
+    pub fn segment_group_number(&self) -> Option<u16> {
+        self.system_slot
+            .parts()
+            .get_field_word(self.entry_offset + Self::SEGMENT_GROUP_NUMBER_OFFSET)
+    }
+
+    /// Bus Number (Peer)
+    pub fn bus_number(&self) -> Option<u8> {
+        self.system_slot
+            .parts()
+            .get_field_byte(self.entry_offset + Self::BUS_NUMBER_OFFSET)
+    }
+
+    /// Device/Function Number (Peer)
+    pub fn device_function_number(&self) -> Option<u8> {
+        self.system_slot
+            .parts()
+            .get_field_byte(self.entry_offset + Self::DEVICE_FUNCTION_NUMBER_OFFSET)
+    }
+
+    /// Data bus width (Peer)
+    ///
+    /// Indicates electrical bus width of peer Segment/Bus/Device/Function.
+    pub fn data_bus_width(&self) -> Option<u8> {
+        self.system_slot
+            .parts()
+            .get_field_byte(self.entry_offset + Self::DATA_BUS_WIDTH_OFFSET)
+    }
+}
+
+impl fmt::Debug for SlotPeerGroup<'_> {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SlotPeerGroup>())
+            .field("segment_group_number", &self.segment_group_number())
+            .field("bus_number", &self.bus_number())
+            .field("device_function_number", &self.device_function_number())
+            .field("data_bus_width", &self.data_bus_width())
+            .finish()
+    }
+}
+
+/// # On-board Device Itereator for [SlotPeerGroup]s contained within [SMBiosSystemSlot]
+pub struct SlotPeerGroupIterator<'a> {
+    data: &'a SMBiosSystemSlot<'a>,
+    current_index: usize,
+    current_entry: usize,
+    number_of_entries: usize,
+}
+
+impl<'a> SlotPeerGroupIterator<'a> {
+    const PEER_GROUPS_OFFSET: usize = 0x13;
+
+    fn new(data: &'a SMBiosSystemSlot<'a>) -> Self {
+        SlotPeerGroupIterator {
+            data: data,
+            current_index: Self::PEER_GROUPS_OFFSET,
+            current_entry: 0,
+            number_of_entries: data.peer_group_count().unwrap_or(0),
+        }
+    }
+
+    fn reset(&mut self) {
+        self.current_index = Self::PEER_GROUPS_OFFSET;
+        self.current_entry = 0;
+    }
+}
+
+impl<'a> IntoIterator for &'a SlotPeerGroupIterator<'a> {
+    type Item = SlotPeerGroup<'a>;
+    type IntoIter = SlotPeerGroupIterator<'a>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        SlotPeerGroupIterator {
+            data: self.data,
+            current_index: SlotPeerGroupIterator::PEER_GROUPS_OFFSET,
+            current_entry: 0,
+            number_of_entries: self.data.peer_group_count().unwrap_or(0),
+        }
+    }
+}
+
+impl<'a> Iterator for SlotPeerGroupIterator<'a> {
+    type Item = SlotPeerGroup<'a>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.current_entry == self.number_of_entries {
+            self.reset();
+            return None;
+        }
+
+        let next_index = self.current_index + SlotPeerGroup::SIZE;
+        match self
+            .data
+            .parts()
+            .get_field_data(self.current_index, next_index)
+        {
+            Some(_) => {
+                let result = SlotPeerGroup::new(self.data, self.current_index);
+                self.current_index = next_index;
+                self.current_entry += 1;
+                Some(result)
+            }
+            None => {
+                self.reset();
+                None
+            }
+        }
+    }
+}
+
+impl<'a> fmt::Debug for SlotPeerGroupIterator<'a> {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_list().entries(self.into_iter()).finish()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn unit_test() {
+        // System Slot structure lengths and their versions:
+        // 0Ch for version 2.0 implementations
+        // 0Dh for versions 2.1 to 2.5
+        // 11h for versions 2.6 to 3.1.1
+        // Minimum of 11h for version 3.2 and later.
+
+        // 2.6 to 3.1.1 System Slot structure (0x11 length, it does not include _data_bus_width()_ and beyond)
         let struct_type9 = vec![
             0x09, 0x11, 0x1C, 0x00, 0x01, 0xA5, 0x0D, 0x04, 0x04, 0x00, 0x00, 0x0C, 0x01, 0x00,
             0x00, 0x00, 0x08, 0x4A, 0x36, 0x42, 0x32, 0x00, 0x00,
@@ -794,15 +1000,45 @@ mod tests {
         let parts = SMBiosStructParts::new(struct_type9.as_slice());
         let test_struct = SMBiosSystemSlot::new(&parts);
 
+        assert_eq!(test_struct.slot_designation(), Some("J6B2".to_string()));
+
         assert_eq!(
             *test_struct.system_slot_type().unwrap(),
             SystemSlotType::PciExpress
         );
 
-        assert_eq!(
-            *test_struct.slot_data_bus_width().unwrap(),
-            SlotDataBusWidth::X16
-        );
+        assert_eq!(*test_struct.slot_data_bus_width().unwrap(), SlotWidth::X16);
+
+        // 2.6 to 3.1.1 has no data_bus_width() field or beyond fields
+        assert!(test_struct.data_bus_width().is_none());
+
+        // 3.4 System Slot structure
+        let struct_type9 = vec![
+            0x09, 0x1C, 0x1C, 0x00, 0x01, 0xA5, 0x0D, 0x04, 0x04, 0x00, 0x00, 0x0C, 0x01, 0x00,
+            0x00, 0x00, 0x08, 0x99, 0x01, 0x23, 0x01, 0x04, 0x05, 0x06, 0x07, 0x08, 0xAB, 0x09,
+            0x4A, 0x36, 0x42, 0x32, 0x00, 0x00,
+        ];
+        let parts = SMBiosStructParts::new(struct_type9.as_slice());
+        let test_struct = SMBiosSystemSlot::new(&parts);
+
+        // 3.2 fields
+        assert_eq!(test_struct.data_bus_width(), Some(0x99));
+        assert_eq!(test_struct.peer_group_count(), Some(0x01));
+
+        let mut iterator = test_struct.peer_group_iterator().into_iter();
+        let first = iterator.next().unwrap();
+        assert_eq!(first.segment_group_number(), Some(0x0123));
+        assert_eq!(first.bus_number(), Some(0x04));
+        assert_eq!(first.device_function_number(), Some(0x05));
+        assert_eq!(first.data_bus_width(), Some(0x06));
+
+        // 3.4 fields
+        // TODO:
+        // Note: There will be an erratum published for these fields.  For this test case
+        // the field offsets have been shifted back by 1 from 0x14, 0x15, 0x16 (+ 5 * n), to 0x13...
+        assert_eq!(test_struct.slot_information(), Some(0x07));
+        assert_eq!(*test_struct.slot_physical_width().unwrap(), SlotWidth::X1);
+        assert_eq!(test_struct.slot_pitch(), Some(0x09AB));
 
         println!("{:?}", test_struct);
     }

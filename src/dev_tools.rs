@@ -88,7 +88,7 @@ mod tests {
                     println!(
                         "let struct_type{} = vec!{};",
                         type_to_find,
-                        PrintableArray(structure.data)
+                        PrintableArray(structure.raw)
                     );
                     println!();
 
