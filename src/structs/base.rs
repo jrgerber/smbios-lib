@@ -160,39 +160,64 @@ pub enum DefinedStruct<'a> {
 /// Every SMBIOS structure contains three parts or sections: A header,
 /// structure data, and string data.
 pub struct SMBiosStructParts<'a> {
+    /// The raw data, including header, fields, and strings
+    pub raw: &'a [u8],
+
     /// The [Header] of the structure
     pub header: Header<'a>,
-    /// The raw data for the entire structure including header and strings
-    pub data: &'a [u8],
+
+    /// The raw data for the header and fields
+    ///
+    /// _fields_ is used by the get_field_*() functions. _fields_ does not
+    /// include _strings_; therefore, preventing accidentally retrieving
+    /// data from the _strings_ area.  This avoids a need to check
+    /// _header.length()_ during field retrieval.
+    ///
+    /// Note: A better design is for this to only hold the fields, however,
+    /// that will shift field offsets given in code by 4 (the header size).
+    /// The SMBIOS specification gives offsets relative to the start of the
+    /// header, and therefore maintaining this library code is easier to
+    /// keep the header.
+    ///
+    /// An alternative would be to make the get_field_*() functions adjust
+    /// for the header offset though this adds a small cost to every field
+    /// retrieval in comparison to just keeping an extra 4 bytes for every
+    /// structure.
+    pub fields: &'a [u8],
+
     /// The strings of the structure
     pub strings: Strings<'a>,
 }
 
 impl<'a> SMBiosStructParts<'a> {
     /// Creates a structure instance of the given byte array slice
-    pub fn new(data: &'a [u8]) -> Self {
+    pub fn new(raw: &'a [u8]) -> Self {
         SMBiosStructParts {
+            raw: raw,
             header: Header::new(
-                data.get(..Header::SIZE)
+                raw.get(..Header::SIZE)
                     .expect("A minimum of Header::SIZE bytes are required."),
             ),
-            data,
+            fields: raw
+                .get(..SMBiosStructParts::header_length(raw))
+                .unwrap_or(&[]),
             strings: {
-                //let string_area_start_index = data[1];
-                let string_area_start_index = data
-                    .get(Header::LENGTH_OFFSET..Header::LENGTH_OFFSET + 1)
-                    .unwrap_or(&[0])[0];
                 Strings::new(
-                    data.get(string_area_start_index as usize..data.len() - 2)
+                    raw.get(SMBiosStructParts::header_length(raw)..raw.len() - 2)
                         .unwrap_or(&[]),
                 )
-            }, //strings: Strings::new(data)
+            },
         }
+    }
+
+    fn header_length(raw: &[u8]) -> usize {
+        raw.get(Header::LENGTH_OFFSET..Header::LENGTH_OFFSET + 1)
+            .unwrap_or(&[0])[0] as usize
     }
 
     /// Retrieve a byte at the given offset from the structure's data section
     pub fn get_field_byte(&self, offset: usize) -> Option<u8> {
-        match self.data.get(offset..offset + 1) {
+        match self.fields.get(offset..offset + 1) {
             Some(val) => Some(val[0]),
             None => None,
         }
@@ -200,7 +225,7 @@ impl<'a> SMBiosStructParts<'a> {
 
     /// Retrieve a WORD at the given offset from the structure's data section
     pub fn get_field_word(&self, offset: usize) -> Option<u16> {
-        match self.data.get(offset..offset + 2) {
+        match self.fields.get(offset..offset + 2) {
             Some(val) => Some(u16::from_le_bytes(
                 val.try_into()
                     .expect("array length does not match type width"),
@@ -211,7 +236,7 @@ impl<'a> SMBiosStructParts<'a> {
 
     /// Retrieve a [Handle] at the given offset from the structure's data section
     pub fn get_field_handle(&self, offset: usize) -> Option<Handle> {
-        match self.data.get(offset..offset + 2) {
+        match self.fields.get(offset..offset + 2) {
             Some(val) => Some(Handle(u16::from_le_bytes(
                 val.try_into()
                     .expect("array length does not match type width"),
@@ -222,7 +247,7 @@ impl<'a> SMBiosStructParts<'a> {
 
     /// Retrieve a DWORD at the given offset from the structure's data section
     pub fn get_field_dword(&self, offset: usize) -> Option<u32> {
-        match self.data.get(offset..offset + 4) {
+        match self.fields.get(offset..offset + 4) {
             Some(val) => Some(u32::from_le_bytes(
                 val.try_into()
                     .expect("array length does not match type width"),
@@ -233,7 +258,7 @@ impl<'a> SMBiosStructParts<'a> {
 
     /// Retrieve a QWORD at the given offset from the structure's data section
     pub fn get_field_qword(&self, offset: usize) -> Option<u64> {
-        match self.data.get(offset..offset + 8) {
+        match self.fields.get(offset..offset + 8) {
             Some(val) => Some(u64::from_le_bytes(
                 val.try_into()
                     .expect("array length does not match type width"),
@@ -260,7 +285,7 @@ impl<'a> SMBiosStructParts<'a> {
 
     /// Retrieve a block of bytes from the structure's data section
     pub fn get_field_data(&self, start_index: usize, end_index: usize) -> Option<&[u8]> {
-        return self.data.get(start_index..end_index);
+        return self.raw.get(start_index..end_index);
     }
 
     /// Cast to a given structure
@@ -544,7 +569,13 @@ impl fmt::Debug for Header<'_> {
 }
 
 impl<'a> Header<'a> {
-    const SIZE: usize = 4;
+    /// Total size of a Header (4)
+    ///
+    /// A header has a byte for the _struct_type_ at offset 0,
+    /// a byte for the _length_ at offset 1,
+    /// and a word for the _handle_ at offset 2 for a total of
+    /// 4 bytes.
+    pub const SIZE: usize = 4;
     const LENGTH_OFFSET: usize = 1;
 
     fn new(data: &'a [u8]) -> Self {

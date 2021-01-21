@@ -39,8 +39,10 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
     /// Otherwise, either a lock is not present or it is
     /// unknown if the enclosure has a lock.
     /// Bits 6:0 Enumeration value.
-    pub fn chassis_type(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x05)
+    pub fn chassis_type(&self) -> Option<ChassisTypeData> {
+        self.parts
+            .get_field_byte(0x05)
+            .and_then(|raw| Some(ChassisTypeData::from(raw)))
     }
 
     /// Version
@@ -61,32 +63,40 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
     /// Boot-up State
     ///
     /// State of the enclosure when it was last booted.
-    pub fn bootup_state(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x09)
+    pub fn bootup_state(&self) -> Option<ChassisStateData> {
+        self.parts
+            .get_field_byte(0x09)
+            .and_then(|raw| Some(ChassisStateData::from(raw)))
     }
 
     /// Power supply state
     ///
     /// State of the enclosure’s power supply (or
     /// supplies) when last booted
-    pub fn power_supply_state(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x0A)
+    pub fn power_supply_state(&self) -> Option<ChassisStateData> {
+        self.parts
+            .get_field_byte(0x0A)
+            .and_then(|raw| Some(ChassisStateData::from(raw)))
     }
 
     /// Thermal state
     ///
     /// Thermal state of the enclosure when last
     /// booted.
-    pub fn thermal_state(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x0B)
+    pub fn thermal_state(&self) -> Option<ChassisStateData> {
+        self.parts
+            .get_field_byte(0x0B)
+            .and_then(|raw| Some(ChassisStateData::from(raw)))
     }
 
     /// Security status
     ///
     /// Physical security status of the enclosure when
     /// last booted.
-    pub fn security_status(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x0C)
+    pub fn security_status(&self) -> Option<ChassisSecurityStatusData> {
+        self.parts
+            .get_field_byte(0x0C)
+            .and_then(|raw| Some(ChassisSecurityStatusData::from(raw)))
     }
 
     /// OEM-defined
@@ -143,9 +153,13 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
         self.parts.get_field_byte(0x14)
     }
 
+    //TODO:
+
     // fn contained_elements(&self) -> Option<FixMe> {
     //     self.parts.get_field_undefined(0x15)
     // }
+
+    // TODO: This sku_number offset is incorrect, if follows the elements
 
     /// SKU number
     ///
@@ -177,9 +191,295 @@ impl fmt::Debug for SMBiosSystemChassisInformation<'_> {
                 "contained_element_record_length",
                 &self.contained_element_record_length(),
             )
+            // TODO:
             // .field("contained_elements", &self.contained_elements())
             .field("sku_number", &self.sku_number())
             .finish()
+    }
+}
+
+/// # Chassis Type Data
+pub struct ChassisTypeData {
+    /// Raw value
+    ///
+    /// _raw_ is most useful when _value_ is None.
+    /// This is most likely to occur when the standard was updated but
+    /// this library code has not been updated to match the current
+    /// standard.
+    raw: u8,
+    /// The contained [ChassisType] value
+    value: ChassisType,
+}
+
+impl fmt::Debug for ChassisTypeData {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<ChassisTypeData>())
+            .field("raw", &self.raw)
+            .field("value", &self.value)
+            .finish()
+    }
+}
+
+impl Deref for ChassisTypeData {
+    type Target = ChassisType;
+
+    fn deref(&self) -> &Self::Target {
+        &self.value
+    }
+}
+
+/// # Chassis Type
+#[derive(Debug, PartialEq, Eq)]
+pub enum ChassisType {
+    /// Other
+    Other,
+    /// Unknown
+    Unknown,
+    /// Desktop
+    Desktop,
+    /// Low Profile Desktop
+    LowProfileDesktop,
+    /// Pizza Box
+    PizzaBox,
+    /// Mini Tower
+    MiniTower,
+    /// Tower
+    Tower,
+    /// Portable
+    Portable,
+    /// Laptop
+    Laptop,
+    /// Notebook
+    Notebook,
+    /// Hand Held
+    HandHeld,
+    /// Docking Station
+    DockingStation,
+    /// All in One
+    AllInOne,
+    /// Sub Notebook
+    SubNotebook,
+    /// Space-saving
+    SpaceSaving,
+    /// Lunch Box
+    LunchBox,
+    /// Main Server Chassis
+    MainServerChassis,
+    /// Expansion Chassis
+    ExpansionChassis,
+    /// SubChassis
+    SubChassis,
+    /// Bus Expansion Chassis
+    BusExpansionChassis,
+    /// Peripheral Chassis
+    PeripheralChassis,
+    /// RAID Chassis
+    RaidChassis,
+    /// Rack Mount Chassis
+    RackMountChassis,
+    /// Sealed-case PC
+    SealedCasePC,
+    /// Multi-system chassis
+    MultiSystemChassis,
+    /// Compact PCI
+    CompactPci,
+    /// Advanced TCA
+    AdvancedTca,
+    /// Blade
+    Blade,
+    /// Blade Encloser
+    BladeEnclosure,
+    /// Tablet
+    Tablet,
+    /// Convertible
+    Convertible,
+    /// Detachable
+    Detachable,
+    /// IoT Gateway
+    IoTGateway,
+    /// Embedded PC
+    EmbeddedPC,
+    /// Mini PC
+    MiniPC,
+    /// Stick PC
+    StickPC,
+    /// A value unknown to this standard, check the raw value
+    None,
+}
+
+impl From<u8> for ChassisTypeData {
+    fn from(raw: u8) -> Self {
+        ChassisTypeData {
+            value: match raw {
+                0x01 => ChassisType::Other,
+                0x02 => ChassisType::Unknown,
+                0x03 => ChassisType::Desktop,
+                0x04 => ChassisType::LowProfileDesktop,
+                0x05 => ChassisType::PizzaBox,
+                0x06 => ChassisType::MiniTower,
+                0x07 => ChassisType::Tower,
+                0x08 => ChassisType::Portable,
+                0x09 => ChassisType::Laptop,
+                0x0A => ChassisType::Notebook,
+                0x0B => ChassisType::HandHeld,
+                0x0C => ChassisType::DockingStation,
+                0x0D => ChassisType::AllInOne,
+                0x0E => ChassisType::SubNotebook,
+                0x0F => ChassisType::SpaceSaving,
+                0x10 => ChassisType::LunchBox,
+                0x11 => ChassisType::MainServerChassis,
+                0x12 => ChassisType::ExpansionChassis,
+                0x13 => ChassisType::SubChassis,
+                0x14 => ChassisType::BusExpansionChassis,
+                0x15 => ChassisType::PeripheralChassis,
+                0x16 => ChassisType::RaidChassis,
+                0x17 => ChassisType::RackMountChassis,
+                0x18 => ChassisType::SealedCasePC,
+                0x19 => ChassisType::MultiSystemChassis,
+                0x1A => ChassisType::CompactPci,
+                0x1B => ChassisType::AdvancedTca,
+                0x1C => ChassisType::Blade,
+                0x1D => ChassisType::BladeEnclosure,
+                0x1E => ChassisType::Tablet,
+                0x1F => ChassisType::Convertible,
+                0x20 => ChassisType::Detachable,
+                0x21 => ChassisType::IoTGateway,
+                0x22 => ChassisType::EmbeddedPC,
+                0x23 => ChassisType::MiniPC,
+                0x24 => ChassisType::StickPC,
+                _ => ChassisType::None,
+            },
+            raw,
+        }
+    }
+}
+
+/// # Chassis State Data
+pub struct ChassisStateData {
+    /// Raw value
+    ///
+    /// _raw_ is most useful when _value_ is None.
+    /// This is most likely to occur when the standard was updated but
+    /// this library code has not been updated to match the current
+    /// standard.
+    raw: u8,
+    /// The contained [ChassisState] value
+    value: ChassisState,
+}
+
+impl fmt::Debug for ChassisStateData {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<ChassisStateData>())
+            .field("raw", &self.raw)
+            .field("value", &self.value)
+            .finish()
+    }
+}
+
+impl Deref for ChassisStateData {
+    type Target = ChassisState;
+
+    fn deref(&self) -> &Self::Target {
+        &self.value
+    }
+}
+
+/// # Chassis Statue
+#[derive(Debug, PartialEq, Eq)]
+pub enum ChassisState {
+    /// Other
+    Other,
+    /// Unknown
+    Unknown,
+    /// Safe
+    Safe,
+    /// Warning
+    Warning,
+    /// Critical
+    Critical,
+    /// Non-recoverable
+    NonRecoverable,
+    /// A value unknown to this standard, check the raw value
+    None,
+}
+
+impl From<u8> for ChassisStateData {
+    fn from(raw: u8) -> Self {
+        ChassisStateData {
+            value: match raw {
+                0x01 => ChassisState::Other,
+                0x02 => ChassisState::Unknown,
+                0x03 => ChassisState::Safe,
+                0x04 => ChassisState::Warning,
+                0x05 => ChassisState::Critical,
+                0x06 => ChassisState::NonRecoverable,
+                _ => ChassisState::None,
+            },
+            raw,
+        }
+    }
+}
+
+/// # Chassis Security Status Data
+pub struct ChassisSecurityStatusData {
+    /// Raw value
+    ///
+    /// _raw_ is most useful when _value_ is None.
+    /// This is most likely to occur when the standard was updated but
+    /// this library code has not been updated to match the current
+    /// standard.
+    raw: u8,
+    /// The contained [ChassisSecurityStatus] value
+    value: ChassisSecurityStatus,
+}
+
+impl fmt::Debug for ChassisSecurityStatusData {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<ChassisSecurityStatusData>())
+            .field("raw", &self.raw)
+            .field("value", &self.value)
+            .finish()
+    }
+}
+
+impl Deref for ChassisSecurityStatusData {
+    type Target = ChassisSecurityStatus;
+
+    fn deref(&self) -> &Self::Target {
+        &self.value
+    }
+}
+
+/// # Chassis Security Status
+#[derive(Debug, PartialEq, Eq)]
+pub enum ChassisSecurityStatus {
+    /// Other
+    Other,
+    /// Unknown
+    Unknown,
+    /// None
+    StatusNone,
+    /// External interface locked out
+    ExternalInterfaceLockedOut,
+    /// External interface enabled
+    ExternalInterfaceEnabled,
+    /// A value unknown to this standard, check the raw value
+    None,
+}
+
+impl From<u8> for ChassisSecurityStatusData {
+    fn from(raw: u8) -> Self {
+        ChassisSecurityStatusData {
+            value: match raw {
+                0x01 => ChassisSecurityStatus::Other,
+                0x02 => ChassisSecurityStatus::Unknown,
+                0x03 => ChassisSecurityStatus::StatusNone,
+                0x04 => ChassisSecurityStatus::ExternalInterfaceLockedOut,
+                0x05 => ChassisSecurityStatus::ExternalInterfaceEnabled,
+                _ => ChassisSecurityStatus::None,
+            },
+            raw,
+        }
     }
 }
 
@@ -201,14 +501,20 @@ mod tests {
         let test_struct = SMBiosSystemChassisInformation::new(&parts);
 
         assert_eq!(test_struct.manufacturer(), Some("LENOVO".to_string()));
-        assert_eq!(test_struct.chassis_type(), Some(3));
+        assert_eq!(*test_struct.chassis_type().unwrap(), ChassisType::Desktop);
         assert_eq!(test_struct.version(), Some("None".to_string()));
         assert_eq!(test_struct.serial_number(), Some("MJ06URDZ".to_string()));
         assert_eq!(test_struct.asset_tag_number(), Some("4089985".to_string()));
-        assert_eq!(test_struct.bootup_state(), Some(3));
-        assert_eq!(test_struct.power_supply_state(), Some(3));
-        assert_eq!(test_struct.thermal_state(), Some(3));
-        assert_eq!(test_struct.security_status(), Some(3));
+        assert_eq!(*test_struct.bootup_state().unwrap(), ChassisState::Safe);
+        assert_eq!(
+            *test_struct.power_supply_state().unwrap(),
+            ChassisState::Safe
+        );
+        assert_eq!(*test_struct.thermal_state().unwrap(), ChassisState::Safe);
+        assert_eq!(
+            *test_struct.security_status().unwrap(),
+            ChassisSecurityStatus::StatusNone
+        );
         assert_eq!(test_struct.oem_defined(), Some(0));
         assert_eq!(test_struct.height(), Some(0));
         assert_eq!(test_struct.number_of_power_cords(), Some(1));

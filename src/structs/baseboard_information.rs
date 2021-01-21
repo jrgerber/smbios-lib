@@ -48,8 +48,10 @@ impl<'a> SMBiosBaseboardInformation<'a> {
     }
 
     /// Collection of flags that identify features of this baseboard.
-    pub fn feature_flags(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x09)
+    pub fn feature_flags(&self) -> Option<BaseboardFeatures> {
+        self.parts
+            .get_field_byte(0x09)
+            .and_then(|raw| Some(BaseboardFeatures::from(raw)))
     }
 
     /// This baseboard's location within the chassis (chassis is referenced by ChassisHandle).
@@ -63,8 +65,10 @@ impl<'a> SMBiosBaseboardInformation<'a> {
     }
 
     /// Type of baseboard.
-    pub fn board_type(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x0D)
+    pub fn board_type(&self) -> Option<BoardTypeData> {
+        self.parts
+            .get_field_byte(0x0D)
+            .and_then(|raw| Some(BoardTypeData::from(raw)))
     }
 
     /// The count of ObjectHandles.
@@ -99,6 +103,153 @@ impl fmt::Debug for SMBiosBaseboardInformation<'_> {
                 "contained_object_handle_iterator",
                 &self.contained_object_handle_iterator(),
             )
+            .finish()
+    }
+}
+
+/// # Board Type Data
+pub struct BoardTypeData {
+    /// Raw value
+    ///
+    /// _raw_ is most useful when _value_ is None.
+    /// This is most likely to occur when the standard was updated but
+    /// this library code has not been updated to match the current
+    /// standard.
+    raw: u8,
+    /// The contained [BoardType] value
+    value: BoardType,
+}
+
+impl fmt::Debug for BoardTypeData {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<BoardTypeData>())
+            .field("raw", &self.raw)
+            .field("value", &self.value)
+            .finish()
+    }
+}
+
+impl Deref for BoardTypeData {
+    type Target = BoardType;
+
+    fn deref(&self) -> &Self::Target {
+        &self.value
+    }
+}
+
+impl From<u8> for BoardTypeData {
+    fn from(raw: u8) -> Self {
+        BoardTypeData {
+            value: match raw {
+                0x01 => BoardType::Other,
+                0x02 => BoardType::Unknown,
+                0x03 => BoardType::ServerBlade,
+                0x04 => BoardType::ConnectivitySwitch,
+                0x05 => BoardType::SystemManagementModule,
+                0x06 => BoardType::ProcessorModule,
+                0x07 => BoardType::IOModule,
+                0x08 => BoardType::MemoryModule,
+                0x09 => BoardType::Daughterboard,
+                0x0A => BoardType::Motherboard,
+                0x0B => BoardType::ProcessorMemoryModule,
+                0x0C => BoardType::ProcessorIOModule,
+                0x0D => BoardType::InterconnectBoard,
+                _ => BoardType::None,
+            },
+            raw,
+        }
+    }
+}
+
+/// # Board Type
+#[derive(Debug, PartialEq, Eq)]
+pub enum BoardType {
+    /// Unknown
+    Unknown,
+    /// Other
+    Other,
+    /// Server Blade
+    ServerBlade,
+    /// Connectivity Switch
+    ConnectivitySwitch,
+    /// System Management Module
+    SystemManagementModule,
+    /// Processor Module
+    ProcessorModule,
+    /// I/O Module
+    IOModule,
+    /// Memory Module
+    MemoryModule,
+    /// Daughter board
+    Daughterboard,
+    /// Motherboard (includes processor, memory, and I/O)
+    Motherboard,
+    /// Processor/Memory Module
+    ProcessorMemoryModule,
+    /// Processor/IO Module
+    ProcessorIOModule,
+    /// Interconnect board
+    InterconnectBoard,
+    /// A value unknown to this standard, check the raw value
+    None,
+}
+
+/// # Baseboard Features
+#[derive(PartialEq, Eq)]
+pub struct BaseboardFeatures {
+    raw: u8,
+}
+
+impl Deref for BaseboardFeatures {
+    type Target = u8;
+
+    fn deref(&self) -> &Self::Target {
+        &self.raw
+    }
+}
+
+impl From<u8> for BaseboardFeatures {
+    fn from(raw: u8) -> Self {
+        BaseboardFeatures { raw }
+    }
+}
+
+impl BaseboardFeatures {
+    /// Set if the board is a hosting board (for example, a motherboard).
+    pub fn hosting_board(&self) -> bool {
+        self.raw & 0x01 == 0x01
+    }
+
+    /// Set if the board requires at least one daughter board or auxiliary card to function properly.
+    pub fn requires_daughterboard(&self) -> bool {
+        self.raw & 0x02 == 0x02
+    }
+
+    /// Set if the board is removable; it is designed to be taken in and out of the chassis without impairing the function of the chassis.
+    pub fn is_removable(&self) -> bool {
+        self.raw & 0x04 == 0x04
+    }
+
+    /// Set if the board is replaceable; it is possible to replace (either as a field repair or as an upgrade) the board with a physically different board. The board is inherently removable.
+    pub fn is_replaceable(&self) -> bool {
+        self.raw & 0x08 == 0x08
+    }
+
+    /// Set if the board is hot swappable; it is possible to replace the board with a physically different but equivalent board while power is applied to the board. The board is inherently replaceable and removable.
+    pub fn is_hot_swappable(&self) -> bool {
+        self.raw & 0x10 == 0x10
+    }
+}
+
+impl fmt::Debug for BaseboardFeatures {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<BaseboardFeatures>())
+            .field("raw", &self.raw)
+            .field("hosting_board", &self.hosting_board())
+            .field("requires_daughterboard", &self.requires_daughterboard())
+            .field("is_removable", &self.is_removable())
+            .field("is_replaceable", &self.is_replaceable())
+            .field("is_hot_swappable", &self.is_hot_swappable())
             .finish()
     }
 }
@@ -215,50 +366,35 @@ mod tests {
 
         // basic field tests
         assert_eq!(
-            baseboard_information
-                .manufacturer()
-                .expect("manufacturer field exists"),
+            baseboard_information.manufacturer().unwrap(),
             "Microsoft Corporation".to_string()
         );
         assert_eq!(
-            baseboard_information
-                .product()
-                .expect("product field exists"),
+            baseboard_information.product().unwrap(),
             "Surface Laptop 3".to_string()
         );
         assert_eq!(baseboard_information.version().is_none(), true);
         assert_eq!(
-            baseboard_information
-                .serial_number()
-                .expect("serial_number field exists"),
+            baseboard_information.serial_number().unwrap(),
             "B009250100J1939B".to_string()
         );
         assert_eq!(baseboard_information.asset_tag().is_none(), true);
         assert_eq!(
-            baseboard_information
-                .feature_flags()
-                .expect("feature_flags field exists"),
-            1
+            baseboard_information.feature_flags().unwrap(),
+            BaseboardFeatures::from(1)
         );
         assert_eq!(baseboard_information.location_in_chassis().is_none(), true);
+        assert_eq!(*baseboard_information.chassis_handle().unwrap(), 0x0F);
         assert_eq!(
-            *baseboard_information
-                .chassis_handle()
-                .expect("chassis_handle field exists"),
-            0x0F
-        );
-        assert_eq!(
-            baseboard_information
-                .board_type()
-                .expect("board_type field exists"),
-            0x0A
+            *baseboard_information.board_type().unwrap(),
+            BoardType::Motherboard
         );
 
         // contained object handle tests
         assert_eq!(
             baseboard_information
                 .number_of_contained_object_handles()
-                .expect("2 object handles"),
+                .unwrap(),
             2
         );
 

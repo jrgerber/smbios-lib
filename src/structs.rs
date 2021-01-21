@@ -4,6 +4,7 @@
 //! the DMTF SMBIOS specification.
 
 use std::fmt;
+use std::ops::Deref;
 
 mod base;
 pub use base::*;

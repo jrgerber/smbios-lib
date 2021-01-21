@@ -342,11 +342,26 @@ impl fmt::Debug for SMBiosMemoryDevice<'_> {
     }
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn test() {
+        // Memory Device structure is sensitive to BIOS specification versions
+        // and prone to bugs.  Therefore, it is important to test different
+        // structure versions.
+        //
+        // Length of the structure:
+        // 15h for version 2.1,
+        // 1Bh for version 2.3,
+        // 1Ch for version 2.6,
+        // 22h for version 2.7,
+        // 28h for version 2.8,
+        // 54h for version 3.2,
+        // 5Ch for version 3.3 and later
+
+        // Memory Device structure version 2.8 (does not contain _memory_technology()_ field and beyond)
         let struct_type17 = vec![
             0x11, 0x28, 0x40, 0x00, 0x3E, 0x00, 0xFE, 0xFF, 0x48, 0x00, 0x40, 0x00, 0x00, 0x20,
             0x09, 0x00, 0x01, 0x02, 0x1A, 0x80, 0x00, 0x6A, 0x0A, 0x03, 0x04, 0x05, 0x06, 0x01,
@@ -387,27 +402,31 @@ mod tests {
         assert_eq!(test_struct.minimum_voltage(), Some(1200));
         assert_eq!(test_struct.maximum_voltage(), Some(1200));
         assert_eq!(test_struct.configured_voltage(), Some(1200));
-        assert_eq!(test_struct.memory_technology(), Some(67));
-        assert_eq!(test_struct.memory_operating_mode_capability(), Some(21840));
-        assert_eq!(test_struct.firmware_version(), None);
-        assert_eq!(test_struct.module_manufacturer_id(), Some(17503));
-        assert_eq!(test_struct.module_product_id(), Some(19785));
-        assert_eq!(
-            test_struct.memory_subsystem_controller_manufacturer_id(),
-            Some(24397)
-        );
-        assert_eq!(
-            test_struct.memory_subsystem_controller_product_id(),
-            Some(49)
-        );
-        assert_eq!(test_struct.non_volatile_size(), Some(5188200785401630542));
-        assert_eq!(test_struct.volatile_size(), Some(3472898737815776889));
-        assert_eq!(test_struct.cache_size(), Some(9007419106537785));
-        assert_eq!(test_struct.logical_size(), Some(3986326896899083592));
-        assert_eq!(test_struct.extended_speed(), Some(944916033));
-        assert_eq!(
-            test_struct.extended_configured_memory_speed(),
-            Some(1263938894)
-        );
+
+        // version 2.8 does not contain _memory_technology()_ field and fields beyond
+        assert_eq!(test_struct.memory_technology(), None);
+
+        // TODO: add a 3.2 and 3.3 structure and test these fields:
+        // assert_eq!(test_struct.memory_operating_mode_capability(), Some(21840));
+        // assert_eq!(test_struct.firmware_version(), None);
+        // assert_eq!(test_struct.module_manufacturer_id(), Some(17503));
+        // assert_eq!(test_struct.module_product_id(), Some(19785));
+        // assert_eq!(
+        //     test_struct.memory_subsystem_controller_manufacturer_id(),
+        //     Some(24397)
+        // );
+        // assert_eq!(
+        //     test_struct.memory_subsystem_controller_product_id(),
+        //     Some(49)
+        // );
+        // assert_eq!(test_struct.non_volatile_size(), Some(5188200785401630542));
+        // assert_eq!(test_struct.volatile_size(), Some(3472898737815776889));
+        // assert_eq!(test_struct.cache_size(), Some(9007419106537785));
+        // assert_eq!(test_struct.logical_size(), Some(3986326896899083592));
+        // assert_eq!(test_struct.extended_speed(), Some(944916033));
+        // assert_eq!(
+        //     test_struct.extended_configured_memory_speed(),
+        //     Some(1263938894)
+        // );
     }
 }

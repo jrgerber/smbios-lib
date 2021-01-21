@@ -16,18 +16,26 @@ pub enum FileLoadError {
     DataError(windows::DataError),
 }
 
+impl From<io::Error> for FileLoadError {
+    fn from(error: io::Error) -> Self {
+        FileLoadError::IOError(error)
+    }
+}
+
+impl From<windows::DataError> for FileLoadError {
+    fn from(error: windows::DataError) -> Self {
+        FileLoadError::DataError(error)
+    }
+}
+
 /// Result returned when loading raw SMBIOS data from a file
 pub type FileLoadResult = Result<windows::RawSMBiosData, FileLoadError>;
 
 /// Loads raw smbios data from a file
 pub fn load_smbios_data_file(filename: &str) -> FileLoadResult {
-    match fs::read(filename) {
-        Ok(data) => match windows::RawSMBiosData::new(data) {
-            Ok(data) => Ok(data),
-            Err(err) => Err(FileLoadError::DataError(err)),
-        },
-        Err(err) => Err(FileLoadError::IOError(err)),
-    }
+    let raw_smbios_data = fs::read(filename)?;
+    let result = windows::RawSMBiosData::new(raw_smbios_data)?;
+    Ok(result)
 }
 
 #[cfg(test)]

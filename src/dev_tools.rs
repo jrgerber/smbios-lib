@@ -9,12 +9,10 @@ use std::fs;
 use std::io;
 
 // TODO:
-// 1. Write a function to iterate through a folder full of windows DAT files
-// 2. Write a function to iterate through a folder full of non-windows DAT files
-// 3. Write a test function to output rust code for unit tests of each type by
-//    finding candidates from a file collection.
+// Write a function to iterate through a folder full of non-windows DAT files
 
-fn load_windows_raw_files(folder: &str) -> Vec<RawSMBiosData> {
+/// Temporary function for loading raw files from a folder
+pub fn load_windows_raw_files(folder: &str) -> Vec<RawSMBiosData> {
     let mut result = Vec::new();
 
     let entries = fs::read_dir(folder)
@@ -90,7 +88,7 @@ mod tests {
                     println!(
                         "let struct_type{} = vec!{};",
                         type_to_find,
-                        PrintableArray(structure.data)
+                        PrintableArray(structure.raw)
                     );
                     println!();
 
@@ -112,7 +110,7 @@ mod tests {
                     let parts = non_header.split(": ");
 
                     let mut field_name = String::new();
-                    let mut field_value = String::new();
+                    let mut field_value: String;
                     for part in parts {
                         let mut field_and_value = part.split(", ");
                         field_value = field_and_value.next().unwrap().to_string();
