@@ -3,7 +3,7 @@
 //! Place any functions here which are useful while developing the library.
 
 use crate::read::*;
-use crate::windows::*;
+use crate::structs::SMBiosTableData;
 use std::fmt;
 use std::fs;
 use std::io;
@@ -12,7 +12,7 @@ use std::io;
 // Write a function to iterate through a folder full of non-windows DAT files
 
 /// Temporary function for loading raw files from a folder
-pub fn load_windows_raw_files(folder: &str) -> Vec<RawSMBiosData> {
+pub fn load_raw_files(folder: &str) -> Vec<SMBiosTableData> {
     let mut result = Vec::new();
 
     let entries = fs::read_dir(folder)
@@ -27,8 +27,8 @@ pub fn load_windows_raw_files(folder: &str) -> Vec<RawSMBiosData> {
         // Temporary output to see what files we found
         // println!("{}", file_name);
 
-        let raw_smbios_data = load_smbios_data_file(file_name);
-        match raw_smbios_data {
+        let smbios_table_data = load_smbios_table_data(file_name);
+        match smbios_table_data {
             Ok(data) => result.push(data),
             Err(_) => {}
         }
@@ -66,6 +66,7 @@ mod tests {
     use std::io::Write;
 
     #[test]
+    #[ignore = "dev tool, this won't work since folder with data is located locally"]
     fn test_find_type() {
         for type_to_find in 0..44u8 {
             println!("#[cfg(test)]");
@@ -76,10 +77,9 @@ mod tests {
             println!("fn unit_test() {{");
 
             let results =
-                load_windows_raw_files(r"C:\Users\Jeff\Desktop\BIOSRawFiles\WindowsHeader");
-            for raw_data in results {
-                let found_structure = raw_data
-                    .smbios_table_data()
+                load_raw_files(r"C:\Users\Jeff\Desktop\BIOSRawFiles\WindowsHeader");
+            for table_data in results {
+                let found_structure = table_data
                     .into_iter()
                     .find(|x| x.header.struct_type() == type_to_find);
 
