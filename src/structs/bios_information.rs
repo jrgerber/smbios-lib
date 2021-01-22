@@ -90,13 +90,17 @@ impl<'a> SMBiosInformation<'a> {
     }
 
     /// Characteristics extension byte 0
-    pub fn characteristics_extension0(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x12)
+    pub fn characteristics_extension0(&self) -> Option<BiosCharacteristicsExtension0> {
+        self.parts
+            .get_field_byte(0x12)
+            .and_then(|raw| Some(BiosCharacteristicsExtension0::from(raw)))
     }
 
     /// Characteristics extension byte 1
-    pub fn characteristics_extension1(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x13)
+    pub fn characteristics_extension1(&self) -> Option<BiosCharacteristicsExtension1> {
+        self.parts
+            .get_field_byte(0x13)
+            .and_then(|raw| Some(BiosCharacteristicsExtension1::from(raw)))
     }
 
     /// System BIOS major release
@@ -175,8 +179,48 @@ impl<'a> SMBiosInformation<'a> {
     /// represented as 0010h. A 48 GB device set
     /// would be represented as
     /// 0100_0000_0011_0000b or 4030h.
-    pub fn extended_rom_size(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x18)
+    pub fn extended_rom_size(&self) -> Option<ExtendedRomSize> {
+        self.parts
+            .get_field_word(0x18)
+            .and_then(|raw| Some(ExtendedRomSize::from(raw)))
+    }
+}
+
+/// # Extended BIOS ROM size
+#[derive(Debug, PartialEq, Eq)]
+pub enum ExtendedRomSize {
+    /// Extended size of the physical device(s)
+    /// containing the BIOS (in MB).
+    Megabytes(u16),
+    /// Extended size of the physical device(s)
+    /// containing the BIOS (in MB).
+    Gigabytes(u16),
+    /// Extended size of the physical device(s)
+    /// containing the BIOS in raw form.
+    ///
+    /// The standard currently only defines MB and GB
+    /// as given in the high nibble (bits 15-14)
+    Undefined(u16),
+}
+
+impl From<u16> for ExtendedRomSize {
+    fn from(raw: u16) -> Self {
+        // Bits 15:14 Unit
+        // 00b - megabytes
+        // 01b - gigabytes
+        // 10b - reserved
+        // 11b - reserved
+        // Bits 13:0 Size
+        let unit = raw & 0xC000; // 15:14 mask
+        let size = raw & 0x3FFF; // 13:0 mask
+
+        if unit == 0x0000 {
+            ExtendedRomSize::Megabytes(size)
+        } else if unit == 0x4000 {
+            ExtendedRomSize::Gigabytes(size)
+        } else {
+            ExtendedRomSize::Undefined(raw)
+        }
     }
 }
 
@@ -470,13 +514,13 @@ impl fmt::Debug for BiosCharacteristics {
     }
 }
 
-/// # BIOS Characteristics Extension 1
+/// # BIOS Characteristics Extension Byte 0
 #[derive(PartialEq, Eq)]
-pub struct BiosCharacteristicsExtension1 {
+pub struct BiosCharacteristicsExtension0 {
     raw: u8,
 }
 
-impl Deref for BiosCharacteristicsExtension1 {
+impl Deref for BiosCharacteristicsExtension0 {
     type Target = u8;
 
     fn deref(&self) -> &Self::Target {
@@ -484,13 +528,13 @@ impl Deref for BiosCharacteristicsExtension1 {
     }
 }
 
-impl From<u8> for BiosCharacteristicsExtension1 {
+impl From<u8> for BiosCharacteristicsExtension0 {
     fn from(raw: u8) -> Self {
-        BiosCharacteristicsExtension1 { raw }
+        BiosCharacteristicsExtension0 { raw }
     }
 }
 
-impl BiosCharacteristicsExtension1 {
+impl BiosCharacteristicsExtension0 {
     /// ACPI is supported.
     pub fn acpi_is_supported(&self) -> bool {
         self.raw & 0x01 == 0x01
@@ -532,9 +576,9 @@ impl BiosCharacteristicsExtension1 {
     }
 }
 
-impl fmt::Debug for BiosCharacteristicsExtension1 {
+impl fmt::Debug for BiosCharacteristicsExtension0 {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<BiosCharacteristicsExtension1>())
+        fmt.debug_struct(std::any::type_name::<BiosCharacteristicsExtension0>())
             .field("raw", &self.raw)
             .field("acpi_is_supported", &self.acpi_is_supported())
             .field("usb_legacy_is_supported", &self.usb_legacy_is_supported())
@@ -557,13 +601,13 @@ impl fmt::Debug for BiosCharacteristicsExtension1 {
     }
 }
 
-/// # BIOS Characteristics Extension 2
+/// # BIOS Characteristics Extension Byte 1
 #[derive(PartialEq, Eq)]
-pub struct BiosCharacteristicsExtension2 {
+pub struct BiosCharacteristicsExtension1 {
     raw: u8,
 }
 
-impl Deref for BiosCharacteristicsExtension2 {
+impl Deref for BiosCharacteristicsExtension1 {
     type Target = u8;
 
     fn deref(&self) -> &Self::Target {
@@ -571,13 +615,13 @@ impl Deref for BiosCharacteristicsExtension2 {
     }
 }
 
-impl From<u8> for BiosCharacteristicsExtension2 {
+impl From<u8> for BiosCharacteristicsExtension1 {
     fn from(raw: u8) -> Self {
-        BiosCharacteristicsExtension2 { raw }
+        BiosCharacteristicsExtension1 { raw }
     }
 }
 
-impl BiosCharacteristicsExtension2 {
+impl BiosCharacteristicsExtension1 {
     /// BIOS Boot Specification is supported.
     pub fn bios_boot_specification_is_supported(&self) -> bool {
         self.raw & 0x01 == 0x01
@@ -610,9 +654,9 @@ impl BiosCharacteristicsExtension2 {
     }
 }
 
-impl fmt::Debug for BiosCharacteristicsExtension2 {
+impl fmt::Debug for BiosCharacteristicsExtension1 {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<BiosCharacteristicsExtension2>())
+        fmt.debug_struct(std::any::type_name::<BiosCharacteristicsExtension1>())
             .field("raw", &self.raw)
             .field(
                 "bios_boot_specification_is_supported",
@@ -693,8 +737,14 @@ mod tests {
             test_struct.system_vendor_reserved_characteristics(),
             Some(17)
         );
-        assert_eq!(test_struct.characteristics_extension0(), Some(3));
-        assert_eq!(test_struct.characteristics_extension1(), Some(13));
+        assert_eq!(
+            test_struct.characteristics_extension0(),
+            Some(BiosCharacteristicsExtension0::from(3))
+        );
+        assert_eq!(
+            test_struct.characteristics_extension1(),
+            Some(BiosCharacteristicsExtension1::from(13))
+        );
         assert_eq!(test_struct.system_bios_major_release(), Some(0));
         assert_eq!(test_struct.system_bios_minor_release(), Some(33));
         assert_eq!(test_struct.e_c_firmware_major_release(), Some(17));
@@ -703,5 +753,26 @@ mod tests {
         // 2.4 to 3.0 BIOS Information does not include _extended_rom_size()_ or
         // fields beyond.
         assert!(test_struct.extended_rom_size().is_none());
+
+        // 3.1 BIOS (includes _extended_rom_size_)
+        let struct_type0 = vec![
+            0x00, 0x1A, 0x00, 0x00, 0x01, 0x02, 0x00, 0xF0, 0x03, 0xFF, 0x80, 0x98, 0x8B, 0x3F,
+            0x01, 0x00, 0x11, 0x00, 0x03, 0x0D, 0x00, 0x21, 0x11, 0x2D, 0x30, 0x40, 0x4C, 0x45,
+            0x4E, 0x4F, 0x56, 0x4F, 0x00, 0x53, 0x30, 0x33, 0x4B, 0x54, 0x33, 0x33, 0x41, 0x00,
+            0x30, 0x38, 0x2F, 0x30, 0x36, 0x2F, 0x32, 0x30, 0x31, 0x39, 0x00, 0x00,
+        ];
+
+        let parts = SMBiosStructParts::new(struct_type0.as_slice());
+        let test_struct = SMBiosInformation::new(&parts);
+
+        let extended_rom_size = test_struct.extended_rom_size().unwrap();
+        assert_eq!(extended_rom_size, ExtendedRomSize::from(0x4030));
+
+        match extended_rom_size {
+            ExtendedRomSize::Gigabytes(size) => assert_eq!(size, 48),
+            _ => panic!("incorrect unit"),
+        }
+
+        println!("{:?}", test_struct);
     }
 }
