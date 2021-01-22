@@ -1,4 +1,4 @@
-use super::{fmt, SMBiosStruct, SMBiosStructParts, Strings};
+use super::*;
 
 /// # BIOS Language Information (Type 13)
 ///
@@ -33,8 +33,10 @@ impl<'a> SMBiosBiosLanguageInformation<'a> {
     }
 
     /// Bit field indicating the format of the languages.
-    pub fn flags(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x5)
+    pub fn flags(&self) -> Option<BiosLanguageFlags> {
+        self.parts
+            .get_field_byte(0x5)
+            .and_then(|raw| Some(BiosLanguageFlags::from(raw)))
     }
 
     /// The currently installed language.
@@ -63,6 +65,59 @@ impl fmt::Debug for SMBiosBiosLanguageInformation<'_> {
     }
 }
 
+/// # Language Format
+#[derive(Debug)]
+pub enum LanguageFormat {
+    /// Language strings use the abbreviated format.
+    ///
+    /// Example: "frCA"
+    Abbreviated,
+    /// Language strings use the long format.
+    ///
+    /// Example: "fr|CA|iso8859-1"
+    Long,
+}
+
+/// # BIOS Language Flags
+#[derive(PartialEq, Eq)]
+pub struct BiosLanguageFlags {
+    raw: u8,
+}
+
+impl Deref for BiosLanguageFlags {
+    type Target = u8;
+
+    fn deref(&self) -> &Self::Target {
+        &self.raw
+    }
+}
+
+impl From<u8> for BiosLanguageFlags {
+    fn from(raw: u8) -> Self {
+        BiosLanguageFlags { raw }
+    }
+}
+
+impl BiosLanguageFlags {
+    /// If set to 1, the Current Language strings use the abbreviated format. Otherwise, the strings use the long format.
+    pub fn language_format(&self) -> LanguageFormat {
+        if self.raw & 0x01 == 0x01 {
+            LanguageFormat::Abbreviated
+        } else {
+            LanguageFormat::Long
+        }
+    }
+}
+
+impl fmt::Debug for BiosLanguageFlags {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<BiosLanguageFlags>())
+            .field("raw", &self.raw)
+            .field("language_format", &self.language_format())
+            .finish()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -75,9 +130,9 @@ mod tests {
             0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
             0x00, 0x00, 0x00, 0x01, // "en|US|iso8859-1"
             0x65, 0x6E, 0x7C, 0x55, 0x53, 0x7C, 0x69, 0x73, 0x6F, 0x38, 0x38, 0x35, 0x39, 0x2D,
-            0x31, 0x00, // "fr|FR|iso8859-1"
-            0x66, 0x72, 0x7C, 0x46, 0x52, 0x7C, 0x69, 0x73, 0x6F, 0x38, 0x38, 0x35, 0x39, 0x2D,
-            0x31, 0x00, // "ja|JP|unicode"
+            0x31, 0x00, // "hr|HR|iso8859-2"
+            0x68, 0x72, 0x7C, 0x48, 0x52, 0x7C, 0x69, 0x73, 0x6F, 0x38, 0x38, 0x35, 0x39, 0x2D,
+            0x32, 0x00, // "ja|JP|unicode"
             0x6A, 0x61, 0x7C, 0x4A, 0x50, 0x7C, 0x75, 0x6E, 0x69, 0x63, 0x6F, 0x64, 0x65, 0x00,
             // end of structure
             0x00,
@@ -104,10 +159,8 @@ mod tests {
             3
         );
         assert_eq!(
-            bios_language_information
-                .flags()
-                .expect("flags field exists"),
-            0
+            bios_language_information.flags().unwrap(),
+            BiosLanguageFlags::from(0)
         );
 
         // installable_languages tests
@@ -117,7 +170,7 @@ mod tests {
         let first_string = string_iterator.next().expect("has a first string");
         assert_eq!(first_string, "en|US|iso8859-1".to_string());
         let second_string = string_iterator.next().expect("has a second string");
-        assert_eq!(second_string, "fr|FR|iso8859-1".to_string());
+        assert_eq!(second_string, "hr|HR|iso8859-2".to_string());
         let third_string = string_iterator.next().expect("has a third string");
         assert_eq!(third_string, "ja|JP|unicode".to_string());
         assert!(string_iterator.next().is_none());
