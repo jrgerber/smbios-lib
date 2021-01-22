@@ -8,8 +8,6 @@ use std::fmt;
 use std::fs;
 use std::io;
 
-// TODO:
-// Write a function to iterate through a folder full of non-windows DAT files
 
 /// Temporary function for loading raw files from a folder
 pub fn load_raw_files(folder: &str) -> Vec<SMBiosTableData> {
