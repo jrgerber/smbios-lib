@@ -20,7 +20,7 @@
 
 use super::structs::SMBiosTableData;
 use std::convert::TryInto;
-use std::{fmt,fs, io};
+use std::{fmt, fs, io};
 
 mod ffi {
     // https://doc.rust-lang.org/nomicon/ffi.html
@@ -244,7 +244,6 @@ impl From<DataError> for WinFileLoadError {
         Self::DataError(error)
     }
 }
-
 
 impl fmt::Debug for WinSMBiosData {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {

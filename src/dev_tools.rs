@@ -76,8 +76,7 @@ mod tests {
             println!("#[test]");
             println!("fn unit_test() {{");
 
-            let results =
-                load_raw_files(r"C:\Users\Jeff\Desktop\BIOSRawFiles\WindowsHeader");
+            let results = load_raw_files(r"C:\Users\Jeff\Desktop\BIOSRawFiles\WindowsHeader");
             for table_data in results {
                 let found_structure = table_data
                     .into_iter()

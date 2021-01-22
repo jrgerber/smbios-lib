@@ -1,6 +1,6 @@
 use super::*;
-use std::{fmt, fs, io};
 use std::{convert::TryInto, ops::Deref};
+use std::{fmt, fs, io};
 
 // use super::SMBiosUnknown;
 
@@ -626,9 +626,9 @@ impl SMBiosTableData {
         // TODO: implement a fn that checks whether the structure is valid table data.
         // If it's not return that error here.
         let data = fs::read(filename)?;
-        let result = Self {data};
+        let result = Self { data };
         Ok(result)
-    } 
+    }
 }
 
 impl<'a> IntoIterator for &'a SMBiosTableData {
@@ -640,7 +640,6 @@ impl<'a> IntoIterator for &'a SMBiosTableData {
         RawStructIterator::new(self.data.as_slice())
     }
 }
-
 
 impl<'a> fmt::Debug for SMBiosTableData {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
