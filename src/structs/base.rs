@@ -1,6 +1,6 @@
 use super::*;
-use std::fmt;
 use std::{convert::TryInto, ops::Deref};
+use std::{fmt, fs, io};
 
 // use super::SMBiosUnknown;
 
@@ -611,38 +611,37 @@ impl<'a> Header<'a> {
 ///
 /// Contains the raw data of BIOS and provides iteration of
 /// the structures contained within the raw data.
-pub struct SMBiosTableData<'a> {
-    data: &'a [u8],
+pub struct SMBiosTableData {
+    data: Vec<u8>,
 }
 
-impl<'a> SMBiosTableData<'a> {
+impl SMBiosTableData {
     /// Creates a wrapper around raw SMBIOS data
-    pub fn new(data: &'a [u8]) -> Self {
+    pub fn new(data: Vec<u8>) -> Self {
         Self { data }
     }
+
+    /// Loads raw SMBios table data and return [Self] or [io:Error]
+    pub fn from_file(filename: &str) -> Result<Self, io::Error> {
+        // TODO: implement a fn that checks whether the structure is valid table data.
+        // If it's not return that error here.
+        let data = fs::read(filename)?;
+        let result = Self { data };
+        Ok(result)
+    }
 }
 
-impl<'a> IntoIterator for SMBiosTableData<'a> {
+impl<'a> IntoIterator for &'a SMBiosTableData {
     type Item = SMBiosStructParts<'a>;
 
     type IntoIter = RawStructIterator<'a>;
 
     fn into_iter(self) -> Self::IntoIter {
-        RawStructIterator::new(self.data)
+        RawStructIterator::new(self.data.as_slice())
     }
 }
 
-impl<'a> IntoIterator for &'a SMBiosTableData<'a> {
-    type Item = SMBiosStructParts<'a>;
-
-    type IntoIter = RawStructIterator<'a>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        RawStructIterator::new(self.data)
-    }
-}
-
-impl<'a> fmt::Debug for SMBiosTableData<'_> {
+impl<'a> fmt::Debug for SMBiosTableData {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // TODO: format as an array, make a function on SMBiosStructParts to return an enum of variants of the struct types
         self.into_iter().map(|x| writeln!(f, "{:?}", x)).collect()
