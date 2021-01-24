@@ -274,7 +274,8 @@ impl fmt::Debug for SMBiosInformation<'_> {
 /// # BIOS Characteristics
 #[derive(PartialEq, Eq)]
 pub struct BiosCharacteristics {
-    raw: u32,
+    /// Raw value
+    pub raw: u32,
 }
 
 impl Deref for BiosCharacteristics {
@@ -517,7 +518,8 @@ impl fmt::Debug for BiosCharacteristics {
 /// # BIOS Characteristics Extension Byte 0
 #[derive(PartialEq, Eq)]
 pub struct BiosCharacteristicsExtension0 {
-    raw: u8,
+    /// Raw value
+    pub raw: u8,
 }
 
 impl Deref for BiosCharacteristicsExtension0 {
@@ -604,7 +606,8 @@ impl fmt::Debug for BiosCharacteristicsExtension0 {
 /// # BIOS Characteristics Extension Byte 1
 #[derive(PartialEq, Eq)]
 pub struct BiosCharacteristicsExtension1 {
-    raw: u8,
+    /// Raw value
+    pub raw: u8,
 }
 
 impl Deref for BiosCharacteristicsExtension1 {

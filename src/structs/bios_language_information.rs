@@ -81,7 +81,8 @@ pub enum LanguageFormat {
 /// # BIOS Language Flags
 #[derive(PartialEq, Eq)]
 pub struct BiosLanguageFlags {
-    raw: u8,
+    /// Raw value
+    pub raw: u8,
 }
 
 impl Deref for BiosLanguageFlags {

@@ -59,7 +59,7 @@ impl fmt::Debug for SMBiosBuiltInPointingDevice<'_> {
     }
 }
 
-/// #
+/// # Built-in Pointing Device Type Data
 pub struct PointingDeviceTypeData {
     /// Raw value
     ///
@@ -67,9 +67,9 @@ pub struct PointingDeviceTypeData {
     /// This is most likely to occur when the standard was updated but
     /// this library code has not been updated to match the current
     /// standard.
-    raw: u8,
+    pub raw: u8,
     /// The contained [BuiltInPointingDeviceType] value
-    value: PointingDeviceType,
+    pub value: PointingDeviceType,
 }
 
 impl fmt::Debug for PointingDeviceTypeData {
@@ -142,9 +142,9 @@ pub struct PointingDeviceInterfaceData {
     /// This is most likely to occur when the standard was updated but
     /// this library code has not been updated to match the current
     /// standard.
-    raw: u8,
+    pub raw: u8,
     /// The contained [PointingDeviceInterface] value
-    value: PointingDeviceInterface,
+    pub value: PointingDeviceInterface,
 }
 
 impl fmt::Debug for PointingDeviceInterfaceData {

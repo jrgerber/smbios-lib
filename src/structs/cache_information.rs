@@ -129,9 +129,9 @@ pub struct CacheAssociativityData {
     /// This is most likely to occur when the standard was updated but
     /// this library code has not been updated to match the current
     /// standard.
-    raw: u8,
+    pub raw: u8,
     /// The contained [CacheAssociativity] value
-    value: CacheAssociativity,
+    pub value: CacheAssociativity,
 }
 
 impl fmt::Debug for CacheAssociativityData {
@@ -219,9 +219,9 @@ pub struct SystemCacheTypeData {
     /// This is most likely to occur when the standard was updated but
     /// this library code has not been updated to match the current
     /// standard.
-    raw: u8,
+    pub raw: u8,
     /// The contained [SystemCacheType] value
-    value: SystemCacheType,
+    pub value: SystemCacheType,
 }
 
 impl fmt::Debug for SystemCacheTypeData {
@@ -282,9 +282,9 @@ pub struct ErrorCorrectionTypeData {
     /// This is most likely to occur when the standard was updated but
     /// this library code has not been updated to match the current
     /// standard.
-    raw: u8,
+    pub raw: u8,
     /// The contained [ErrorCorrectionType] value
-    value: ErrorCorrectionType,
+    pub value: ErrorCorrectionType,
 }
 
 impl fmt::Debug for ErrorCorrectionTypeData {
@@ -343,7 +343,8 @@ impl From<u8> for ErrorCorrectionTypeData {
 /// # System Cache SRAM Types
 #[derive(PartialEq, Eq)]
 pub struct SramTypes {
-    raw: u16,
+    /// Raw value
+    pub raw: u16,
 }
 
 impl Deref for SramTypes {
@@ -415,7 +416,8 @@ impl fmt::Debug for SramTypes {
 /// # System Cache Configuration
 #[derive(PartialEq, Eq)]
 pub struct CacheConfiguaration {
-    raw: u16,
+    /// Raw value
+    pub raw: u16,
 }
 
 impl Deref for CacheConfiguaration {
