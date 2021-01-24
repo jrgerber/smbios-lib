@@ -10,6 +10,7 @@ use std::{convert::TryInto, ops::Deref};
 /// Some structures will reference other structures by using this value.
 ///
 /// Dereference a handle (*handle) to access its u16 value.
+#[derive(Eq, PartialEq)]
 pub struct Handle(u16);
 
 impl Deref for Handle {
