@@ -25,8 +25,10 @@ impl<'a> SMBiosStruct<'a> for SMBiosHardwareSecurity<'a> {
 
 impl<'a> SMBiosHardwareSecurity<'a> {
     /// Bit field that identifies the password and reset status for the system
-    pub fn hardware_security_settings(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x4)
+    pub fn hardware_security_settings(&self) -> Option<HardwareSecuritySettings> {
+        self.parts
+            .get_field_byte(0x4)
+            .and_then(|raw| Some(HardwareSecuritySettings::from(raw)))
     }
 }
 
@@ -42,6 +44,84 @@ impl fmt::Debug for SMBiosHardwareSecurity<'_> {
     }
 }
 
+/// # Hardware Security Settings
+#[derive(PartialEq, Eq)]
+pub struct HardwareSecuritySettings {
+    /// Raw value
+    pub raw: u8,
+    /// Power-on Password Status
+    pub power_on_password_status: HardwareSecurityStatus,
+    /// Keyboard Password Status
+    pub keyboard_password_status: HardwareSecurityStatus,
+    /// Administrator Password Status
+    pub administrator_password_status: HardwareSecurityStatus,
+    /// Front Panel Reset Status
+    pub front_panel_reset_status: HardwareSecurityStatus,
+}
+
+impl fmt::Debug for HardwareSecuritySettings {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<CoolingDeviceTypeAndStatus>())
+            .field("raw", &self.raw)
+            .field("power_on_password_status", &self.power_on_password_status)
+            .field("keyboard_password_status", &self.keyboard_password_status)
+            .field(
+                "administrator_password_status",
+                &self.administrator_password_status,
+            )
+            .field("front_panel_reset_status", &self.front_panel_reset_status)
+            .finish()
+    }
+}
+
+/// # Hardware Security Status
+#[derive(Debug, PartialEq, Eq)]
+pub enum HardwareSecurityStatus {
+    /// Disabled
+    Disabled,
+    /// Enabled
+    Enabled,
+    /// Not implemented
+    NotImplemented,
+    /// Unknown status
+    Unknown,
+}
+
+impl From<u8> for HardwareSecuritySettings {
+    fn from(raw: u8) -> Self {
+        HardwareSecuritySettings {
+            power_on_password_status: match raw & 0b11_000000 {
+                0b00_000000 => HardwareSecurityStatus::Disabled,
+                0b01_000000 => HardwareSecurityStatus::Enabled,
+                0b10_000000 => HardwareSecurityStatus::NotImplemented,
+                0b11_000000 => HardwareSecurityStatus::Unknown,
+                _ => panic!("Impossible value"),
+            },
+            keyboard_password_status: match raw & 0b00_11_0000 {
+                0b00_00_0000 => HardwareSecurityStatus::Disabled,
+                0b00_01_0000 => HardwareSecurityStatus::Enabled,
+                0b00_10_0000 => HardwareSecurityStatus::NotImplemented,
+                0b00_11_0000 => HardwareSecurityStatus::Unknown,
+                _ => panic!("Impossible value"),
+            },
+            administrator_password_status: match raw & 0b0000_11_00 {
+                0b0000_00_00 => HardwareSecurityStatus::Disabled,
+                0b0000_01_00 => HardwareSecurityStatus::Enabled,
+                0b0000_10_00 => HardwareSecurityStatus::NotImplemented,
+                0b0000_11_00 => HardwareSecurityStatus::Unknown,
+                _ => panic!("Impossible value"),
+            },
+            front_panel_reset_status: match raw & 0b000000_11 {
+                0b000000_00 => HardwareSecurityStatus::Disabled,
+                0b000000_01 => HardwareSecurityStatus::Enabled,
+                0b000000_10 => HardwareSecurityStatus::NotImplemented,
+                0b000000_11 => HardwareSecurityStatus::Unknown,
+                _ => panic!("Impossible value"),
+            },
+            raw,
+        }
+    }
+}
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -53,6 +133,9 @@ mod tests {
         let parts = SMBiosStructParts::new(struct_type24.as_slice());
         let test_struct = SMBiosHardwareSecurity::new(&parts);
 
-        assert_eq!(test_struct.hardware_security_settings(), Some(22));
+        assert_eq!(
+            test_struct.hardware_security_settings(),
+            Some(HardwareSecuritySettings::from(22))
+        );
     }
 }
