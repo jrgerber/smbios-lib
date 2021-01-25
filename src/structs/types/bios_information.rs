@@ -193,7 +193,7 @@ pub enum ExtendedRomSize {
     /// containing the BIOS (in MB).
     Megabytes(u16),
     /// Extended size of the physical device(s)
-    /// containing the BIOS (in MB).
+    /// containing the BIOS (in GB).
     Gigabytes(u16),
     /// Extended size of the physical device(s)
     /// containing the BIOS in raw form.
@@ -211,12 +211,12 @@ impl From<u16> for ExtendedRomSize {
         // 10b - reserved
         // 11b - reserved
         // Bits 13:0 Size
-        let unit = raw & 0xC000; // 15:14 mask
-        let size = raw & 0x3FFF; // 13:0 mask
+        let unit = raw & 0b11000000_00000000; // 15:14 mask
+        let size = raw & 0b00111111_11111111; // 13:0 mask
 
-        if unit == 0x0000 {
+        if unit == 0b00000000_00000000 {
             ExtendedRomSize::Megabytes(size)
-        } else if unit == 0x4000 {
+        } else if unit == 0b01000000_00000000 {
             ExtendedRomSize::Gigabytes(size)
         } else {
             ExtendedRomSize::Undefined(raw)
