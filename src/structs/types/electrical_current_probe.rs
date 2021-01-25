@@ -30,8 +30,10 @@ impl<'a> SMBiosElectricalCurrentProbe<'a> {
     }
 
     /// Probe’s physical location and status of the current monitored by this current probe
-    pub fn location_and_status(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x05)
+    pub fn location_and_status(&self) -> Option<CurrentProbeLocationAndStatus> {
+        self.parts
+            .get_field_byte(0x05)
+            .and_then(|raw| Some(CurrentProbeLocationAndStatus::from(raw)))
     }
 
     /// Maximum current level readable by this probe, in milliamps
@@ -87,6 +89,111 @@ impl fmt::Debug for SMBiosElectricalCurrentProbe<'_> {
     }
 }
 
+/// # Electrical Current Probe Location and Status
+#[derive(PartialEq, Eq)]
+pub struct CurrentProbeLocationAndStatus {
+    /// Raw value
+    ///
+    /// _raw_ is most useful when _value_ is None.
+    /// This is most likely to occur when the standard was updated but
+    /// this library code has not been updated to match the current
+    /// standard.
+    pub raw: u8,
+    /// The [CurrentProbeStatus]
+    pub status: CurrentProbeStatus,
+    /// The [CurrentProbeLocation]
+    pub location: CurrentProbeLocation,
+}
+
+impl fmt::Debug for CurrentProbeLocationAndStatus {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<CurrentProbeLocationAndStatus>())
+            .field("raw", &self.raw)
+            .field("status", &self.status)
+            .field("location", &self.location)
+            .finish()
+    }
+}
+
+/// # Electrical Current Probe Status
+#[derive(Debug, PartialEq, Eq)]
+pub enum CurrentProbeStatus {
+    /// Other
+    Other,
+    /// Unknown
+    Unknown,
+    /// OK
+    OK,
+    /// Non-critical
+    NonCritical,
+    /// Critical
+    Critical,
+    /// Non-recoverable
+    NonRecoverable,
+    /// A value unknown to this standard, check the raw value
+    None,
+}
+
+/// # Electrical Current Probe Location
+#[derive(Debug, PartialEq, Eq)]
+pub enum CurrentProbeLocation {
+    /// Other
+    Other,
+    /// Unknown
+    Unknown,
+    /// Processor
+    Processor,
+    /// Disk
+    Disk,
+    /// Peripheral Bay
+    PeripheralBay,
+    /// System Management Module
+    SystemManagementModule,
+    /// Motherboard
+    Motherboard,
+    /// Memory Module
+    MemoryModule,
+    /// Processor Module
+    ProcessorModule,
+    /// Power Unit
+    PowerUnit,
+    /// Add-in Card
+    AddInCard,
+    /// A value unknown to this standard, check the raw value
+    None,
+}
+
+impl From<u8> for CurrentProbeLocationAndStatus {
+    fn from(raw: u8) -> Self {
+        CurrentProbeLocationAndStatus {
+            status: match raw & 0b111_00000 {
+                0b001_00000 => CurrentProbeStatus::Other,
+                0b010_00000 => CurrentProbeStatus::Unknown,
+                0b011_00000 => CurrentProbeStatus::OK,
+                0b100_00000 => CurrentProbeStatus::NonCritical,
+                0b101_00000 => CurrentProbeStatus::Critical,
+                0b110_00000 => CurrentProbeStatus::NonRecoverable,
+                _ => CurrentProbeStatus::None,
+            },
+            location: match raw & 0b000_11111 {
+                0b000_00001 => CurrentProbeLocation::Other,
+                0b000_00010 => CurrentProbeLocation::Unknown,
+                0b000_00011 => CurrentProbeLocation::Processor,
+                0b000_00100 => CurrentProbeLocation::Disk,
+                0b000_00101 => CurrentProbeLocation::PeripheralBay,
+                0b000_00110 => CurrentProbeLocation::SystemManagementModule,
+                0b000_00111 => CurrentProbeLocation::Motherboard,
+                0b000_01000 => CurrentProbeLocation::MemoryModule,
+                0b000_01001 => CurrentProbeLocation::ProcessorModule,
+                0b000_01010 => CurrentProbeLocation::PowerUnit,
+                0b000_01011 => CurrentProbeLocation::AddInCard,
+                _ => CurrentProbeLocation::None,
+            },
+            raw,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -102,7 +209,16 @@ mod tests {
         let test_struct = SMBiosElectricalCurrentProbe::new(&parts);
 
         assert_eq!(test_struct.description(), Some("ABC".to_string()));
-        assert_eq!(test_struct.location_and_status(), Some(103));
+        let location_and_status = test_struct.location_and_status().unwrap();
+        assert_eq!(location_and_status.status, CurrentProbeStatus::OK);
+        assert_eq!(
+            location_and_status.location,
+            CurrentProbeLocation::Motherboard
+        );
+        assert_eq!(
+            test_struct.location_and_status(),
+            Some(CurrentProbeLocationAndStatus::from(103))
+        );
         assert_eq!(test_struct.maximum_value(), Some(32768));
         assert_eq!(test_struct.minimum_value(), Some(32768));
         assert_eq!(test_struct.resolution(), Some(32768));

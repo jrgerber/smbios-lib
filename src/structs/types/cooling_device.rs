@@ -33,8 +33,10 @@ impl<'a> SMBiosCoolingDevice<'a> {
     }
 
     /// Cooling device type and status.
-    pub fn device_type_and_status(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x06)
+    pub fn device_type_and_status(&self) -> Option<CoolingDeviceTypeAndStatus> {
+        self.parts
+            .get_field_byte(0x06)
+            .and_then(|raw| Some(CoolingDeviceTypeAndStatus::from(raw)))
     }
 
     /// Cooling unit group to which this cooling device is associated
@@ -85,6 +87,111 @@ impl fmt::Debug for SMBiosCoolingDevice<'_> {
     }
 }
 
+/// # Cooling Device Type and Status
+#[derive(PartialEq, Eq)]
+pub struct CoolingDeviceTypeAndStatus {
+    /// Raw value
+    ///
+    /// _raw_ is most useful when _value_ is None.
+    /// This is most likely to occur when the standard was updated but
+    /// this library code has not been updated to match the current
+    /// standard.
+    pub raw: u8,
+    /// The [CoolingDeviceStatus]
+    pub device_status: CoolingDeviceStatus,
+    /// The [CoolingDeviceType]
+    pub device_type: CoolingDeviceType,
+}
+
+impl fmt::Debug for CoolingDeviceTypeAndStatus {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<CoolingDeviceTypeAndStatus>())
+            .field("raw", &self.raw)
+            .field("device_status", &self.device_status)
+            .field("device_type", &self.device_type)
+            .finish()
+    }
+}
+
+/// # Cooling Device Status
+#[derive(Debug, PartialEq, Eq)]
+pub enum CoolingDeviceStatus {
+    /// Other
+    Other,
+    /// Unknown
+    Unknown,
+    /// OK
+    OK,
+    /// Non-critical
+    NonCritical,
+    /// Critical
+    Critical,
+    /// Non-recoverable
+    NonRecoverable,
+    /// A value unknown to this standard, check the raw value
+    None,
+}
+
+/// # Cooling Device Type
+#[derive(Debug, PartialEq, Eq)]
+pub enum CoolingDeviceType {
+    /// Other
+    Other,
+    /// Unknown
+    Unknown,
+    /// Fan
+    Fan,
+    /// Centrifugal Blower
+    CentrifugalBlower,
+    /// Chip Fan
+    ChipFan,
+    /// Cabinet Fan
+    CabinetFan,
+    /// Power Supply Fan
+    PowerSupplyFan,
+    /// Heat Pipe
+    HeatPipe,
+    /// Integrated Refrigeration
+    IntegratedRefrigeration,
+    /// Active Cooling
+    ActiveCooling,
+    /// Passive Cooling
+    PassiveCooling,
+    /// A value unknown to this standard, check the raw value
+    None,
+}
+
+impl From<u8> for CoolingDeviceTypeAndStatus {
+    fn from(raw: u8) -> Self {
+        CoolingDeviceTypeAndStatus {
+            device_status: match raw & 0b111_00000 {
+                0b001_00000 => CoolingDeviceStatus::Other,
+                0b010_00000 => CoolingDeviceStatus::Unknown,
+                0b011_00000 => CoolingDeviceStatus::OK,
+                0b100_00000 => CoolingDeviceStatus::NonCritical,
+                0b101_00000 => CoolingDeviceStatus::Critical,
+                0b110_00000 => CoolingDeviceStatus::NonRecoverable,
+                _ => CoolingDeviceStatus::None,
+            },
+            device_type: match raw & 0b000_11111 {
+                0b000_00001 => CoolingDeviceType::Other,
+                0b000_00010 => CoolingDeviceType::Unknown,
+                0b000_00011 => CoolingDeviceType::Fan,
+                0b000_00100 => CoolingDeviceType::CentrifugalBlower,
+                0b000_00101 => CoolingDeviceType::ChipFan,
+                0b000_00110 => CoolingDeviceType::CabinetFan,
+                0b000_00111 => CoolingDeviceType::PowerSupplyFan,
+                0b000_01000 => CoolingDeviceType::HeatPipe,
+                0b000_01001 => CoolingDeviceType::IntegratedRefrigeration,
+                0b000_10000 => CoolingDeviceType::ActiveCooling,
+                0b000_10001 => CoolingDeviceType::PassiveCooling,
+                _ => CoolingDeviceType::None,
+            },
+            raw,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -101,7 +208,16 @@ mod tests {
         let test_struct = SMBiosCoolingDevice::new(&parts);
 
         //assert_eq!(test_struct.temperature_probe_handle(), Some(Handle(42)));
-        assert_eq!(test_struct.device_type_and_status(), Some(103));
+
+        let device_type_and_status = test_struct.device_type_and_status().unwrap();
+        assert_eq!(
+            device_type_and_status.device_status,
+            CoolingDeviceStatus::OK
+        );
+        assert_eq!(
+            device_type_and_status.device_type,
+            CoolingDeviceType::PowerSupplyFan
+        );
         assert_eq!(test_struct.cooling_unit_group(), Some(1));
         assert_eq!(test_struct.oem_defined(), Some(0));
         assert_eq!(test_struct.nominal_speed(), Some(32768));

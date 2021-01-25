@@ -28,13 +28,17 @@ impl<'a> SMBiosStruct<'a> for SMBiosBuiltInPointingDevice<'a> {
 
 impl<'a> SMBiosBuiltInPointingDevice<'a> {
     /// Type of pointing device.
-    pub fn device_type(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x04)
+    pub fn device_type(&self) -> Option<PointingDeviceTypeData> {
+        self.parts
+            .get_field_byte(0x04)
+            .and_then(|raw| Some(PointingDeviceTypeData::from(raw)))
     }
 
     /// Interface type for the pointing device.
-    pub fn interface(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x05)
+    pub fn interface(&self) -> Option<PointingDeviceInterfaceData> {
+        self.parts
+            .get_field_byte(0x05)
+            .and_then(|raw| Some(PointingDeviceInterfaceData::from(raw)))
     }
 
     /// Number of buttons on the pointing device.
@@ -55,6 +59,162 @@ impl fmt::Debug for SMBiosBuiltInPointingDevice<'_> {
     }
 }
 
+/// # Built-in Pointing Device Type Data
+pub struct PointingDeviceTypeData {
+    /// Raw value
+    ///
+    /// _raw_ is most useful when _value_ is None.
+    /// This is most likely to occur when the standard was updated but
+    /// this library code has not been updated to match the current
+    /// standard.
+    pub raw: u8,
+    /// The contained [BuiltInPointingDeviceType] value
+    pub value: PointingDeviceType,
+}
+
+impl fmt::Debug for PointingDeviceTypeData {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<PointingDeviceTypeData>())
+            .field("raw", &self.raw)
+            .field("value", &self.value)
+            .finish()
+    }
+}
+
+impl Deref for PointingDeviceTypeData {
+    type Target = PointingDeviceType;
+
+    fn deref(&self) -> &Self::Target {
+        &self.value
+    }
+}
+
+/// # Built-in Pointing Device Type
+#[derive(Debug, PartialEq, Eq)]
+pub enum PointingDeviceType {
+    /// Other
+    Other,
+    /// Unknown
+    Unknown,
+    /// Mouse
+    Mouse,
+    /// Track Ball
+    TrackBall,
+    /// Track Point
+    TrackPoint,
+    /// Glide Point
+    GlidePoint,
+    /// Touch Pad
+    TouchPad,
+    /// Touch Screen
+    TouchScreen,
+    /// Optical Sensor
+    OpticalSensor,
+    /// A value unknown to this standard, check the raw value
+    None,
+}
+
+impl From<u8> for PointingDeviceTypeData {
+    fn from(raw: u8) -> Self {
+        PointingDeviceTypeData {
+            value: match raw {
+                0x01 => PointingDeviceType::Other,
+                0x02 => PointingDeviceType::Unknown,
+                0x03 => PointingDeviceType::Mouse,
+                0x04 => PointingDeviceType::TrackBall,
+                0x05 => PointingDeviceType::TrackPoint,
+                0x06 => PointingDeviceType::GlidePoint,
+                0x07 => PointingDeviceType::TouchPad,
+                0x08 => PointingDeviceType::TouchScreen,
+                0x09 => PointingDeviceType::OpticalSensor,
+                _ => PointingDeviceType::None,
+            },
+            raw,
+        }
+    }
+}
+
+/// # Built-in Pointing Device Interface Data
+pub struct PointingDeviceInterfaceData {
+    /// Raw value
+    ///
+    /// _raw_ is most useful when _value_ is None.
+    /// This is most likely to occur when the standard was updated but
+    /// this library code has not been updated to match the current
+    /// standard.
+    pub raw: u8,
+    /// The contained [PointingDeviceInterface] value
+    pub value: PointingDeviceInterface,
+}
+
+impl fmt::Debug for PointingDeviceInterfaceData {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<PointingDeviceInterfaceData>())
+            .field("raw", &self.raw)
+            .field("value", &self.value)
+            .finish()
+    }
+}
+
+impl Deref for PointingDeviceInterfaceData {
+    type Target = PointingDeviceInterface;
+
+    fn deref(&self) -> &Self::Target {
+        &self.value
+    }
+}
+
+/// # Built-in Pointing Device Interface
+#[derive(Debug, PartialEq, Eq)]
+pub enum PointingDeviceInterface {
+    /// Other field
+    Other,
+    /// Unknown
+    Unknown,
+    /// Serial
+    Serial,
+    /// PS/2
+    PS2,
+    /// Infrared
+    Infrared,
+    /// HP-HIL
+    HpHil,
+    /// Bus mouse
+    BusMouse,
+    /// ADB (Apple Desktop Bus)
+    Adb,
+    /// Bus mouse DB-9
+    BusMouseDB9,
+    /// Bus mouse micro-DIN
+    BusMouseMicroDin,
+    /// USB
+    USB,
+    /// A value unknown to this standard, check the raw value
+    None,
+}
+
+impl From<u8> for PointingDeviceInterfaceData {
+    fn from(raw: u8) -> Self {
+        PointingDeviceInterfaceData {
+            value: match raw {
+                0x01 => PointingDeviceInterface::Other,
+                0x02 => PointingDeviceInterface::Unknown,
+                0x03 => PointingDeviceInterface::Serial,
+                0x04 => PointingDeviceInterface::PS2,
+                0x05 => PointingDeviceInterface::Infrared,
+                0x06 => PointingDeviceInterface::HpHil,
+                0x07 => PointingDeviceInterface::BusMouse,
+                0x08 => PointingDeviceInterface::Adb,
+                0xA0 => PointingDeviceInterface::BusMouseDB9,
+                0xA1 => PointingDeviceInterface::BusMouseMicroDin,
+                0xA2 => PointingDeviceInterface::USB,
+                _ => PointingDeviceInterface::None,
+            },
+            raw,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -66,8 +226,14 @@ mod tests {
         let parts = SMBiosStructParts::new(struct_type21.as_slice());
         let test_struct = SMBiosBuiltInPointingDevice::new(&parts);
 
-        assert_eq!(test_struct.device_type(), Some(5));
-        assert_eq!(test_struct.interface(), Some(4));
+        assert_eq!(
+            *test_struct.device_type().unwrap(),
+            PointingDeviceType::TrackPoint
+        );
+        assert_eq!(
+            *test_struct.interface().unwrap(),
+            PointingDeviceInterface::PS2
+        );
         assert_eq!(test_struct.number_of_buttons(), Some(3));
     }
 }

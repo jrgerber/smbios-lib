@@ -115,9 +115,9 @@ pub struct BoardTypeData {
     /// This is most likely to occur when the standard was updated but
     /// this library code has not been updated to match the current
     /// standard.
-    raw: u8,
+    pub raw: u8,
     /// The contained [BoardType] value
-    value: BoardType,
+    pub value: BoardType,
 }
 
 impl fmt::Debug for BoardTypeData {
