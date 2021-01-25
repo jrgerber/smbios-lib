@@ -7,12 +7,18 @@
 
 #![warn(missing_docs)]
 
-mod fields;
-pub use fields::*;
-
-pub mod read;
-pub mod structs;
-pub mod windows;
-
+mod core;
+mod read;
+mod structs;
+mod windows;
 // Temporary tools
-pub mod dev_tools;
+mod dev_tools;
+
+use structs::*;
+use windows::*;
+
+pub use crate::core::*;
+pub use read::*;
+
+#[cfg(target_family = "windows")]
+pub use windows::{get_raw_smbios_data, WinSMBiosData};
