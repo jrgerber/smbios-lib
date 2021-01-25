@@ -1,0 +1,213 @@
+use crate::*;
+
+/// # Group Associations (Type 14)
+///
+/// The Group Associations structure is provided for OEMs who want to specify the arrangement or hierarchy
+/// of certain components (including other Group Associations) within the system. For example, you can use
+/// the Group Associations structure to indicate that two CPUs share a common external cache system.
+///
+/// Compliant with:
+/// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
+/// Document Date: 2020-07-17
+pub struct SMBiosGroupAssociations<'a> {
+    parts: &'a SMBiosStructParts<'a>,
+}
+
+impl<'a> SMBiosStruct<'a> for SMBiosGroupAssociations<'a> {
+    const STRUCT_TYPE: u8 = 14u8;
+
+    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+        Self { parts }
+    }
+
+    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+        self.parts
+    }
+}
+
+impl<'a> SMBiosGroupAssociations<'a> {
+    /// A string describing the group
+    pub fn group_name(&self) -> Option<String> {
+        self.parts.get_field_string(0x4)
+    }
+
+    /// Number of [GroupAssociationItem] entries
+    pub fn number_of_items(&self) -> Option<usize> {
+        let length = self.parts.header.length() as usize;
+
+        if length < GroupAssociationItemIterator::ITEMS_OFFSET {
+            return None;
+        }
+
+        let byte_count = length - GroupAssociationItemIterator::ITEMS_OFFSET;
+
+        if byte_count % GroupAssociationItem::SIZE != 0 {
+            return None;
+        }
+
+        Some(byte_count / GroupAssociationItem::SIZE)
+    }
+
+    /// Iterates over the [GroupAssociationItem] entries
+    pub fn item_iterator(&'a self) -> GroupAssociationItemIterator<'a> {
+        GroupAssociationItemIterator::new(self)
+    }
+}
+
+impl fmt::Debug for SMBiosGroupAssociations<'_> {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosGroupAssociations>())
+            .field("header", &self.parts.header)
+            .field("group_name", &self.group_name())
+            .field("number_of_items", &self.number_of_items())
+            .field("item_iterator", &self.item_iterator())
+            .finish()
+    }
+}
+
+/// # Group Association Item contained within [SMBiosGroupAssociations]
+pub struct GroupAssociationItem<'a> {
+    group_associations: &'a SMBiosGroupAssociations<'a>,
+    entry_offset: usize,
+}
+
+impl<'a> GroupAssociationItem<'a> {
+    /// Size in bytes of a GroupAssociationItem
+    const SIZE: usize = 3usize;
+
+    fn new(group_associations: &'a SMBiosGroupAssociations<'a>, entry_offset: usize) -> Self {
+        Self {
+            group_associations,
+            entry_offset,
+        }
+    }
+
+    /// Item Type
+    ///
+    /// Item (Structure) Type of this member
+    pub fn struct_type(&self) -> Option<u8> {
+        self.group_associations
+            .parts()
+            .get_field_byte(self.entry_offset)
+    }
+
+    /// Item Handle
+    ///
+    /// Handle corresponding to this structure
+    pub fn item_handle(&self) -> Option<Handle> {
+        self.group_associations
+            .parts()
+            .get_field_handle(self.entry_offset + 1)
+    }
+}
+
+impl fmt::Debug for GroupAssociationItem<'_> {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<GroupAssociationItem>())
+            .field("struct_type", &self.struct_type())
+            .field("item_handle", &self.item_handle())
+            .finish()
+    }
+}
+
+/// Iterates over the [GroupAssociationItem] entries contained within [SMBiosGroupAssociations]
+pub struct GroupAssociationItemIterator<'a> {
+    data: &'a SMBiosGroupAssociations<'a>,
+    current_index: usize,
+    current_entry: usize,
+    number_of_entries: usize,
+}
+
+impl<'a> GroupAssociationItemIterator<'a> {
+    const ITEMS_OFFSET: usize = 5usize;
+
+    fn new(data: &'a SMBiosGroupAssociations<'a>) -> Self {
+        GroupAssociationItemIterator {
+            data: data,
+            current_index: Self::ITEMS_OFFSET,
+            current_entry: 0,
+            number_of_entries: data.number_of_items().unwrap_or(0),
+        }
+    }
+
+    fn reset(&mut self) {
+        self.current_index = Self::ITEMS_OFFSET;
+        self.current_entry = 0;
+    }
+}
+
+impl<'a> IntoIterator for &'a GroupAssociationItemIterator<'a> {
+    type Item = GroupAssociationItem<'a>;
+    type IntoIter = GroupAssociationItemIterator<'a>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        GroupAssociationItemIterator {
+            data: self.data,
+            current_index: GroupAssociationItemIterator::ITEMS_OFFSET,
+            current_entry: 0,
+            number_of_entries: self.data.number_of_items().unwrap_or(0),
+        }
+    }
+}
+
+impl<'a> Iterator for GroupAssociationItemIterator<'a> {
+    type Item = GroupAssociationItem<'a>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.current_entry == self.number_of_entries {
+            self.reset();
+            return None;
+        }
+
+        let next_index = self.current_index + GroupAssociationItem::SIZE;
+        match self
+            .data
+            .parts()
+            .get_field_data(self.current_index, next_index)
+        {
+            Some(_entry_block) => {
+                let result = GroupAssociationItem::new(self.data, self.current_index);
+                self.current_index = next_index;
+                self.current_entry += 1;
+                Some(result)
+            }
+            None => {
+                self.reset();
+                None
+            }
+        }
+    }
+}
+
+impl<'a> fmt::Debug for GroupAssociationItemIterator<'a> {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_list().entries(self.into_iter()).finish()
+    }
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unit_test() {
+        let struct_type14 = vec![
+            0x0E, 0x08, 0x5F, 0x00, 0x01, 0xDD, 0x5B, 0x00, 0x46, 0x69, 0x72, 0x6D, 0x77, 0x61,
+            0x72, 0x65, 0x20, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6F, 0x6E, 0x20, 0x49, 0x6E, 0x66,
+            0x6F, 0x00, 0x00,
+        ];
+
+        let parts = SMBiosStructParts::new(struct_type14.as_slice());
+        let test_struct = SMBiosGroupAssociations::new(&parts);
+
+        println!("{:?}", test_struct);
+
+        assert_eq!(
+            test_struct.group_name(),
+            Some("Firmware Version Info".to_string())
+        );
+        let mut iterator = test_struct.item_iterator().into_iter();
+        let first_item = iterator.next().unwrap();
+        assert_eq!(first_item.struct_type(), Some(221));
+        assert_eq!(*first_item.item_handle().unwrap(), 91);
+    }
+}
