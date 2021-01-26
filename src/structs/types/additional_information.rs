@@ -146,7 +146,7 @@ impl<'a> Iterator for AdditionalInformationEntryIterator<'a> {
                     Some(_entry_block) => {
                         let result = AdditionalInformationEntry::new(self.data, self.current_index);
                         self.current_index = next_index;
-                        self.current_entry = self.current_entry + 1;
+                        self.current_entry += 1;
                         Some(result)
                     }
                     None => {

@@ -184,6 +184,7 @@ impl<'a> fmt::Debug for GroupAssociationItemIterator<'a> {
         fmt.debug_list().entries(self.into_iter()).finish()
     }
 }
+
 #[cfg(test)]
 mod tests {
     use super::*;
