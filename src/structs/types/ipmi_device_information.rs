@@ -279,12 +279,12 @@ mod tests {
 
     #[test]
     fn unit_test() {
-        let struct_type24 = vec![
+        let struct_type38 = vec![
             0x26, 0x12, 0x24, 0x00, 0x01, 0x10, 0x05, 0xFF, 0x08, 0x07, 0x06, 0x05, 0x04, 0x03,
             0x02, 0x01, 0b10010010, 0x00,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type24.as_slice());
+        let parts = SMBiosStructParts::new(struct_type38.as_slice());
         let test_struct = SMBiosIpmiDeviceInformation::new(&parts);
 
         assert_eq!(

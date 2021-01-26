@@ -79,8 +79,8 @@ mod tests {
             test_struct.description(),
             Some("Default string".to_string())
         );
-        // assert_eq!(test_struct.management_device_handle(), Some(Handle(38)));
-        // assert_eq!(test_struct.component_handle(), Some(Handle(39)));
-        // assert_eq!(test_struct.threshold_handle(), Some(Handle(40)));
+        assert_eq!(*test_struct.management_device_handle().unwrap(), 38);
+        assert_eq!(*test_struct.component_handle().unwrap(), 39);
+        assert_eq!(*test_struct.threshold_handle().unwrap(), 40);
     }
 }
