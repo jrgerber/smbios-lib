@@ -26,23 +26,30 @@ impl<'a> SMBiosStruct<'a> for SMBiosMemoryErrorInformation64<'a> {
 impl<'a> SMBiosMemoryErrorInformation64<'a> {
     /// Type of error that is associated with the current
     /// status reported for the memory array or device
-    pub fn error_type(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x04)
+    pub fn error_type(&self) -> Option<MemoryErrorTypeData> {
+        self.parts
+            .get_field_byte(0x04)
+            .and_then(|raw| Some(MemoryErrorTypeData::from(raw)))
     }
 
     /// Granularity (for example, device versus Partition)
     /// to which the error can be resolved
-    pub fn error_granularity(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x05)
+    pub fn error_granularity(&self) -> Option<MemoryErrorGranularityData> {
+        self.parts
+            .get_field_byte(0x05)
+            .and_then(|raw| Some(MemoryErrorGranularityData::from(raw)))
     }
 
     /// Memory access operation that caused the error
-    pub fn error_operation(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x06)
+    pub fn error_operation(&self) -> Option<MemoryErrorOperationData> {
+        self.parts
+            .get_field_byte(0x06)
+            .and_then(|raw| Some(MemoryErrorOperationData::from(raw)))
     }
 
     /// Vendor-specific ECC syndrome or CRC data
     /// associated with the erroneous access
+    ///
     /// If the value is unknown, this field contains 0000
     /// 0000h.
     pub fn vendor_syndrome(&self) -> Option<u32> {
@@ -52,6 +59,7 @@ impl<'a> SMBiosMemoryErrorInformation64<'a> {
     /// 64-bit physical address of the error based on the
     /// addressing of the bus to which the memory array is
     /// connected
+    ///
     /// If the address is unknown, this field contains 8000 0000
     /// 0000 0000h.
     pub fn memory_array_error_address(&self) -> Option<u64> {
@@ -60,6 +68,7 @@ impl<'a> SMBiosMemoryErrorInformation64<'a> {
 
     /// 64-bit physical address of the error relative to the start of
     /// the failing memory device, in bytes
+    ///
     /// If the address is unknown, this field contains 8000 0000
     /// 0000 0000h.
     pub fn device_error_address(&self) -> Option<u64> {
@@ -68,6 +77,7 @@ impl<'a> SMBiosMemoryErrorInformation64<'a> {
 
     /// Range, in bytes, within which the error can be determined,
     /// when an error address is given
+    ///
     /// If the range is unknown, this field contains 8000 0000h.
     pub fn error_resolution(&self) -> Option<u32> {
         self.parts.get_field_dword(0x1B)
@@ -89,5 +99,42 @@ impl fmt::Debug for SMBiosMemoryErrorInformation64<'_> {
             .field("device_error_address", &self.device_error_address())
             .field("error_resolution", &self.error_resolution())
             .finish()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unit_test() {
+        let struct_type33 = vec![
+            0x21, 0x1F, 0x50, 0x00, 0x03, 0x02, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x00,
+            0x00, 0x00, 0x80, 0x00, 0x00,
+        ];
+
+        let parts = SMBiosStructParts::new(struct_type33.as_slice());
+        let test_struct = SMBiosMemoryErrorInformation64::new(&parts);
+
+        assert_eq!(*test_struct.error_type().unwrap(), MemoryErrorType::OK);
+        assert_eq!(
+            *test_struct.error_granularity().unwrap(),
+            MemoryErrorGranularity::Unknown
+        );
+        assert_eq!(
+            *test_struct.error_operation().unwrap(),
+            MemoryErrorOperation::Unknown
+        );
+        assert_eq!(test_struct.vendor_syndrome(), Some(0));
+        assert_eq!(
+            test_struct.memory_array_error_address(),
+            Some(0x8000_0000_0000_0000)
+        );
+        assert_eq!(
+            test_struct.device_error_address(),
+            Some(0x8000_0000_0000_0000)
+        );
+        assert_eq!(test_struct.error_resolution(), Some(0x8000_0000));
     }
 }
