@@ -47,8 +47,10 @@ impl<'a> SMBiosMemoryModuleInformation<'a> {
     }
 
     /// Bit field for the current memory type
-    pub fn current_memory_type(&self) -> Option<u16> {
-        self.parts.get_field_word(0x07)
+    pub fn current_memory_type(&self) -> Option<MemoryTypes> {
+        self.parts
+            .get_field_word(0x07)
+            .and_then(|raw| Some(MemoryTypes::from(raw)))
     }
 
     /// Installed size

@@ -266,7 +266,6 @@ pub struct ObjectHandleIterator<'a> {
 
 impl<'a> ObjectHandleIterator<'a> {
     const OBJECT_HANDLES_OFFSET: usize = 0x0Fusize;
-    const HANDLE_SIZE: usize = 2usize;
 
     /// Creates an instance of the object handle iterator.
     pub fn new(data: &'a SMBiosBaseboardInformation<'a>) -> Self {
@@ -314,7 +313,7 @@ impl<'a> Iterator for ObjectHandleIterator<'a> {
 
         match self.data.parts().get_field_handle(self.current_index) {
             Some(current_handle) => {
-                self.current_index = self.current_index + Self::HANDLE_SIZE;
+                self.current_index = self.current_index + Handle::SIZE;
                 self.current_entry = self.current_entry + 1;
                 Some(current_handle)
             }
