@@ -81,7 +81,7 @@ impl<'a> SMBiosStructParts<'a> {
 
     /// Retrieve a [Handle] at the given offset from the structure's data section
     pub fn get_field_handle(&self, offset: usize) -> Option<Handle> {
-        match self.fields.get(offset..offset + 2) {
+        match self.fields.get(offset..offset + Handle::SIZE) {
             Some(val) => Some(Handle(u16::from_le_bytes(
                 val.try_into()
                     .expect("array length does not match type width"),

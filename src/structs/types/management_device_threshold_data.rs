@@ -4,6 +4,12 @@ use crate::*;
 ///
 /// The information in this structure defines threshold information for a component (probe or cooling-unit) contained within a Management Device
 ///
+/// For each threshold field present in the structure:
+/// - The threshold units (millivolts, milliamps, 1/10th degrees C, or RPMs) are as defined by the associated probe or cooling-unit component structure.
+/// - If the value is unavailable, the field is set to 0x8000.
+///
+/// NOTE This structure type was added in version 2.3 of this specification.
+///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17

@@ -170,8 +170,11 @@ mod tests {
 
         assert_eq!(test_struct.starting_address(), Some(0));
         assert_eq!(test_struct.ending_address(), Some(8388607));
-        //assert_eq!(test_struct.memory_device_handle(), Some(Handle(64)));
-        //assert_eq!(test_struct.memory_array_mapped_address_handle(), Some(Handle(63)));
+        assert_eq!(*test_struct.memory_device_handle().unwrap(), 64);
+        assert_eq!(
+            *test_struct.memory_array_mapped_address_handle().unwrap(),
+            63
+        );
         assert_eq!(test_struct.partition_row_position(), Some(1));
         assert_eq!(test_struct.interleave_position(), Some(1));
         assert_eq!(test_struct.interleaved_data_depth(), Some(2));

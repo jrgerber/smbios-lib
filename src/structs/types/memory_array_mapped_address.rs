@@ -4,6 +4,8 @@ use crate::*;
 ///
 /// This structure provides the address mapping for a Physical Memory Array.
 ///
+/// One structure is present for each contiguous address range described.
+///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
@@ -129,7 +131,7 @@ mod tests {
 
         assert_eq!(test_struct.starting_address(), Some(0));
         assert_eq!(test_struct.ending_address(), Some(16777215));
-        //assert_eq!(test_struct.physical_memory_array_handle(), Some(Handle(62)));
+        assert_eq!(*test_struct.physical_memory_array_handle().unwrap(), 62);
         assert_eq!(test_struct.partition_width(), Some(4));
         assert_eq!(test_struct.extended_starting_address(), Some(0));
         assert_eq!(test_struct.extended_ending_address(), Some(0));

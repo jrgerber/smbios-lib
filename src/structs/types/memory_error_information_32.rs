@@ -26,19 +26,25 @@ impl<'a> SMBiosStruct<'a> for SMBiosMemoryErrorInformation32<'a> {
 impl<'a> SMBiosMemoryErrorInformation32<'a> {
     /// Type of error that is associated with the current
     /// status reported for the memory array or device
-    pub fn error_type(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x04)
+    pub fn error_type(&self) -> Option<MemoryErrorTypeData> {
+        self.parts
+            .get_field_byte(0x04)
+            .and_then(|raw| Some(MemoryErrorTypeData::from(raw)))
     }
 
     /// Granularity (for example, device versus Partition)
     /// to which the error can be resolved
-    pub fn error_granularity(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x05)
+    pub fn error_granularity(&self) -> Option<MemoryErrorGranularityData> {
+        self.parts
+            .get_field_byte(0x05)
+            .and_then(|raw| Some(MemoryErrorGranularityData::from(raw)))
     }
 
     /// Memory access operation that caused the error
-    pub fn error_operation(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x06)
+    pub fn error_operation(&self) -> Option<MemoryErrorOperationData> {
+        self.parts
+            .get_field_byte(0x06)
+            .and_then(|raw| Some(MemoryErrorOperationData::from(raw)))
     }
 
     /// Vendor-specific ECC syndrome or CRC data
@@ -93,6 +99,219 @@ impl fmt::Debug for SMBiosMemoryErrorInformation32<'_> {
     }
 }
 
+/// # Memory Error - Error Type Data
+pub struct MemoryErrorTypeData {
+    /// Raw value
+    ///
+    /// _raw_ is most useful when _value_ is None.
+    /// This is most likely to occur when the standard was updated but
+    /// this library code has not been updated to match the current
+    /// standard.
+    pub raw: u8,
+    /// The contained [MemoryErrorType] value
+    pub value: MemoryErrorType,
+}
+
+impl fmt::Debug for MemoryErrorTypeData {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<MemoryErrorTypeData>())
+            .field("raw", &self.raw)
+            .field("value", &self.value)
+            .finish()
+    }
+}
+
+impl Deref for MemoryErrorTypeData {
+    type Target = MemoryErrorType;
+
+    fn deref(&self) -> &Self::Target {
+        &self.value
+    }
+}
+
+/// # Memory Error - Error Type
+#[derive(Debug, PartialEq, Eq)]
+pub enum MemoryErrorType {
+    /// Other
+    Other,
+    /// Unknown
+    Unknown,
+    /// OK
+    OK,
+    /// Bad read
+    BadRead,
+    /// Parity error
+    ParityError,
+    /// Single-bit error
+    SingleBitError,
+    /// Double-bit error
+    DoubleBitError,
+    /// Multi-bit error
+    MultiBitError,
+    /// Nibble error
+    NibbleError,
+    /// Checksum error
+    ChecksumError,
+    /// CRC error
+    CrcError,
+    /// Corrected single-bit error
+    CorrectedSingleBitError,
+    /// Corrected error
+    CorrectedError,
+    /// Uncorrectable error
+    UncorrectableError,
+    /// A value unknown to this standard, check the raw value
+    None,
+}
+
+impl From<u8> for MemoryErrorTypeData {
+    fn from(raw: u8) -> Self {
+        MemoryErrorTypeData {
+            value: match raw {
+                0x01 => MemoryErrorType::Other,
+                0x02 => MemoryErrorType::Unknown,
+                0x03 => MemoryErrorType::OK,
+                0x04 => MemoryErrorType::BadRead,
+                0x05 => MemoryErrorType::ParityError,
+                0x06 => MemoryErrorType::SingleBitError,
+                0x07 => MemoryErrorType::DoubleBitError,
+                0x08 => MemoryErrorType::MultiBitError,
+                0x09 => MemoryErrorType::NibbleError,
+                0x0A => MemoryErrorType::ChecksumError,
+                0x0B => MemoryErrorType::CrcError,
+                0x0C => MemoryErrorType::CorrectedSingleBitError,
+                0x0D => MemoryErrorType::CorrectedError,
+                0x0E => MemoryErrorType::UncorrectableError,
+                _ => MemoryErrorType::None,
+            },
+            raw,
+        }
+    }
+}
+
+/// # Memory Error - Error Granularity Data
+pub struct MemoryErrorGranularityData {
+    /// Raw value
+    ///
+    /// _raw_ is most useful when _value_ is None.
+    /// This is most likely to occur when the standard was updated but
+    /// this library code has not been updated to match the current
+    /// standard.
+    pub raw: u8,
+    /// The contained [MemoryErrorGranularity] value
+    pub value: MemoryErrorGranularity,
+}
+
+impl fmt::Debug for MemoryErrorGranularityData {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<MemoryErrorGranularityData>())
+            .field("raw", &self.raw)
+            .field("value", &self.value)
+            .finish()
+    }
+}
+
+impl Deref for MemoryErrorGranularityData {
+    type Target = MemoryErrorGranularity;
+
+    fn deref(&self) -> &Self::Target {
+        &self.value
+    }
+}
+
+/// # Memory Error - Error Granularity
+#[derive(Debug, PartialEq, Eq)]
+pub enum MemoryErrorGranularity {
+    /// Other
+    Other,
+    /// Unknown
+    Unknown,
+    /// Device level
+    DeviceLevel,
+    /// Memory partition level
+    MemoryPartitionLevel,
+    /// A value unknown to this standard, check the raw value
+    None,
+}
+
+impl From<u8> for MemoryErrorGranularityData {
+    fn from(raw: u8) -> Self {
+        MemoryErrorGranularityData {
+            value: match raw {
+                0x01 => MemoryErrorGranularity::Other,
+                0x02 => MemoryErrorGranularity::Unknown,
+                0x03 => MemoryErrorGranularity::DeviceLevel,
+                0x04 => MemoryErrorGranularity::MemoryPartitionLevel,
+                _ => MemoryErrorGranularity::None,
+            },
+            raw,
+        }
+    }
+}
+
+/// # Memory Error - Error Operation Data
+pub struct MemoryErrorOperationData {
+    /// Raw value
+    ///
+    /// _raw_ is most useful when _value_ is None.
+    /// This is most likely to occur when the standard was updated but
+    /// this library code has not been updated to match the current
+    /// standard.
+    pub raw: u8,
+    /// The contained [MemoryErrorOperation] value
+    pub value: MemoryErrorOperation,
+}
+
+impl fmt::Debug for MemoryErrorOperationData {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<MemoryErrorOperationData>())
+            .field("raw", &self.raw)
+            .field("value", &self.value)
+            .finish()
+    }
+}
+
+impl Deref for MemoryErrorOperationData {
+    type Target = MemoryErrorOperation;
+
+    fn deref(&self) -> &Self::Target {
+        &self.value
+    }
+}
+
+/// # Memory Error - Error Operation
+#[derive(Debug, PartialEq, Eq)]
+pub enum MemoryErrorOperation {
+    /// Other
+    Other,
+    /// Unknown
+    Unknown,
+    /// Read
+    Read,
+    /// Write
+    Write,
+    /// Partial write
+    PartialWrite,
+    /// A value unknown to this standard, check the raw value
+    None,
+}
+
+impl From<u8> for MemoryErrorOperationData {
+    fn from(raw: u8) -> Self {
+        MemoryErrorOperationData {
+            value: match raw {
+                0x01 => MemoryErrorOperation::Other,
+                0x02 => MemoryErrorOperation::Unknown,
+                0x03 => MemoryErrorOperation::Read,
+                0x04 => MemoryErrorOperation::Write,
+                0x05 => MemoryErrorOperation::PartialWrite,
+                _ => MemoryErrorOperation::None,
+            },
+            raw,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -107,12 +326,18 @@ mod tests {
         let parts = SMBiosStructParts::new(struct_type18.as_slice());
         let test_struct = SMBiosMemoryErrorInformation32::new(&parts);
 
-        assert_eq!(test_struct.error_type(), Some(3));
-        assert_eq!(test_struct.error_granularity(), Some(2));
-        assert_eq!(test_struct.error_operation(), Some(2));
+        assert_eq!(*test_struct.error_type().unwrap(), MemoryErrorType::OK);
+        assert_eq!(
+            *test_struct.error_granularity().unwrap(),
+            MemoryErrorGranularity::Unknown
+        );
+        assert_eq!(
+            *test_struct.error_operation().unwrap(),
+            MemoryErrorOperation::Unknown
+        );
         assert_eq!(test_struct.vendor_syndrome(), Some(0));
-        assert_eq!(test_struct.memory_array_error_address(), Some(2147483648));
-        assert_eq!(test_struct.device_error_address(), Some(2147483648));
-        assert_eq!(test_struct.error_resolution(), Some(2147483648));
+        assert_eq!(test_struct.memory_array_error_address(), Some(0x8000_0000));
+        assert_eq!(test_struct.device_error_address(), Some(0x8000_0000));
+        assert_eq!(test_struct.error_resolution(), Some(0x8000_0000));
     }
 }

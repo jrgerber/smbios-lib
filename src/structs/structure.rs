@@ -24,6 +24,11 @@ pub trait SMBiosStruct<'a> {
 /// Dereference a handle (*handle) to access its u16 value.
 pub struct Handle(pub u16);
 
+impl Handle {
+    /// Handle Size (2 bytes)
+    pub const SIZE: usize = 2usize;
+}
+
 impl Deref for Handle {
     type Target = u16;
 
