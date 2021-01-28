@@ -165,8 +165,10 @@ impl<'a> SMBiosMemoryDevice<'a> {
     /// FFFFh = the speed is 65,535 MT/s or greater,
     /// and the actual speed is stored in the Extended
     /// Configured Memory Speed field
-    pub fn configured_memory_speed(&self) -> Option<u16> {
-        self.parts.get_field_word(0x20)
+    pub fn configured_memory_speed(&self) -> Option<MemorySpeed> {
+        self.parts
+            .get_field_word(0x20)
+            .and_then(|raw| Some(MemorySpeed::from(raw)))
     }
 
     /// Minimum operating voltage for this device, in
@@ -859,7 +861,11 @@ mod tests {
         );
         assert_eq!(test_struct.attributes(), Some(1));
         assert_eq!(test_struct.extended_size(), Some(0));
-        assert_eq!(test_struct.configured_memory_speed(), Some(2666));
+        match test_struct.configured_memory_speed().unwrap() {
+            MemorySpeed::MTs(speed) => assert_eq!(speed, 2666),
+            MemorySpeed::Unknown => panic!("expected speed"),
+            MemorySpeed::SeeExtendedSpeed => panic!("expected speed"),
+        }
         assert_eq!(test_struct.minimum_voltage(), Some(1200));
         assert_eq!(test_struct.maximum_voltage(), Some(1200));
         assert_eq!(test_struct.configured_voltage(), Some(1200));
