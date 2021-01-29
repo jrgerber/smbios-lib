@@ -40,8 +40,10 @@ impl<'a> SMBiosProcessorInformation<'a> {
     }
 
     /// Processor type
-    pub fn processor_type(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x05)
+    pub fn processor_type(&self) -> Option<ProcessorTypeData> {
+        self.parts
+            .get_field_byte(0x05)
+            .and_then(|raw| Some(ProcessorTypeData::from(raw)))
     }
 
     /// Processor family
@@ -105,8 +107,10 @@ impl<'a> SMBiosProcessorInformation<'a> {
     }
 
     /// Processor upgrade
-    pub fn processor_upgrade(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x19)
+    pub fn processor_upgrade(&self) -> Option<ProcessorUpgradeData> {
+        self.parts
+            .get_field_byte(0x19)
+            .and_then(|raw| Some(ProcessorUpgradeData::from(raw)))
     }
 
     /// Handle of a [SMBiosCacheInformation] structure that
@@ -118,8 +122,8 @@ impl<'a> SMBiosProcessorInformation<'a> {
     /// processor has no L1 cache. For version 2.3 and
     /// later implementations, the value is 0FFFFh if
     /// the Cache Information structure is not provided.
-    pub fn l1cache_handle(&self) -> Option<u16> {
-        self.parts.get_field_word(0x1A)
+    pub fn l1cache_handle(&self) -> Option<Handle> {
+        self.parts.get_field_handle(0x1A)
     }
 
     /// Handle of a [SMBiosCacheInformation] structure that
@@ -131,8 +135,8 @@ impl<'a> SMBiosProcessorInformation<'a> {
     /// processor has no L2 cache. For version 2.3 and
     /// later implementations, the value is 0FFFFh if
     /// the Cache Information structure is not provided.
-    pub fn l2cache_handle(&self) -> Option<u16> {
-        self.parts.get_field_word(0x1C)
+    pub fn l2cache_handle(&self) -> Option<Handle> {
+        self.parts.get_field_handle(0x1C)
     }
 
     /// Handle of a [SMBiosCacheInformation] structure that
@@ -144,8 +148,8 @@ impl<'a> SMBiosProcessorInformation<'a> {
     /// processor has no L3 cache. For version 2.3 and
     /// later implementations, the value is 0FFFFh if
     /// the Cache Information structure is not provided.
-    pub fn l3cache_handle(&self) -> Option<u16> {
-        self.parts.get_field_word(0x1E)
+    pub fn l3cache_handle(&self) -> Option<Handle> {
+        self.parts.get_field_handle(0x1E)
     }
 
     /// The serial number of this processor
@@ -202,8 +206,10 @@ impl<'a> SMBiosProcessorInformation<'a> {
     }
 
     /// Defines which functions the processor supports
-    pub fn processor_characteristics(&self) -> Option<u16> {
-        self.parts.get_field_word(0x26)
+    pub fn processor_characteristics(&self) -> Option<ProcessorCharacteristics> {
+        self.parts
+            .get_field_word(0x26)
+            .and_then(|raw| Some(ProcessorCharacteristics::from(raw)))
     }
 
     /// Processor family 2
@@ -310,6 +316,394 @@ impl fmt::Debug for SMBiosProcessorInformation<'_> {
     }
 }
 
+/// # Processor Type Data
+pub struct ProcessorTypeData {
+    /// Raw value
+    ///
+    /// _raw_ is most useful when _value_ is None.
+    /// This is most likely to occur when the standard was updated but
+    /// this library code has not been updated to match the current
+    /// standard.
+    pub raw: u8,
+    /// The contained [ProcessorType] value
+    pub value: ProcessorType,
+}
+
+impl fmt::Debug for ProcessorTypeData {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<ProcessorTypeData>())
+            .field("raw", &self.raw)
+            .field("value", &self.value)
+            .finish()
+    }
+}
+
+impl Deref for ProcessorTypeData {
+    type Target = ProcessorType;
+
+    fn deref(&self) -> &Self::Target {
+        &self.value
+    }
+}
+
+/// # Processor Type
+#[derive(Debug, PartialEq, Eq)]
+pub enum ProcessorType {
+    /// Other
+    Other,
+    /// Unknown
+    Unknown,
+    /// Central Processor
+    CentralProcessor,
+    /// Math Processor
+    MathProcessor,
+    /// DSP Processor
+    DspProcessor,
+    /// Video Processor
+    VideoProcessor,
+    /// A value unknown to this standard, check the raw value
+    None,
+}
+
+impl From<u8> for ProcessorTypeData {
+    fn from(raw: u8) -> Self {
+        ProcessorTypeData {
+            value: match raw {
+                0x01 => ProcessorType::Other,
+                0x02 => ProcessorType::Unknown,
+                0x03 => ProcessorType::CentralProcessor,
+                0x04 => ProcessorType::MathProcessor,
+                0x05 => ProcessorType::DspProcessor,
+                0x06 => ProcessorType::VideoProcessor,
+                _ => ProcessorType::None,
+            },
+            raw,
+        }
+    }
+}
+
+/// #
+pub struct ProcessorUpgradeData {
+    /// Raw value
+    ///
+    /// _raw_ is most useful when _value_ is None.
+    /// This is most likely to occur when the standard was updated but
+    /// this library code has not been updated to match the current
+    /// standard.
+    pub raw: u8,
+    /// The contained [ProcessorUpgrade] value
+    pub value: ProcessorUpgrade,
+}
+
+impl fmt::Debug for ProcessorUpgradeData {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<ProcessorUpgradeData>())
+            .field("raw", &self.raw)
+            .field("value", &self.value)
+            .finish()
+    }
+}
+
+impl Deref for ProcessorUpgradeData {
+    type Target = ProcessorUpgrade;
+
+    fn deref(&self) -> &Self::Target {
+        &self.value
+    }
+}
+
+/// #
+#[derive(Debug, PartialEq, Eq)]
+pub enum ProcessorUpgrade {
+    /// Other
+    Other,
+    /// Unknown
+    Unknown,
+    /// Daughter Board
+    DaughterBoard,
+    /// ZIF Socket
+    ZIFSocket,
+    /// Replaceable Piggy Back
+    ReplaceablePiggyBack,
+    /// No Upgrade
+    NoUpgrade,
+    /// LIF Socket
+    LIFSocket,
+    /// Slot 1
+    Slot1,
+    /// Slot 2
+    Slot2,
+    /// 370-pin socket
+    PinSocket370,
+    /// Slot A
+    SlotA,
+    /// Slot M
+    SlotM,
+    /// Socket 423
+    Socket423,
+    /// Socket A (Socket 462)
+    SocketASocket462,
+    /// Socket 478
+    Socket478,
+    /// Socket 754
+    Socket754,
+    /// Socket 940
+    Socket940,
+    /// Socket 939
+    Socket939,
+    /// Socket mPGA604
+    SocketmPGA604,
+    /// Socket LGA771
+    SocketLGA771,
+    /// Socket LGA775
+    SocketLGA775,
+    /// Socket S1
+    SocketS1,
+    /// Socket AM2
+    SocketAM2,
+    /// Socket F (1207)
+    SocketF1207,
+    /// Socket LGA1366
+    SocketLGA1366,
+    /// Socket G34
+    SocketG34,
+    /// Socket AM3
+    SocketAM3,
+    /// Socket C32
+    SocketC32,
+    /// Socket LGA1156
+    SocketLGA1156,
+    /// Socket LGA1567
+    SocketLGA1567,
+    /// Socket PGA988A
+    SocketPGA988A,
+    /// Socket BGA1288
+    SocketBGA1288,
+    /// Socket rPGA988B
+    SocketrPGA988B,
+    /// Socket BGA1023
+    SocketBGA1023,
+    /// Socket BGA1224
+    SocketBGA1224,
+    /// Socket LGA1155
+    SocketLGA1155,
+    /// Socket LGA1356
+    SocketLGA1356,
+    /// Socket LGA2011
+    SocketLGA2011,
+    /// Socket FS1
+    SocketFS1,
+    /// Socket FS2
+    SocketFS2,
+    /// Socket FM1
+    SocketFM1,
+    /// Socket FM2
+    SocketFM2,
+    /// Socket LGA2011-3
+    SocketLGA2011_3,
+    /// Socket LGA1356-3
+    SocketLGA1356_3,
+    /// Socket LGA1150
+    SocketLGA1150,
+    /// Socket BGA1168
+    SocketBGA1168,
+    /// Socket BGA1234
+    SocketBGA1234,
+    /// Socket BGA1364
+    SocketBGA1364,
+    /// Socket AM4
+    SocketAM4,
+    /// Socket LGA1151
+    SocketLGA1151,
+    /// Socket BGA1356
+    SocketBGA1356,
+    /// Socket BGA1440
+    SocketBGA1440,
+    /// Socket BGA1515
+    SocketBGA1515,
+    /// Socket LGA3647-1
+    SocketLGA3647_1,
+    /// Socket SP3
+    SocketSP3,
+    /// Socket SP3r2
+    SocketSP3r23,
+    /// Socket LGA2066
+    SocketLGA2066,
+    /// Socket BGA1392
+    SocketBGA1392,
+    /// Socket BGA1510
+    SocketBGA1510,
+    /// Socket BGA1528
+    SocketBGA1528,
+    /// Socket LGA4189
+    SocketLGA4189,
+    /// Socket LGA1200
+    SocketLGA1200,
+    /// A value unknown to this standard, check the raw value
+    None,
+}
+
+impl From<u8> for ProcessorUpgradeData {
+    fn from(raw: u8) -> Self {
+        ProcessorUpgradeData {
+            value: match raw {
+                0x01 => ProcessorUpgrade::Other,
+                0x02 => ProcessorUpgrade::Unknown,
+                0x03 => ProcessorUpgrade::DaughterBoard,
+                0x04 => ProcessorUpgrade::ZIFSocket,
+                0x05 => ProcessorUpgrade::ReplaceablePiggyBack,
+                0x06 => ProcessorUpgrade::NoUpgrade,
+                0x07 => ProcessorUpgrade::LIFSocket,
+                0x08 => ProcessorUpgrade::Slot1,
+                0x09 => ProcessorUpgrade::Slot2,
+                0x0A => ProcessorUpgrade::PinSocket370,
+                0x0B => ProcessorUpgrade::SlotA,
+                0x0C => ProcessorUpgrade::SlotM,
+                0x0D => ProcessorUpgrade::Socket423,
+                0x0E => ProcessorUpgrade::SocketASocket462,
+                0x0F => ProcessorUpgrade::Socket478,
+                0x10 => ProcessorUpgrade::Socket754,
+                0x11 => ProcessorUpgrade::Socket940,
+                0x12 => ProcessorUpgrade::Socket939,
+                0x13 => ProcessorUpgrade::SocketmPGA604,
+                0x14 => ProcessorUpgrade::SocketLGA771,
+                0x15 => ProcessorUpgrade::SocketLGA775,
+                0x16 => ProcessorUpgrade::SocketS1,
+                0x17 => ProcessorUpgrade::SocketAM2,
+                0x18 => ProcessorUpgrade::SocketF1207,
+                0x19 => ProcessorUpgrade::SocketLGA1366,
+                0x1A => ProcessorUpgrade::SocketG34,
+                0x1B => ProcessorUpgrade::SocketAM3,
+                0x1C => ProcessorUpgrade::SocketC32,
+                0x1D => ProcessorUpgrade::SocketLGA1156,
+                0x1E => ProcessorUpgrade::SocketLGA1567,
+                0x1F => ProcessorUpgrade::SocketPGA988A,
+                0x20 => ProcessorUpgrade::SocketBGA1288,
+                0x21 => ProcessorUpgrade::SocketrPGA988B,
+                0x22 => ProcessorUpgrade::SocketBGA1023,
+                0x23 => ProcessorUpgrade::SocketBGA1224,
+                0x24 => ProcessorUpgrade::SocketLGA1155,
+                0x25 => ProcessorUpgrade::SocketLGA1356,
+                0x26 => ProcessorUpgrade::SocketLGA2011,
+                0x27 => ProcessorUpgrade::SocketFS1,
+                0x28 => ProcessorUpgrade::SocketFS2,
+                0x29 => ProcessorUpgrade::SocketFM1,
+                0x2A => ProcessorUpgrade::SocketFM2,
+                0x2B => ProcessorUpgrade::SocketLGA2011_3,
+                0x2C => ProcessorUpgrade::SocketLGA1356_3,
+                0x2D => ProcessorUpgrade::SocketLGA1150,
+                0x2E => ProcessorUpgrade::SocketBGA1168,
+                0x2F => ProcessorUpgrade::SocketBGA1234,
+                0x30 => ProcessorUpgrade::SocketBGA1364,
+                0x31 => ProcessorUpgrade::SocketAM4,
+                0x32 => ProcessorUpgrade::SocketLGA1151,
+                0x33 => ProcessorUpgrade::SocketBGA1356,
+                0x34 => ProcessorUpgrade::SocketBGA1440,
+                0x35 => ProcessorUpgrade::SocketBGA1515,
+                0x36 => ProcessorUpgrade::SocketLGA3647_1,
+                0x37 => ProcessorUpgrade::SocketSP3,
+                0x38 => ProcessorUpgrade::SocketSP3r23,
+                0x39 => ProcessorUpgrade::SocketLGA2066,
+                0x3A => ProcessorUpgrade::SocketBGA1392,
+                0x3B => ProcessorUpgrade::SocketBGA1510,
+                0x3C => ProcessorUpgrade::SocketBGA1528,
+                0x3D => ProcessorUpgrade::SocketLGA4189,
+                0x3E => ProcessorUpgrade::SocketLGA1200,
+                _ => ProcessorUpgrade::None,
+            },
+            raw,
+        }
+    }
+}
+
+/// # Processor Characteristics
+#[derive(PartialEq, Eq)]
+pub struct ProcessorCharacteristics {
+    /// Raw value
+    pub raw: u16,
+}
+
+impl Deref for ProcessorCharacteristics {
+    type Target = u16;
+
+    fn deref(&self) -> &Self::Target {
+        &self.raw
+    }
+}
+
+impl From<u16> for ProcessorCharacteristics {
+    fn from(raw: u16) -> Self {
+        ProcessorCharacteristics { raw }
+    }
+}
+
+impl ProcessorCharacteristics {
+    /// Bit 1 Unknown
+    pub fn unknown(&self) -> bool {
+        self.raw & 0x0002 == 0x0002
+    }
+
+    /// Bit 2 64-bit Capable
+    pub fn bit_64capable(&self) -> bool {
+        self.raw & 0x0004 == 0x0004
+    }
+
+    /// Bit 3 Multi-Core
+    pub fn multi_core(&self) -> bool {
+        self.raw & 0x0008 == 0x0008
+    }
+
+    /// Bit 4 Hardware Thread
+    pub fn hardware_thread(&self) -> bool {
+        self.raw & 0x0010 == 0x0010
+    }
+
+    /// Bit 5 Execute Protection
+    pub fn execute_protection(&self) -> bool {
+        self.raw & 0x0020 == 0x0020
+    }
+
+    /// Bit 6 Enhanced Virtualization
+    pub fn enhanced_virtualization(&self) -> bool {
+        self.raw & 0x0040 == 0x0040
+    }
+
+    /// Bit 7 Power/Performance Control
+    pub fn power_performance_control(&self) -> bool {
+        self.raw & 0x0080 == 0x0080
+    }
+
+    /// Bit 8 128-bit Capable
+    pub fn bit_128capable(&self) -> bool {
+        self.raw & 0x0100 == 0x0100
+    }
+
+    /// Bit 9 Arm64 SoC ID
+    pub fn arm_64soc_id(&self) -> bool {
+        self.raw & 0x200 == 0x200
+    }
+}
+
+impl fmt::Debug for ProcessorCharacteristics {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<ProcessorCharacteristics>())
+            .field("raw", &self.raw)
+            .field("unknown", &self.unknown())
+            .field("bit_64capable", &self.bit_64capable())
+            .field("multi_core", &self.multi_core())
+            .field("hardware_thread", &self.hardware_thread())
+            .field("execute_protection", &self.execute_protection())
+            .field("enhanced_virtualization", &self.enhanced_virtualization())
+            .field(
+                "power_performance_control",
+                &self.power_performance_control(),
+            )
+            .field("bit_128capable", &self.bit_128capable())
+            .field("arm_64soc_id", &self.arm_64soc_id())
+            .finish()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -332,7 +726,10 @@ mod tests {
         let test_struct = SMBiosProcessorInformation::new(&parts);
 
         assert_eq!(test_struct.socket_designation(), Some("CPU0".to_string()));
-        assert_eq!(test_struct.processor_type(), Some(3));
+        assert_eq!(
+            *test_struct.processor_type().unwrap(),
+            ProcessorType::CentralProcessor
+        );
         assert_eq!(test_struct.processor_family(), Some(179));
         assert_eq!(
             test_struct.processor_manufacturer(),
@@ -348,20 +745,28 @@ mod tests {
         assert_eq!(test_struct.max_speed(), Some(3900));
         assert_eq!(test_struct.current_speed(), Some(3600));
         assert_eq!(test_struct.status(), Some(65));
-        assert_eq!(test_struct.processor_upgrade(), Some(1));
-        assert_eq!(test_struct.l1cache_handle(), Some(83));
-        assert_eq!(test_struct.l2cache_handle(), Some(84));
-        assert_eq!(test_struct.l3cache_handle(), Some(85));
+        assert_eq!(
+            *test_struct.processor_upgrade().unwrap(),
+            ProcessorUpgrade::Other
+        );
+        assert_eq!(*test_struct.l1cache_handle().unwrap(), 83);
+        assert_eq!(*test_struct.l2cache_handle().unwrap(), 84);
+        assert_eq!(*test_struct.l3cache_handle().unwrap(), 85);
         assert_eq!(test_struct.serial_number(), None);
         assert_eq!(test_struct.asset_tag(), Some("UNKNOWN".to_string()));
         assert_eq!(test_struct.part_number(), None);
         assert_eq!(test_struct.core_count(), Some(6));
         assert_eq!(test_struct.core_enabled(), Some(6));
         assert_eq!(test_struct.thread_count(), Some(12));
-        assert_eq!(test_struct.processor_characteristics(), Some(252));
+        assert_eq!(
+            test_struct.processor_characteristics(),
+            Some(ProcessorCharacteristics::from(252))
+        );
         assert_eq!(test_struct.processor_family_2(), Some(179));
         assert_eq!(test_struct.core_count_2(), Some(6));
         assert_eq!(test_struct.core_enabled_2(), Some(6));
         assert_eq!(test_struct.thread_count_2(), Some(12));
+
+        println!("{:?}", test_struct);
     }
 }
