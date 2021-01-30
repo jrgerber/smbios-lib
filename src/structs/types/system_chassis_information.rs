@@ -28,6 +28,8 @@ impl<'a> SMBiosStruct<'a> for SMBiosSystemChassisInformation<'a> {
 }
 
 impl<'a> SMBiosSystemChassisInformation<'a> {
+    const CONTAINED_ELEMENTS_OFFSET: usize = 0x15usize;
+
     /// Manufacturer
     pub fn manufacturer(&self) -> Option<String> {
         self.parts.get_field_string(0x04)
@@ -109,23 +111,24 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
     /// Height
     ///
     /// Height of the enclosure, in 'U's
+    ///
     /// A U is a standard unit of measure for the
     /// height of a rack or rack-mountable component
-    /// and is equal to 1.75 inches or 4.445 cm. A
-    /// value of 00h indicates that the enclosure
-    /// height is unspecified.
-    pub fn height(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x11)
+    /// and is equal to 1.75 inches or 4.445 cm.
+    pub fn height(&self) -> Option<ChassisHeight> {
+        self.parts
+            .get_field_byte(0x11)
+            .and_then(|raw| Some(ChassisHeight::from(raw)))
     }
 
     /// Number of power cords
     ///
     /// Number of power cords associated with the
     /// enclosure or chassis
-    /// A value of 00h indicates that the number is
-    /// unspecified.
-    pub fn number_of_power_cords(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x12)
+    pub fn number_of_power_cords(&self) -> Option<PowerCords> {
+        self.parts
+            .get_field_byte(0x12)
+            .and_then(|raw| Some(PowerCords::from(raw)))
     }
 
     /// Contained element count (n)
@@ -153,20 +156,26 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
         self.parts.get_field_byte(0x14)
     }
 
-    //TODO:
+    fn contained_elements_size(&self) -> Option<usize> {
+        self.contained_element_record_length().and_then(|m| {
+            self.contained_element_count()
+                .and_then(|n| Some(m as usize * n as usize))
+        })
+    }
 
-    // fn contained_elements(&self) -> Option<FixMe> {
-    //     self.parts.get_field_undefined(0x15)
-    // }
-
-    // TODO: This sku_number offset is incorrect, if follows the elements
+    /// Contained Elements
+    pub fn contained_elements(&self) -> Option<ContainedElements> {
+        ContainedElements::new(self)
+    }
 
     /// SKU number
     ///
-    /// Number of null-terminated string describing the
-    /// chassis or enclosure SKU number
-    fn sku_number(&self) -> Option<String> {
-        self.parts.get_field_string(0x15)
+    /// Chassis or enclosure SKU number
+    pub fn sku_number(&self) -> Option<String> {
+        self.contained_elements_size().and_then(|size| {
+            self.parts
+                .get_field_string(Self::CONTAINED_ELEMENTS_OFFSET + size)
+        })
     }
 }
 
@@ -191,10 +200,49 @@ impl fmt::Debug for SMBiosSystemChassisInformation<'_> {
                 "contained_element_record_length",
                 &self.contained_element_record_length(),
             )
-            // TODO:
-            // .field("contained_elements", &self.contained_elements())
+            .field("contained_elements", &self.contained_elements())
             .field("sku_number", &self.sku_number())
             .finish()
+    }
+}
+
+/// # Chassis Height
+#[derive(Debug)]
+pub enum ChassisHeight {
+    /// A chassis enclosure height is not specified.
+    Unspecified,
+    /// Height of the enclosure, in 'U's
+    ///
+    /// A U is a standard unit of measure for the height of a rack
+    /// or rack-mountable component and is equal to 1.75 inches or
+    /// 4.445 cm.
+    U(u8),
+}
+
+impl From<u8> for ChassisHeight {
+    fn from(raw: u8) -> Self {
+        match raw {
+            0 => ChassisHeight::Unspecified,
+            _ => ChassisHeight::U(raw),
+        }
+    }
+}
+
+/// # Number of Power Cords
+#[derive(Debug)]
+pub enum PowerCords {
+    /// The number of power cords is not specified.
+    Unspecified,
+    /// The number of power cords
+    Count(u8),
+}
+
+impl From<u8> for PowerCords {
+    fn from(raw: u8) -> Self {
+        match raw {
+            0 => PowerCords::Unspecified,
+            _ => PowerCords::Count(raw),
+        }
     }
 }
 
@@ -483,6 +531,219 @@ impl From<u8> for ChassisSecurityStatusData {
     }
 }
 
+/// # Contained Elements
+pub struct ContainedElements<'a> {
+    raw: &'a [u8],
+    record_count: usize,
+    record_length: usize,
+}
+
+impl<'a> ContainedElements<'a> {
+    fn new(chassis_information: &'a SMBiosSystemChassisInformation<'a>) -> Option<Self> {
+        chassis_information
+            .contained_element_record_length()
+            .and_then(|record_length| {
+                chassis_information
+                    .contained_element_count()
+                    .and_then(|record_count| {
+                        chassis_information
+                            .parts()
+                            .get_field_data(
+                                SMBiosSystemChassisInformation::CONTAINED_ELEMENTS_OFFSET,
+                                SMBiosSystemChassisInformation::CONTAINED_ELEMENTS_OFFSET
+                                    + (record_length as usize * record_count as usize),
+                            )
+                            .and_then(|raw| {
+                                Some(Self {
+                                    raw,
+                                    record_count: record_count as usize,
+                                    record_length: record_length as usize,
+                                })
+                            })
+                    })
+            })
+    }
+}
+
+impl<'a> fmt::Debug for ContainedElements<'a> {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<ContainedElements>())
+            .field("records", &self.into_iter())
+            .finish()
+    }
+}
+
+/// # Contained Chassis Element
+pub struct ChassisElement<'a> {
+    pub raw: &'a [u8],
+}
+
+impl<'a> ChassisElement<'a> {
+    const MINIMUM_RAW_SIZE: usize = 3usize;
+    const ELEMENT_TYPE_OFFSET: usize = 0usize;
+    const ELEMENT_MINIMUM_OFFSET: usize = 1usize;
+    const ELEMENT_MAXIMUM_OFFSET: usize = 2usize;
+
+    fn new(raw: &'a [u8]) -> Option<Self> {
+        if raw.len() < Self::MINIMUM_RAW_SIZE {
+            None
+        } else {
+            Some(Self { raw })
+        }
+    }
+
+    /// Contained Element Type
+    pub fn element_type(&self) -> ElementType {
+        ElementType::from(self.raw[Self::ELEMENT_TYPE_OFFSET])
+    }
+
+    /// Contained Element Minimum
+    pub fn element_minimum(&self) -> ElementMinimum {
+        ElementMinimum::from(self.raw[Self::ELEMENT_MINIMUM_OFFSET])
+    }
+
+    /// Contained Element Maximum
+    pub fn element_maximum(&self) -> ElementMaximum {
+        ElementMaximum::from(self.raw[Self::ELEMENT_MAXIMUM_OFFSET])
+    }
+}
+
+impl fmt::Debug for ChassisElement<'_> {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<ChassisElement>())
+            .field("raw", &self.raw)
+            .field("element_type", &self.element_type())
+            .field("element_minimum", &self.element_minimum())
+            .field("element_maximum", &self.element_maximum())
+            .finish()
+    }
+}
+
+/// # Contained Element Type
+#[derive(Debug)]
+pub enum ElementType {
+    /// SMBIOS Baseboard Type enumeration
+    BaseboardType(BoardTypeData),
+    /// SMBIOS structure type enumeration
+    SMBiosType(SMBiosType),
+}
+
+impl From<u8> for ElementType {
+    fn from(raw: u8) -> Self {
+        if raw & 0b1000_0000 == 0b1000_0000 {
+            ElementType::SMBiosType(SMBiosType(raw & 0b0111_1111))
+        } else {
+            ElementType::BaseboardType(BoardTypeData::from(raw))
+        }
+    }
+}
+
+/// # Contained Element Minimum
+///
+/// Specifies the minimum number of the 'element_type' that can be
+/// installed in the chassis for the chassis to properly operate,
+/// in the range 0 to 254.
+#[derive(Debug)]
+pub enum ElementMinimum {
+    /// Specifies the minimum number of the 'element_type' that can be
+    /// installed in the chassis for the chassis to properly operate,
+    ///  in the range 0 to 254.
+    Count(u8),
+    /// The value 255 (0FFh) is reserved for future definition by this specification.
+    Reserved,
+}
+
+impl From<u8> for ElementMinimum {
+    fn from(raw: u8) -> Self {
+        match raw {
+            0xFF => ElementMinimum::Reserved,
+            _ => ElementMinimum::Count(raw),
+        }
+    }
+}
+
+/// # Contained Element Maximum
+///
+/// Specifies the minimum number of the 'element_type' that can be
+/// installed in the chassis in the range 0 to 254.
+#[derive(Debug)]
+pub enum ElementMaximum {
+    /// Specifies the maximum number of the 'element_type' that can be
+    /// installed in the chassis for the chassis to properly operate,
+    ///  in the range 1 to 255.
+    Count(u8),
+    /// The value 0 is reserved for future definition by this specification.
+    Reserved,
+}
+
+impl From<u8> for ElementMaximum {
+    fn from(raw: u8) -> Self {
+        match raw {
+            0x00 => ElementMaximum::Reserved,
+            _ => ElementMaximum::Count(raw),
+        }
+    }
+}
+
+/// # Iterates over the [ChassisElement] entries within [ContainedElements]
+pub struct ContainedElementsIterator<'a> {
+    contained_elements: &'a ContainedElements<'a>,
+    current_index: usize,
+    current_entry: usize,
+}
+
+impl<'a> ContainedElementsIterator<'a> {
+    fn reset(&mut self) {
+        self.current_index = 0;
+        self.current_entry = 0;
+    }
+}
+
+impl<'a> IntoIterator for &'a ContainedElements<'a> {
+    type Item = ChassisElement<'a>;
+    type IntoIter = ContainedElementsIterator<'a>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        ContainedElementsIterator {
+            contained_elements: self,
+            current_index: 0,
+            current_entry: 0,
+        }
+    }
+}
+
+impl<'a> Iterator for ContainedElementsIterator<'a> {
+    type Item = ChassisElement<'a>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.current_entry == self.contained_elements.record_count {
+            self.reset();
+            return None;
+        }
+
+        let next_index = self.current_index + self.contained_elements.record_length;
+        match ChassisElement::new(&self.contained_elements.raw[self.current_index..next_index]) {
+            Some(chassis_element) => {
+                self.current_index = next_index;
+                self.current_entry += 1;
+                Some(chassis_element)
+            }
+            None => {
+                self.reset();
+                None
+            }
+        }
+    }
+}
+
+impl<'a> fmt::Debug for ContainedElementsIterator<'a> {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_list()
+            .entries(self.contained_elements.into_iter())
+            .finish()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -490,11 +751,12 @@ mod tests {
     #[test]
     fn unit_test() {
         let struct_type3 = vec![
-            0x03, 0x16, 0x03, 0x00, 0x01, 0x03, 0x02, 0x03, 0x04, 0x03, 0x03, 0x03, 0x03, 0x00,
-            0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x03, 0x05, 0x4C, 0x45, 0x4E, 0x4F, 0x56, 0x4F,
-            0x00, 0x4E, 0x6F, 0x6E, 0x65, 0x00, 0x4D, 0x4A, 0x30, 0x36, 0x55, 0x52, 0x44, 0x5A,
-            0x00, 0x34, 0x30, 0x38, 0x39, 0x39, 0x38, 0x35, 0x00, 0x44, 0x65, 0x66, 0x61, 0x75,
-            0x6C, 0x74, 0x20, 0x73, 0x74, 0x72, 0x69, 0x6E, 0x67, 0x00, 0x00,
+            0x03, 0x1C, 0x03, 0x00, 0x01, 0x03, 0x02, 0x03, 0x04, 0x03, 0x03, 0x03, 0x03, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x85, 0x00, 0x02, 0x05, 0x00, 0x02, 0x05,
+            b'L', b'E', b'N', b'O', b'V', b'O', 0x00, b'N', b'o', b'n', b'e', 0x00, b'M', b'J',
+            b'0', b'6', b'U', b'R', b'D', b'Z', 0x00, b'4', b'0', b'8', b'9', b'9', b'8', b'5',
+            0x00, b'D', b'e', b'f', b'a', b'u', b'l', b't', b' ', b's', b't', b'r', b'i', b'n',
+            b'g', 0x00, 0x00,
         ];
 
         let parts = SMBiosStructParts::new(struct_type3.as_slice());
@@ -516,10 +778,32 @@ mod tests {
             ChassisSecurityStatus::StatusNone
         );
         assert_eq!(test_struct.oem_defined(), Some(0));
-        assert_eq!(test_struct.height(), Some(0));
-        assert_eq!(test_struct.number_of_power_cords(), Some(1));
-        assert_eq!(test_struct.contained_element_count(), Some(0));
+        match test_struct.height().unwrap() {
+            ChassisHeight::U(_) => panic!("expected no height specified"),
+            ChassisHeight::Unspecified => (),
+        }
+        match test_struct.number_of_power_cords().unwrap() {
+            PowerCords::Count(count) => assert_eq!(count, 1),
+            PowerCords::Unspecified => panic!("expected a count"),
+        }
+        assert_eq!(test_struct.contained_element_count(), Some(2));
         assert_eq!(test_struct.contained_element_record_length(), Some(3));
+        let contained_elements = test_struct.contained_elements().unwrap();
+        let mut iterator = contained_elements.into_iter();
+        let first = iterator.next().unwrap();
+        match first.element_type() {
+            ElementType::SMBiosType(bios_type) => {
+                assert_eq!(*bios_type, 5)
+            }
+            _ => panic!("expected SMBIOS type"),
+        }
+        let second = iterator.next().unwrap();
+        match second.element_type() {
+            ElementType::BaseboardType(baseboard_type) => {
+                assert_eq!(*baseboard_type, BoardType::SystemManagementModule)
+            }
+            _ => panic!("expected baseboard type"),
+        }
         assert_eq!(test_struct.sku_number(), Some("Default string".to_string()));
     }
 }
