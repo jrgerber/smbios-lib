@@ -68,8 +68,10 @@ impl<'a> SMBiosPortableBattery<'a> {
     /// Battery set this field to 02h (Unknown) to
     /// indicate that the SBDS Device Chemistry field
     /// contains the information.
-    pub fn device_chemistry(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x09)
+    pub fn device_chemistry(&self) -> Option<PortableBatteryDeviceChemistryData> {
+        self.parts
+            .get_field_byte(0x09)
+            .and_then(|raw| Some(PortableBatteryDeviceChemistryData::from(raw)))
     }
 
     /// Design capacity of the battery in mWatt-hours
@@ -77,17 +79,21 @@ impl<'a> SMBiosPortableBattery<'a> {
     /// If the value is unknown, the field contains 0.
     ///
     /// For version 2.2+ implementations, this value is
-    /// multiplied by the Design Capacity Multiplier to
+    /// multiplied by the 'design_capacity_multiplier' to
     /// produce the actual value.
-    pub fn design_capacity(&self) -> Option<u16> {
-        self.parts.get_field_word(0x0A)
+    pub fn design_capacity(&self) -> Option<PortableBatteryDesignCapacity> {
+        self.parts
+            .get_field_word(0x0A)
+            .and_then(|raw| Some(PortableBatteryDesignCapacity::from(raw)))
     }
 
     /// Design voltage of the battery in mVolts
     ///
     /// If the value is unknown, the field contains 0.
-    pub fn design_voltage(&self) -> Option<u16> {
-        self.parts.get_field_word(0x0C)
+    pub fn design_voltage(&self) -> Option<PortableBatteryDesignVoltage> {
+        self.parts
+            .get_field_word(0x0C)
+            .and_then(|raw| Some(PortableBatteryDesignVoltage::from(raw)))
     }
 
     /// Contains the Smart Battery Data Specification version number
@@ -184,6 +190,122 @@ impl fmt::Debug for SMBiosPortableBattery<'_> {
     }
 }
 
+/// # Portable Battery - Device Chemistry Data
+pub struct PortableBatteryDeviceChemistryData {
+    /// Raw value
+    ///
+    /// _raw_ is most useful when _value_ is None.
+    /// This is most likely to occur when the standard was updated but
+    /// this library code has not been updated to match the current
+    /// standard.
+    pub raw: u8,
+    /// The contained [PortableBatteryDeviceChemistry] value
+    pub value: PortableBatteryDeviceChemistry,
+}
+
+impl fmt::Debug for PortableBatteryDeviceChemistryData {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<PortableBatteryDeviceChemistryData>())
+            .field("raw", &self.raw)
+            .field("value", &self.value)
+            .finish()
+    }
+}
+
+impl Deref for PortableBatteryDeviceChemistryData {
+    type Target = PortableBatteryDeviceChemistry;
+
+    fn deref(&self) -> &Self::Target {
+        &self.value
+    }
+}
+
+/// # Portable Battery - Device Chemistry
+#[derive(Debug, PartialEq, Eq)]
+pub enum PortableBatteryDeviceChemistry {
+    /// Other
+    Other,
+    /// Unknown
+    ///
+    /// Version 2.2+ implementations that use a Smart Battery
+    /// set this field to 02h (Unknown) to indicate that the
+    /// 'sbds_device_chemistry' field contains the information.
+    Unknown,
+    /// Lead Acid
+    LeadAcit,
+    /// Nickel Cadmium
+    NickelCadmium,
+    /// Nickel metal hydride
+    NickelMetalHydride,
+    /// Lithium-ion
+    LithiumIon,
+    /// Zinc air
+    ZincAir,
+    /// Lithium Polymer
+    LithiumPolymer,
+    /// A value unknown to this standard, check the raw value
+    None,
+}
+
+impl From<u8> for PortableBatteryDeviceChemistryData {
+    fn from(raw: u8) -> Self {
+        PortableBatteryDeviceChemistryData {
+            value: match raw {
+                0x01 => PortableBatteryDeviceChemistry::Other,
+                0x02 => PortableBatteryDeviceChemistry::Unknown,
+                0x03 => PortableBatteryDeviceChemistry::LeadAcit,
+                0x04 => PortableBatteryDeviceChemistry::NickelCadmium,
+                0x05 => PortableBatteryDeviceChemistry::NickelMetalHydride,
+                0x06 => PortableBatteryDeviceChemistry::LithiumIon,
+                0x07 => PortableBatteryDeviceChemistry::ZincAir,
+                0x08 => PortableBatteryDeviceChemistry::LithiumPolymer,
+                _ => PortableBatteryDeviceChemistry::None,
+            },
+            raw,
+        }
+    }
+}
+
+/// # Portable Battery - Design Capacity
+#[derive(Debug, PartialEq, Eq)]
+pub enum PortableBatteryDesignCapacity {
+    /// Design capacity of the battery in mWatt-hours
+    ///
+    /// For version 2.2+ implementations, this value is
+    /// multiplied by the 'design_capacity_multiplier' to
+    /// produce the actual value.
+    MilliWattHours(u16),
+    /// Design capacity of the battery in mWatt-hours is unknown.
+    Unknown,
+}
+
+impl From<u16> for PortableBatteryDesignCapacity {
+    fn from(raw: u16) -> Self {
+        match raw {
+            0 => PortableBatteryDesignCapacity::Unknown,
+            _ => PortableBatteryDesignCapacity::MilliWattHours(raw),
+        }
+    }
+}
+
+/// # Portable Battery - Design Voltage
+#[derive(Debug, PartialEq, Eq)]
+pub enum PortableBatteryDesignVoltage {
+    /// Design voltage of the battery in mVolts.
+    MilliVolts(u16),
+    /// Design voltage of the battery in mVolts is unknown.
+    Unknown,
+}
+
+impl From<u16> for PortableBatteryDesignVoltage {
+    fn from(raw: u16) -> Self {
+        match raw {
+            0 => PortableBatteryDesignVoltage::Unknown,
+            _ => PortableBatteryDesignVoltage::MilliVolts(raw),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -205,9 +327,18 @@ mod tests {
         assert_eq!(test_struct.manufacture_date(), None);
         assert_eq!(test_struct.serial_number(), None);
         assert_eq!(test_struct.device_name(), Some("45N1071".to_string()));
-        assert_eq!(test_struct.device_chemistry(), Some(2));
-        assert_eq!(test_struct.design_capacity(), Some(4603));
-        assert_eq!(test_struct.design_voltage(), Some(14800));
+        assert_eq!(
+            *test_struct.device_chemistry().unwrap(),
+            PortableBatteryDeviceChemistry::Unknown
+        );
+        match test_struct.design_capacity().unwrap() {
+            PortableBatteryDesignCapacity::MilliWattHours(mwh) => assert_eq!(mwh, 4603),
+            PortableBatteryDesignCapacity::Unknown => panic!("expected a value in mWH"),
+        }
+        match test_struct.design_voltage().unwrap() {
+            PortableBatteryDesignVoltage::MilliVolts(mv) => assert_eq!(mv, 14800),
+            PortableBatteryDesignVoltage::Unknown => panic!("expected a value in mWH"),
+        }
         assert_eq!(test_struct.sbds_version_number(), Some("03.01".to_string()));
         assert_eq!(test_struct.maximum_error_in_battery_data(), Some(255));
         assert_eq!(test_struct.sbds_serial_number(), Some(711));

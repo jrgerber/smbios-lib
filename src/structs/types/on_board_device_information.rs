@@ -83,7 +83,7 @@ impl<'a> OnBoardDevice<'a> {
         self.onboard_device_information
             .parts()
             .get_field_byte(self.entry_offset)
-            .and_then(|raw| Some(OnBoardDeviceType { raw }))
+            .and_then(|raw| Some(OnBoardDeviceType::from(raw)))
     }
 
     /// Device description
@@ -135,6 +135,12 @@ impl OnBoardDeviceType {
         } else {
             DeviceStatus::Disabled
         }
+    }
+}
+
+impl From<u8> for OnBoardDeviceType {
+    fn from(raw: u8) -> Self {
+        OnBoardDeviceType { raw }
     }
 }
 

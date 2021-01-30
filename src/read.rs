@@ -5,7 +5,7 @@
 
 use crate::*;
 
-/// Loads raw smbios data from a file and returns [SMBiosTableData] or [io:Error] on error.
+/// Loads raw smbios data from a file and returns [SMBiosTableData] or [std::io::Error] on error.
 ///
 /// Currently supports reading raw files containing only SMBIOS table data or
 /// Windows raw files containing the windows header and SMBIOS table data.

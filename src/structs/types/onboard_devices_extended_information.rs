@@ -38,8 +38,10 @@ impl<'a> SMBiosOnboardDevicesExtendedInformation<'a> {
     }
 
     /// Device type bit field and enum
-    pub fn device_type(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x5)
+    pub fn device_type(&self) -> Option<OnBoardDeviceType> {
+        self.parts
+            .get_field_byte(0x5)
+            .and_then(|raw| Some(OnBoardDeviceType::from(raw)))
     }
 
     /// Device type instance
@@ -48,18 +50,24 @@ impl<'a> SMBiosOnboardDevicesExtendedInformation<'a> {
     }
 
     /// Segment group number
-    pub fn segment_group_number(&self) -> Option<u16> {
-        self.parts.get_field_word(0x7)
+    pub fn segment_group_number(&self) -> Option<SegmentGroupNumber> {
+        self.parts
+            .get_field_word(0x7)
+            .and_then(|raw| Some(SegmentGroupNumber::from(raw)))
     }
 
     /// Bus number
-    pub fn bus_number(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x9)
+    pub fn bus_number(&self) -> Option<BusNumber> {
+        self.parts
+            .get_field_byte(0x9)
+            .and_then(|raw| Some(BusNumber::from(raw)))
     }
 
     /// Device/Function number
-    pub fn device_function_number(&self) -> Option<u8> {
-        self.parts.get_field_byte(0xA)
+    pub fn device_function_number(&self) -> Option<DeviceFunctionNumber> {
+        self.parts
+            .get_field_byte(0xA)
+            .and_then(|raw| Some(DeviceFunctionNumber::from(raw)))
     }
 }
 
@@ -74,6 +82,74 @@ impl fmt::Debug for SMBiosOnboardDevicesExtendedInformation<'_> {
             .field("bus_number", &self.bus_number())
             .field("device_function_number", &self.device_function_number())
             .finish()
+    }
+}
+
+/// # Segment Group Number
+#[derive(Debug, PartialEq, Eq)]
+pub enum SegmentGroupNumber {
+    /// Single-Segment Topology (no group number)
+    SingleSegment,
+    /// Segment Group Number
+    Number(u16),
+    /// For devices that are not of types PCI, AGP, PCI-X, or PCI-Express
+    /// and that do not have bus/device/function information.
+    NotApplicable,
+}
+
+impl From<u16> for SegmentGroupNumber {
+    fn from(raw: u16) -> Self {
+        match raw {
+            0x00 => SegmentGroupNumber::SingleSegment,
+            0xFF => SegmentGroupNumber::NotApplicable,
+            _ => SegmentGroupNumber::Number(raw),
+        }
+    }
+}
+
+/// # Bus Number
+#[derive(Debug, PartialEq, Eq)]
+pub enum BusNumber {
+    /// Bus Number
+    Number(u8),
+    /// For devices that are not of types PCI, AGP, PCI-X, or PCI-Express
+    /// and that do not have bus/device/function information.
+    NotApplicable,
+}
+
+impl From<u8> for BusNumber {
+    fn from(raw: u8) -> Self {
+        match raw {
+            0xFF => BusNumber::NotApplicable,
+            _ => BusNumber::Number(raw),
+        }
+    }
+}
+
+/// # Device/Function Number
+#[derive(Debug, PartialEq, Eq)]
+pub enum DeviceFunctionNumber {
+    /// Device/Function Number
+    Number {
+        ///Bits 7:3 – Device number
+        device: u8,
+        /// Bits 2:0 – Function number
+        function: u8,
+    },
+    /// For devices that are not of types PCI, AGP, PCI-X, or PCI-Express
+    /// and that do not have bus/device/function information.
+    NotApplicable,
+}
+
+impl From<u8> for DeviceFunctionNumber {
+    fn from(raw: u8) -> Self {
+        match raw {
+            0xFF => DeviceFunctionNumber::NotApplicable,
+            _ => DeviceFunctionNumber::Number {
+                device: raw & 0b11111000 >> 3,
+                function: raw & 0b00000111,
+            },
+        }
     }
 }
 
@@ -95,10 +171,25 @@ mod tests {
             test_struct.reference_designation(),
             Some("i219".to_string())
         );
-        assert_eq!(test_struct.device_type(), Some(133));
+        let device_type = test_struct.device_type().unwrap();
+        assert_eq!(device_type.type_of_device(), TypeOfDevice::Ethernet);
+        assert_eq!(device_type.status(), DeviceStatus::Enabled);
         assert_eq!(test_struct.device_type_instance(), Some(1));
-        assert_eq!(test_struct.segment_group_number(), Some(0));
-        assert_eq!(test_struct.bus_number(), Some(0));
-        assert_eq!(test_struct.device_function_number(), Some(254));
+        match test_struct.segment_group_number().unwrap() {
+            SegmentGroupNumber::SingleSegment => (),
+            SegmentGroupNumber::NotApplicable => panic!("expected SingleSegment"),
+            SegmentGroupNumber::Number(_) => panic!("expected SingleSegment"),
+        }
+        match test_struct.bus_number().unwrap() {
+            BusNumber::Number(number) => assert_eq!(number, 0),
+            BusNumber::NotApplicable => panic!("expected Number"),
+        }
+        match test_struct.device_function_number().unwrap() {
+            DeviceFunctionNumber::Number { device, function } => {
+                assert_eq!(device, 30);
+                assert_eq!(function, 6);
+            }
+            _ => panic!("expected device and function values"),
+        }
     }
 }

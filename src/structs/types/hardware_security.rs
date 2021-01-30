@@ -61,7 +61,7 @@ pub struct HardwareSecuritySettings {
 
 impl fmt::Debug for HardwareSecuritySettings {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<CoolingDeviceTypeAndStatus>())
+        fmt.debug_struct(std::any::type_name::<HardwareSecuritySettings>())
             .field("raw", &self.raw)
             .field("power_on_password_status", &self.power_on_password_status)
             .field("keyboard_password_status", &self.keyboard_password_status)
