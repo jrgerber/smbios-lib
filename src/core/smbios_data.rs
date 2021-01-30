@@ -14,7 +14,7 @@ impl SMBiosTableData {
         Self { data }
     }
 
-    /// Loads raw SMBios table data and return [Self] or [io:Error]
+    /// Loads raw SMBios table data and return [SMBiosTableData] or [std::io::Error]
     pub fn from_file(filename: &str) -> Result<Self, io::Error> {
         // TODO: implement a fn that checks whether the structure is valid table data.
         // If it's not return that error here.
