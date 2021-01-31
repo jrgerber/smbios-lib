@@ -1,7 +1,7 @@
 [package]
 name = "smbios"
 version = "1.0.0"
-authors = ["Jeff Gerber <jeffreygerber@gmail.com>, Ante Čulo"]
+authors = ["Jeffrey R. Gerber <jeffreygerber@gmail.com>, Ante Čulo <dante2711@gmail.com>"]
 edition = "2018"
 readme = "README.md"
 description = "SMBIOS Library"
