@@ -103,13 +103,17 @@ impl<'a> SMBiosSystemPowerSupply<'a> {
     ///
     /// Set to 0x8000 if unknown. Note that the units specified by
     /// the DMTF for this field are milliWatts.
-    pub fn max_power_capacity(&self) -> Option<u16> {
-        self.parts.get_field_word(0x0C)
+    pub fn max_power_capacity(&self) -> Option<MaxPowerCapacity> {
+        self.parts
+            .get_field_word(0x0C)
+            .and_then(|raw| Some(MaxPowerCapacity::from(raw)))
     }
 
     /// Power supply characteristics
-    pub fn power_supply_characteristics(&self) -> Option<u16> {
-        self.parts.get_field_word(0x0E)
+    pub fn power_supply_characteristics(&self) -> Option<PowerSupplyCharacteristics> {
+        self.parts
+            .get_field_word(0x0E)
+            .and_then(|raw| Some(PowerSupplyCharacteristics::from(raw)))
     }
 
     /// Input voltage probe handle
@@ -176,6 +180,195 @@ impl fmt::Debug for SMBiosSystemPowerSupply<'_> {
     }
 }
 
+/// # Power Supply Characteristics
+#[derive(PartialEq, Eq)]
+pub struct PowerSupplyCharacteristics {
+    /// Raw value
+    ///
+    /// _raw_ is most useful when _value_ is None.
+    /// This is most likely to occur when the standard was updated but
+    /// this library code has not been updated to match the current
+    /// standard.
+    pub raw: u16,
+}
+
+impl From<u16> for PowerSupplyCharacteristics {
+    fn from(raw: u16) -> Self {
+        PowerSupplyCharacteristics { raw }
+    }
+}
+
+impl PowerSupplyCharacteristics {
+    pub fn power_supply_type(&self) -> PowerSupplyType {
+        PowerSupplyType::from(self.raw)
+    }
+
+    /// Power Supply Status
+    pub fn power_supply_status(&self) -> PowerSupplyStatus {
+        PowerSupplyStatus::from(self.raw)
+    }
+
+    /// DMTF Input Voltage Range Switching
+    pub fn input_voltage_range_switching(&self) -> InputVoltageRangeSwitching {
+        InputVoltageRangeSwitching::from(self.raw)
+    }
+
+    /// Power supply is unplugged from the wall
+    pub fn unplugged_from_wall(&self) -> bool {
+        self.raw & 0b0000_0000_0000_0100 == 0b0000_0000_0000_0100
+    }
+
+    /// Power supply is present
+    pub fn is_present(&self) -> bool {
+        self.raw & 0b0000_0000_0000_0010 == 0b0000_0000_0000_0010
+    }
+
+    /// Power supply is hot-replaceable
+    pub fn hot_replaceable(&self) -> bool {
+        self.raw & 0b0000_0000_0000_0001 == 0b0000_0000_0000_0001
+    }
+}
+
+impl fmt::Debug for PowerSupplyCharacteristics {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<PowerSupplyCharacteristics>())
+            .field("raw", &self.raw)
+            .field("power_supply_type", &self.power_supply_type())
+            .field("power_supply_status", &self.power_supply_status())
+            .field(
+                "input_voltage_range_switching",
+                &self.input_voltage_range_switching(),
+            )
+            .field("unplugged_from_wall", &self.unplugged_from_wall())
+            .field("is_present", &self.is_present())
+            .field("hot_replaceable", &self.hot_replaceable())
+            .finish()
+    }
+}
+
+/// # DMTF Power Supply Type
+#[derive(Debug, PartialEq, Eq)]
+pub enum PowerSupplyType {
+    /// Other
+    Other,
+    /// Unknown
+    Unknown,
+    /// Linear
+    Linear,
+    /// Switching
+    Switching,
+    /// Battery
+    Battery,
+    /// UPS
+    Ups,
+    /// Converter
+    Converter,
+    /// Regulator
+    Regulator,
+    /// A value unknown to this standard, check the raw value
+    None,
+}
+
+impl From<u16> for PowerSupplyType {
+    fn from(raw: u16) -> Self {
+        match raw & 0b0011_1100_0000_0000 {
+            0b0000_0100_0000_0000 => PowerSupplyType::Other,
+            0b0000_1000_0000_0000 => PowerSupplyType::Unknown,
+            0b0000_1100_0000_0000 => PowerSupplyType::Linear,
+            0b0001_0000_0000_0000 => PowerSupplyType::Switching,
+            0b0001_0100_0000_0000 => PowerSupplyType::Battery,
+            0b0001_1000_0000_0000 => PowerSupplyType::Ups,
+            0b0001_1100_0000_0000 => PowerSupplyType::Converter,
+            0b0010_0000_0000_0000 => PowerSupplyType::Regulator,
+            _ => PowerSupplyType::None,
+        }
+    }
+}
+
+/// # Power Supply Status
+#[derive(Debug, PartialEq, Eq)]
+pub enum PowerSupplyStatus {
+    /// Other
+    Other,
+    /// Unknown
+    Unknown,
+    /// OK
+    OK,
+    /// Non-critical
+    NonCritical,
+    /// Critical; power supply has failed and has been taken off-line.
+    Critical,
+    /// A value unknown to this standard, check the raw value
+    None,
+}
+
+impl From<u16> for PowerSupplyStatus {
+    fn from(raw: u16) -> Self {
+        match raw & 0b0000_0011_1000_0000 {
+            0b0000_0000_1000_0000 => PowerSupplyStatus::Other,
+            0b0000_0001_0000_0000 => PowerSupplyStatus::Unknown,
+            0b0000_0001_1000_0000 => PowerSupplyStatus::OK,
+            0b0000_0010_0000_0000 => PowerSupplyStatus::NonCritical,
+            0b0000_0010_1000_0000 => PowerSupplyStatus::Critical,
+            _ => PowerSupplyStatus::None,
+        }
+    }
+}
+
+/// # DMTF Input Voltage Range Switching
+#[derive(Debug, PartialEq, Eq)]
+pub enum InputVoltageRangeSwitching {
+    /// Other
+    Other,
+    /// Unknown
+    Unknown,
+    /// Manual,
+    Manual,
+    /// Auto-switch
+    AutoSwitch,
+    /// Wide range
+    WideRange,
+    /// Not applicable
+    NotApplicable,
+    /// A value unknown to this standard, check the raw value
+    None,
+}
+
+impl From<u16> for InputVoltageRangeSwitching {
+    fn from(raw: u16) -> Self {
+        match raw & 0b0000_0000_0111_1000 {
+            0b0000_0000_0000_1000 => InputVoltageRangeSwitching::Other,
+            0b0000_0000_0001_0000 => InputVoltageRangeSwitching::Unknown,
+            0b0000_0000_0001_1000 => InputVoltageRangeSwitching::Manual,
+            0b0000_0000_0010_0000 => InputVoltageRangeSwitching::AutoSwitch,
+            0b0000_0000_0010_1000 => InputVoltageRangeSwitching::WideRange,
+            0b0000_0000_0011_0000 => InputVoltageRangeSwitching::NotApplicable,
+            _ => InputVoltageRangeSwitching::None,
+        }
+    }
+}
+
+/// # Max Power Capacity
+///
+/// Maximum sustained power output in Watts
+#[derive(Debug, PartialEq, Eq)]
+pub enum MaxPowerCapacity {
+    /// Maximum sustained power output in Watts
+    Watts(u16),
+    /// Maximum sustained power output is unknown
+    Unknown,
+}
+
+impl From<u16> for MaxPowerCapacity {
+    fn from(raw: u16) -> Self {
+        if raw == 0x8000 {
+            MaxPowerCapacity::Unknown
+        } else {
+            MaxPowerCapacity::Watts(raw)
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -184,24 +377,25 @@ mod tests {
     fn unit_test() {
         let struct_type39 = vec![
             0x27, 0x16, 0x3A, 0x00, 0x01, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x00, 0x80,
-            0xA2, 0x11, 0x36, 0x00, 0x38, 0x00, 0x39, 0x00, 0x54, 0x6F, 0x20, 0x42, 0x65, 0x20,
-            0x46, 0x69, 0x6C, 0x6C, 0x65, 0x64, 0x20, 0x42, 0x79, 0x20, 0x4F, 0x2E, 0x45, 0x2E,
-            0x4D, 0x2E, 0x00, 0x54, 0x6F, 0x20, 0x42, 0x65, 0x20, 0x46, 0x69, 0x6C, 0x6C, 0x65,
-            0x64, 0x20, 0x42, 0x79, 0x20, 0x4F, 0x2E, 0x45, 0x2E, 0x4D, 0x2E, 0x00, 0x54, 0x6F,
-            0x20, 0x42, 0x65, 0x20, 0x46, 0x69, 0x6C, 0x6C, 0x65, 0x64, 0x20, 0x42, 0x79, 0x20,
-            0x4F, 0x2E, 0x45, 0x2E, 0x4D, 0x2E, 0x00, 0x54, 0x6F, 0x20, 0x42, 0x65, 0x20, 0x46,
-            0x69, 0x6C, 0x6C, 0x65, 0x64, 0x20, 0x42, 0x79, 0x20, 0x4F, 0x2E, 0x45, 0x2E, 0x4D,
-            0x2E, 0x00, 0x54, 0x6F, 0x20, 0x42, 0x65, 0x20, 0x46, 0x69, 0x6C, 0x6C, 0x65, 0x64,
-            0x20, 0x42, 0x79, 0x20, 0x4F, 0x2E, 0x45, 0x2E, 0x4D, 0x2E, 0x00, 0x54, 0x6F, 0x20,
-            0x42, 0x65, 0x20, 0x46, 0x69, 0x6C, 0x6C, 0x65, 0x64, 0x20, 0x42, 0x79, 0x20, 0x4F,
-            0x2E, 0x45, 0x2E, 0x4D, 0x2E, 0x00, 0x54, 0x6F, 0x20, 0x42, 0x65, 0x20, 0x46, 0x69,
-            0x6C, 0x6C, 0x65, 0x64, 0x20, 0x42, 0x79, 0x20, 0x4F, 0x2E, 0x45, 0x2E, 0x4D, 0x2E,
+            0xA2, 0x11, 0x36, 0x00, 0x38, 0x00, 0x39, 0x00, b'T', b'o', b' ', b'B', b'e', b' ',
+            b'F', b'i', b'l', b'l', b'e', b'd', b' ', b'B', b'y', b' ', b'O', b'.', b'E', b'.',
+            b'M', b'.', 0x00, b'T', b'o', b' ', b'B', b'e', b' ', b'F', b'i', b'l', b'l', b'e',
+            b'd', b' ', b'B', b'y', b' ', b'O', b'.', b'E', b'.', b'M', b'.', 0x00, b'T', b'o',
+            b' ', b'B', b'e', b' ', b'F', b'i', b'l', b'l', b'e', b'd', b' ', b'B', b'y', b' ',
+            b'O', b'.', b'E', b'.', b'M', b'.', 0x00, b'T', b'o', b' ', b'B', b'e', b' ', b'F',
+            b'i', b'l', b'l', b'e', b'd', b' ', b'B', b'y', b' ', b'O', b'.', b'E', b'.', b'M',
+            b'.', 0x00, b'T', b'o', b' ', b'B', b'e', b' ', b'F', b'i', b'l', b'l', b'e', b'd',
+            b' ', b'B', b'y', b' ', b'O', b'.', b'E', b'.', b'M', b'.', 0x00, b'T', b'o', b' ',
+            b'B', b'e', b' ', b'F', b'i', b'l', b'l', b'e', b'd', b' ', b'B', b'y', b' ', b'O',
+            b'.', b'E', b'.', b'M', b'.', 0x00, b'T', b'o', b' ', b'B', b'e', b' ', b'F', b'i',
+            b'l', b'l', b'e', b'd', b' ', b'B', b'y', b' ', b'O', b'.', b'E', b'.', b'M', b'.',
             0x00, 0x00,
         ];
 
         let parts = SMBiosStructParts::new(struct_type39.as_slice());
         let test_struct = SMBiosSystemPowerSupply::new(&parts);
 
+        println!("{:?}", test_struct);
         assert_eq!(test_struct.power_unit_group(), Some(1));
         assert_eq!(
             test_struct.location(),
@@ -231,10 +425,16 @@ mod tests {
             test_struct.revision_level(),
             Some("To Be Filled By O.E.M.".to_string())
         );
-        assert_eq!(test_struct.max_power_capacity(), Some(32768));
-        assert_eq!(test_struct.power_supply_characteristics(), Some(4514));
-        // assert_eq!(test_struct.input_voltage_probe_handle(), Some(Handle(54)));
-        // assert_eq!(test_struct.cooling_device_handle(), Some(Handle(56)));
-        // assert_eq!(test_struct.input_current_probe_handle(), Some(Handle(57)));
+        assert_eq!(
+            test_struct.max_power_capacity(),
+            Some(MaxPowerCapacity::Unknown)
+        );
+        assert_eq!(
+            test_struct.power_supply_characteristics(),
+            Some(PowerSupplyCharacteristics::from(4514))
+        );
+        assert_eq!(*test_struct.input_voltage_probe_handle().unwrap(), 54);
+        assert_eq!(*test_struct.cooling_device_handle().unwrap(), 56);
+        assert_eq!(*test_struct.input_current_probe_handle().unwrap(), 57);
     }
 }
