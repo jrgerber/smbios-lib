@@ -134,6 +134,7 @@ impl fmt::Debug for SMBiosTemperatureProbe<'_> {
 /// # Temperature Probe Location and Status
 #[derive(PartialEq, Eq)]
 pub struct TemperatureProbeLocationAndStatus {
+    /// Raw value
     pub raw: u8,
 }
 
