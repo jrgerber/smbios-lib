@@ -80,7 +80,7 @@ impl fmt::Debug for AdditionalInformationEntry<'_> {
     }
 }
 
-/// Iterates over the [AdditionalInformationEntry] entries contained within [SMBiosAdditionalInformation]
+/// # Iterates over the [AdditionalInformationEntry] entries contained within [SMBiosAdditionalInformation]
 pub struct AdditionalInformationEntryIterator<'a> {
     data: &'a SMBiosAdditionalInformation<'a>,
     current_index: usize,

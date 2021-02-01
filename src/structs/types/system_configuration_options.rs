@@ -56,13 +56,16 @@ mod tests {
     #[test]
     fn unit_test() {
         let struct_type12 = vec![
-            0x0C, 0x05, 0x23, 0x00, 0x01, 0x73, 0x63, 0x72, 0x65, 0x2B, 0x2B, 0x00, 0x00,
+            0x0C, 0x05, 0x23, 0x00, 0x01, b's', b'c', b'r', b'e', b'+', b'+', 0x00, 0x00,
         ];
 
         let parts = SMBiosStructParts::new(struct_type12.as_slice());
         let test_struct = SMBiosSystemConfigurationOptions::new(&parts);
 
         assert_eq!(test_struct.count(), Some(1));
-        // assert_eq!(test_struct.configuration_strings().into_iter().next(), Some("scre++".to_string()));
+        assert_eq!(
+            test_struct.configuration_strings().into_iter().next(),
+            Some("scre++".to_string())
+        );
     }
 }

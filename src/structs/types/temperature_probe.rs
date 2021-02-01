@@ -34,8 +34,10 @@ impl<'a> SMBiosTemperatureProbe<'a> {
     ///
     /// Probe’s physical location and the status of the temperature
     /// monitored by this temperature probe
-    pub fn location_and_status(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x05)
+    pub fn location_and_status(&self) -> Option<TemperatureProbeLocationAndStatus> {
+        self.parts
+            .get_field_byte(0x05)
+            .and_then(|raw| Some(TemperatureProbeLocationAndStatus::from(raw)))
     }
 
     /// Maximum value
@@ -43,8 +45,10 @@ impl<'a> SMBiosTemperatureProbe<'a> {
     /// Maximum temperature readable by this probe, in 1/10th degrees C
     ///
     /// If the value is unknown, the field is set to 0x8000.
-    pub fn maximum_value(&self) -> Option<u16> {
-        self.parts.get_field_word(0x06)
+    pub fn maximum_value(&self) -> Option<ProbeTemperature> {
+        self.parts
+            .get_field_word(0x06)
+            .and_then(|raw| Some(ProbeTemperature::from(raw)))
     }
 
     /// Minimum value
@@ -52,8 +56,10 @@ impl<'a> SMBiosTemperatureProbe<'a> {
     /// Minimum temperature readable by this probe, in 1/10th degrees C
     ///
     /// If the value is unknown, the field is set to 0x8000.
-    pub fn minimum_value(&self) -> Option<u16> {
-        self.parts.get_field_word(0x08)
+    pub fn minimum_value(&self) -> Option<ProbeTemperature> {
+        self.parts
+            .get_field_word(0x08)
+            .and_then(|raw| Some(ProbeTemperature::from(raw)))
     }
 
     /// Resolution
@@ -61,8 +67,10 @@ impl<'a> SMBiosTemperatureProbe<'a> {
     /// Resolution for the probe’s reading, in 1/1000th degrees C
     ///
     /// If the value is unknown, the field is set to 0x8000.
-    pub fn resolution(&self) -> Option<u16> {
-        self.parts.get_field_word(0x0A)
+    pub fn resolution(&self) -> Option<TemperatureProbeResolution> {
+        self.parts
+            .get_field_word(0x0A)
+            .and_then(|raw| Some(TemperatureProbeResolution::from(raw)))
     }
 
     /// Tolerance
@@ -70,8 +78,10 @@ impl<'a> SMBiosTemperatureProbe<'a> {
     /// Tolerance for reading from this probe, in plus/minus 1/10th degrees C
     ///
     /// If the value is unknown, the field is set to 0x8000.
-    pub fn tolerance(&self) -> Option<u16> {
-        self.parts.get_field_word(0x0C)
+    pub fn tolerance(&self) -> Option<ProbeTemperature> {
+        self.parts
+            .get_field_word(0x0C)
+            .and_then(|raw| Some(ProbeTemperature::from(raw)))
     }
 
     /// Accuracy
@@ -79,8 +89,10 @@ impl<'a> SMBiosTemperatureProbe<'a> {
     /// Accuracy for reading from this probe, in plus/minus 1/100th of a percent
     ///
     /// If the value is unknown, the field is set to 0x8000.
-    pub fn accuracy(&self) -> Option<u16> {
-        self.parts.get_field_word(0x0E)
+    pub fn accuracy(&self) -> Option<TemperatureProbeAccuracy> {
+        self.parts
+            .get_field_word(0x0E)
+            .and_then(|raw| Some(TemperatureProbeAccuracy::from(raw)))
     }
 
     /// OEM defined
@@ -95,8 +107,10 @@ impl<'a> SMBiosTemperatureProbe<'a> {
     /// If the value is unknown, the field is set to 0x8000. This field is
     /// present in the structure only if the structure’s Length is larger
     /// than 14h.
-    pub fn nominal_value(&self) -> Option<u16> {
-        self.parts.get_field_word(0x14)
+    pub fn nominal_value(&self) -> Option<ProbeTemperature> {
+        self.parts
+            .get_field_word(0x14)
+            .and_then(|raw| Some(ProbeTemperature::from(raw)))
     }
 }
 
@@ -117,6 +131,190 @@ impl fmt::Debug for SMBiosTemperatureProbe<'_> {
     }
 }
 
+/// # Temperature Probe Location and Status
+#[derive(PartialEq, Eq)]
+pub struct TemperatureProbeLocationAndStatus {
+    /// Raw value
+    pub raw: u8,
+}
+
+impl From<u8> for TemperatureProbeLocationAndStatus {
+    fn from(raw: u8) -> Self {
+        TemperatureProbeLocationAndStatus { raw }
+    }
+}
+
+impl TemperatureProbeLocationAndStatus {
+    /// Temperature Probe Location
+    pub fn location(&self) -> TemperatureProbeLocation {
+        TemperatureProbeLocation::from(self.raw)
+    }
+
+    /// Temperature Probe Status
+    pub fn status(&self) -> TemperatureProbeStatus {
+        TemperatureProbeStatus::from(self.raw)
+    }
+}
+
+impl fmt::Debug for TemperatureProbeLocationAndStatus {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<TemperatureProbeLocationAndStatus>())
+            .field("raw", &self.raw)
+            .field("location", &self.location())
+            .field("status", &self.status())
+            .finish()
+    }
+}
+
+/// # Temperature Probe Status
+#[derive(Debug, PartialEq, Eq)]
+pub enum TemperatureProbeStatus {
+    /// Other
+    Other,
+    /// Unknown
+    Unknown,
+    /// OK
+    OK,
+    /// Non-critical
+    NonCritical,
+    /// Critical
+    Critical,
+    /// Non-recoverable
+    NonRecoverable,
+    /// A value unknown to this standard, check the raw value
+    None,
+}
+
+impl From<u8> for TemperatureProbeStatus {
+    fn from(raw: u8) -> Self {
+        match raw & 0b1110_0000 {
+            0b0000_0000 => TemperatureProbeStatus::None,
+            0b0010_0000 => TemperatureProbeStatus::Other,
+            0b0100_0000 => TemperatureProbeStatus::Unknown,
+            0b0110_0000 => TemperatureProbeStatus::OK,
+            0b1000_0000 => TemperatureProbeStatus::NonCritical,
+            0b1010_0000 => TemperatureProbeStatus::Critical,
+            0b1100_0000 => TemperatureProbeStatus::NonRecoverable,
+            0b1110_0000 => TemperatureProbeStatus::None,
+            _ => panic!("impossible value"),
+        }
+    }
+}
+
+/// # Temperature Probe Location
+#[derive(Debug, PartialEq, Eq)]
+pub enum TemperatureProbeLocation {
+    /// Other
+    Other,
+    /// Unknown
+    Unknown,
+    /// Processor
+    Processor,
+    /// Disk
+    Disk,
+    /// Peripheral Bay
+    PeripheralBay,
+    /// System Management Moduel
+    SystemManagementModule,
+    /// Motherboard
+    Motherboard,
+    /// Memory Module
+    MemoryModule,
+    /// Processor Module
+    ProcessorModule,
+    /// Power Unit
+    PowerUnit,
+    /// Add-in Card
+    AddInCard,
+    /// Front Panel Board
+    FrontPanelBoard,
+    /// Back Panel Board
+    BackPanelBoard,
+    /// Power System Board
+    PowerSystemBoard,
+    /// Drive Back Plane
+    DriveBackPlane,
+    /// A value unknown to this standard, check the raw value
+    None,
+}
+
+impl From<u8> for TemperatureProbeLocation {
+    fn from(raw: u8) -> Self {
+        match raw & 0b0001_1111 {
+            0b0000_0001 => TemperatureProbeLocation::Other,
+            0b0000_0010 => TemperatureProbeLocation::Unknown,
+            0b0000_0011 => TemperatureProbeLocation::Processor,
+            0b0000_0100 => TemperatureProbeLocation::Disk,
+            0b0000_0101 => TemperatureProbeLocation::PeripheralBay,
+            0b0000_0110 => TemperatureProbeLocation::SystemManagementModule,
+            0b0000_0111 => TemperatureProbeLocation::Motherboard,
+            0b0000_1000 => TemperatureProbeLocation::MemoryModule,
+            0b0000_1001 => TemperatureProbeLocation::ProcessorModule,
+            0b0000_1010 => TemperatureProbeLocation::PowerUnit,
+            0b0000_1011 => TemperatureProbeLocation::AddInCard,
+            0b0000_1100 => TemperatureProbeLocation::FrontPanelBoard,
+            0b0000_1101 => TemperatureProbeLocation::BackPanelBoard,
+            0b0000_1110 => TemperatureProbeLocation::PowerSystemBoard,
+            0b0000_1111 => TemperatureProbeLocation::DriveBackPlane,
+            _ => TemperatureProbeLocation::None,
+        }
+    }
+}
+
+/// # Probe Temperature
+#[derive(Debug)]
+pub enum ProbeTemperature {
+    /// Temperature in 1/10 degrees C
+    OneTenthDegreesC(u16),
+    /// Temperature is unknown
+    Unknown,
+}
+
+impl From<u16> for ProbeTemperature {
+    fn from(raw: u16) -> Self {
+        match raw {
+            0x8000 => ProbeTemperature::Unknown,
+            _ => ProbeTemperature::OneTenthDegreesC(raw),
+        }
+    }
+}
+
+/// # Temperature Probe Resolution
+#[derive(Debug)]
+pub enum TemperatureProbeResolution {
+    /// Resolution for the probe's reading in 1/1000 degrees C
+    OneOneThousandthDegreesC(u16),
+    /// Resolution is unknown
+    Unknown,
+}
+
+impl From<u16> for TemperatureProbeResolution {
+    fn from(raw: u16) -> Self {
+        match raw {
+            0x8000 => TemperatureProbeResolution::Unknown,
+            _ => TemperatureProbeResolution::OneOneThousandthDegreesC(raw),
+        }
+    }
+}
+
+/// # Temperature Probe Accuracy
+#[derive(Debug)]
+pub enum TemperatureProbeAccuracy {
+    /// Accuracy for the probe's reading in 1/100 degrees C
+    OneOneHundredthDegreesC(u16),
+    /// Accuracy is unknown
+    Unknown,
+}
+
+impl From<u16> for TemperatureProbeAccuracy {
+    fn from(raw: u16) -> Self {
+        match raw {
+            0x8000 => TemperatureProbeAccuracy::Unknown,
+            _ => TemperatureProbeAccuracy::OneOneHundredthDegreesC(raw),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -133,13 +331,34 @@ mod tests {
         let test_struct = SMBiosTemperatureProbe::new(&parts);
 
         assert_eq!(test_struct.description(), Some("LM78A".to_string()));
-        assert_eq!(test_struct.location_and_status(), Some(103));
-        assert_eq!(test_struct.maximum_value(), Some(32768));
-        assert_eq!(test_struct.minimum_value(), Some(32768));
-        assert_eq!(test_struct.resolution(), Some(32768));
-        assert_eq!(test_struct.tolerance(), Some(32768));
-        assert_eq!(test_struct.accuracy(), Some(32768));
+        assert_eq!(
+            test_struct.location_and_status(),
+            Some(TemperatureProbeLocationAndStatus::from(103))
+        );
+        match test_struct.maximum_value().unwrap() {
+            ProbeTemperature::OneTenthDegreesC(_) => panic!("expected unknown"),
+            ProbeTemperature::Unknown => (),
+        }
+        match test_struct.minimum_value().unwrap() {
+            ProbeTemperature::OneTenthDegreesC(_) => panic!("expected unknown"),
+            ProbeTemperature::Unknown => (),
+        }
+        match test_struct.resolution().unwrap() {
+            TemperatureProbeResolution::OneOneThousandthDegreesC(_) => panic!("expected unknown"),
+            TemperatureProbeResolution::Unknown => (),
+        }
+        match test_struct.tolerance().unwrap() {
+            ProbeTemperature::OneTenthDegreesC(_) => panic!("expected unknown"),
+            ProbeTemperature::Unknown => (),
+        }
+        match test_struct.accuracy().unwrap() {
+            TemperatureProbeAccuracy::OneOneHundredthDegreesC(_) => panic!("expected unknown"),
+            TemperatureProbeAccuracy::Unknown => (),
+        }
         assert_eq!(test_struct.oem_defined(), Some(0));
-        assert_eq!(test_struct.nominal_value(), Some(32768));
+        match test_struct.nominal_value().unwrap() {
+            ProbeTemperature::OneTenthDegreesC(_) => panic!("expected unknown"),
+            ProbeTemperature::Unknown => (),
+        }
     }
 }

@@ -44,3 +44,26 @@ impl fmt::Debug for Handle {
             .finish()
     }
 }
+
+/// # SMBIOS Structure Type
+///
+/// Each SMBIOS structure has a type number associated with it.
+///
+/// Dereference a structure type (*struct_type) to access its u8 value.
+pub struct SMBiosType(pub u8);
+
+impl Deref for SMBiosType {
+    type Target = u8;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl fmt::Debug for SMBiosType {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosType>())
+            .field("type", &self.0)
+            .finish()
+    }
+}

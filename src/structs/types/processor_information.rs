@@ -1880,7 +1880,5 @@ mod tests {
             ThreadCount2::Unknown => panic!("expected number"),
             ThreadCount2::Reserved => panic!("expected number"),
         }
-
-        println!("{:?}", test_struct);
     }
 }

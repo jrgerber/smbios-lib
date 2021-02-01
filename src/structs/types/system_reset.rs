@@ -33,27 +33,29 @@ impl<'a> SMBiosSystemReset<'a> {
     /// Capabilities bit-field
     ///
     /// Identifies the system-reset capabilities for the system
-    pub fn capabilities(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x04)
+    pub fn capabilities(&self) -> Option<SystemResetCapabilities> {
+        self.parts
+            .get_field_byte(0x04)
+            .and_then(|raw| Some(SystemResetCapabilities::from(raw)))
     }
 
     /// Reset count
     ///
     /// Number of automatic system resets since the last intentional
     /// reset
-    ///
-    /// A value of 0FFFFh indicates unknown.
-    pub fn reset_count(&self) -> Option<u16> {
-        self.parts.get_field_word(0x05)
+    pub fn reset_count(&self) -> Option<ResetCount> {
+        self.parts
+            .get_field_word(0x05)
+            .and_then(|raw| Some(ResetCount::from(raw)))
     }
 
     /// Reset limit
     ///
     /// Number of consecutive times the system reset is attempted
-    ///
-    /// A value of 0FFFFh indicates unknown.
-    pub fn reset_limit(&self) -> Option<u16> {
-        self.parts.get_field_word(0x07)
+    pub fn reset_limit(&self) -> Option<ResetLimit> {
+        self.parts
+            .get_field_word(0x07)
+            .and_then(|raw| Some(ResetLimit::from(raw)))
     }
 
     /// Timer interval
@@ -61,9 +63,11 @@ impl<'a> SMBiosSystemReset<'a> {
     /// Number of minutes to use for the watchdog timer
     ///
     /// If the timer is not reset within this interval, the system reset
-    /// timeout begins. A value of 0FFFFh indicates unknown.
-    pub fn timer_interval(&self) -> Option<u16> {
-        self.parts.get_field_word(0x09)
+    /// timeout begins.
+    pub fn timer_interval(&self) -> Option<TimerInterval> {
+        self.parts
+            .get_field_word(0x09)
+            .and_then(|raw| Some(TimerInterval::from(raw)))
     }
 
     /// Timeout
@@ -71,10 +75,11 @@ impl<'a> SMBiosSystemReset<'a> {
     /// Number of minutes before the reboot is initiated
     ///
     /// It is used after a system power cycle, system reset (local or
-    /// remote), and automatic system reset. A value of 0FFFFh
-    /// indicates unknown.
-    pub fn timeout(&self) -> Option<u16> {
-        self.parts.get_field_word(0x0B)
+    /// remote), and automatic system reset.
+    pub fn timeout(&self) -> Option<Timeout> {
+        self.parts
+            .get_field_word(0x0B)
+            .and_then(|raw| Some(Timeout::from(raw)))
     }
 }
 
@@ -88,6 +93,196 @@ impl fmt::Debug for SMBiosSystemReset<'_> {
             .field("timer_interval", &self.timer_interval())
             .field("timeout", &self.timeout())
             .finish()
+    }
+}
+
+/// # System Reset Capabilities
+#[derive(PartialEq, Eq)]
+pub struct SystemResetCapabilities {
+    pub raw: u8,
+}
+
+impl From<u8> for SystemResetCapabilities {
+    fn from(raw: u8) -> Self {
+        SystemResetCapabilities { raw }
+    }
+}
+
+impl SystemResetCapabilities {
+    /// System contains a watchdog timer; either
+    /// True (1) or False (0).
+    pub fn has_watchdog_timer(&self) -> bool {
+        self.raw & 0b0010_0000 == 0b0010_0000
+    }
+
+    /// Boot Option on Limit
+    ///
+    /// Identifies one of the system actions
+    /// to be taken when the Reset Limit is reached.
+    pub fn boot_option_on_limit(&self) -> BootOptionOnLimit {
+        BootOptionOnLimit::from(self.raw)
+    }
+
+    /// Boot Option
+    ///
+    /// Indicates one of the following actions
+    /// to be taken after a watchdog reset:
+    pub fn boot_option(&self) -> BootOption {
+        BootOption::from(self.raw)
+    }
+
+    /// Status
+    ///
+    /// Identifies whether (1) or not (0)
+    /// the system reset is enabled by the user.
+    pub fn reset_enabled(&self) -> bool {
+        self.raw & 0b0000_0001 == 0b0000_0001
+    }
+}
+
+impl fmt::Debug for SystemResetCapabilities {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SystemResetCapabilities>())
+            .field("raw", &self.raw)
+            .field("has_watchdog_timer", &self.has_watchdog_timer())
+            .field("boot_option_on_limit", &self.boot_option_on_limit())
+            .field("boot_option", &self.boot_option())
+            .field("reset_enabled", &self.reset_enabled())
+            .finish()
+    }
+}
+
+/// # Boot Option on Limit
+///
+/// Identifies one of the following system actions to
+/// be taken when the Reset Limit is reached
+#[derive(Debug, PartialEq, Eq)]
+pub enum BootOptionOnLimit {
+    /// Reserved, do not use.
+    Reserved,
+    /// Operating System
+    OperatingSystem,
+    /// System utilities
+    SystemUtilities,
+    /// Do not reboot
+    DoNotReboot,
+}
+
+impl From<u8> for BootOptionOnLimit {
+    fn from(raw: u8) -> Self {
+        match raw & 0b0001_1000 {
+            0b0000_0000 => BootOptionOnLimit::Reserved,
+            0b0000_1000 => BootOptionOnLimit::OperatingSystem,
+            0b0001_0000 => BootOptionOnLimit::SystemUtilities,
+            0b0001_1000 => BootOptionOnLimit::DoNotReboot,
+            _ => panic!("impossible value"),
+        }
+    }
+}
+
+/// # Boot Option
+///
+/// Indicates one of the following actions to be taken
+//  after a watchdog reset
+#[derive(Debug, PartialEq, Eq)]
+pub enum BootOption {
+    /// Reserved, do not use.
+    Reserved,
+    /// Operating System
+    OperatingSystem,
+    /// System utilities
+    SystemUtilities,
+    /// Do not reboot
+    DoNotReboot,
+}
+
+impl From<u8> for BootOption {
+    fn from(raw: u8) -> Self {
+        match raw & 0b0000_0110 {
+            0b0000_0000 => BootOption::Reserved,
+            0b0000_0010 => BootOption::OperatingSystem,
+            0b0000_0100 => BootOption::SystemUtilities,
+            0b0000_0110 => BootOption::DoNotReboot,
+            _ => panic!("impossible value"),
+        }
+    }
+}
+
+/// # Reset Count
+#[derive(Debug)]
+pub enum ResetCount {
+    /// Number of automatic system resets since the last intentional reset
+    Count(u16),
+    /// Reset count is unknown.
+    Unknown,
+}
+
+impl From<u16> for ResetCount {
+    fn from(raw: u16) -> Self {
+        match raw {
+            0xFFFF => ResetCount::Unknown,
+            _ => ResetCount::Count(raw),
+        }
+    }
+}
+
+/// # Reset Limit
+#[derive(Debug)]
+pub enum ResetLimit {
+    /// Number of consecutive times the system reset is attempted
+    Count(u16),
+    /// Reset limit is unknown.
+    Unknown,
+}
+
+impl From<u16> for ResetLimit {
+    fn from(raw: u16) -> Self {
+        match raw {
+            0xFFFF => ResetLimit::Unknown,
+            _ => ResetLimit::Count(raw),
+        }
+    }
+}
+
+/// # Timer Interval
+#[derive(Debug)]
+pub enum TimerInterval {
+    /// Number of minutes to use for the watchdog timer
+    ///
+    /// If the timer is not reset within this interval,
+    /// the system reset timeout begins.
+    Minutes(u16),
+    /// Timer interval is unknown.
+    Unknown,
+}
+
+impl From<u16> for TimerInterval {
+    fn from(raw: u16) -> Self {
+        match raw {
+            0xFFFF => TimerInterval::Unknown,
+            _ => TimerInterval::Minutes(raw),
+        }
+    }
+}
+
+/// # Timeout
+#[derive(Debug)]
+pub enum Timeout {
+    /// Number of minutes before the reboot is initiated
+    ///
+    /// It is used after a system power cycle, system reset
+    // (local or remote), and automatic system reset.
+    Minutes(u16),
+    /// Timeout is unknown.
+    Unknown,
+}
+
+impl From<u16> for Timeout {
+    fn from(raw: u16) -> Self {
+        match raw {
+            0xFFFF => Timeout::Unknown,
+            _ => Timeout::Minutes(raw),
+        }
     }
 }
 
@@ -105,10 +300,25 @@ mod tests {
         let parts = SMBiosStructParts::new(struct_type23.as_slice());
         let test_struct = SMBiosSystemReset::new(&parts);
 
-        assert_eq!(test_struct.capabilities(), Some(0));
-        assert_eq!(test_struct.reset_count(), Some(65535));
-        assert_eq!(test_struct.reset_limit(), Some(65535));
-        assert_eq!(test_struct.timer_interval(), Some(65535));
-        assert_eq!(test_struct.timeout(), Some(65535));
+        assert_eq!(
+            test_struct.capabilities(),
+            Some(SystemResetCapabilities::from(0))
+        );
+        match test_struct.reset_count().unwrap() {
+            ResetCount::Count(_) => panic!("expected unknown"),
+            ResetCount::Unknown => (),
+        }
+        match test_struct.reset_limit().unwrap() {
+            ResetLimit::Count(_) => panic!("expected unknown"),
+            ResetLimit::Unknown => (),
+        }
+        match test_struct.timer_interval().unwrap() {
+            TimerInterval::Minutes(_) => panic!("expected unknown"),
+            TimerInterval::Unknown => (),
+        }
+        match test_struct.timeout().unwrap() {
+            Timeout::Minutes(_) => panic!("expected unknown"),
+            Timeout::Unknown => (),
+        }
     }
 }
