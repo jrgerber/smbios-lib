@@ -34,56 +34,58 @@ impl<'a> SMBiosVoltageProbe<'a> {
     ///
     /// Probe’s physical location and status of the voltage
     /// monitored by this voltage probe
-    pub fn location_and_status(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x05)
+    pub fn location_and_status(&self) -> Option<VoltageProbeLocationAndStatus> {
+        self.parts
+            .get_field_byte(0x05)
+            .and_then(|raw| Some(VoltageProbeLocationAndStatus::from(raw)))
     }
 
     /// Maximum value
     ///
     /// Maximum voltage level readable by this probe, in
     /// millivolts
-    ///
-    /// If the value is unknown, the field is set to 0x8000.
-    pub fn maximum_value(&self) -> Option<u16> {
-        self.parts.get_field_word(0x06)
+    pub fn maximum_value(&self) -> Option<ProbeVoltage> {
+        self.parts
+            .get_field_word(0x06)
+            .and_then(|raw| Some(ProbeVoltage::from(raw)))
     }
 
     /// Minimum value
     ///
     /// Minimum voltage level readable by this probe, in millivolts
-    ///
-    /// If the value is unknown, the field is set to 0x8000.
-    pub fn minimum_value(&self) -> Option<u16> {
-        self.parts.get_field_word(0x08)
+    pub fn minimum_value(&self) -> Option<ProbeVoltage> {
+        self.parts
+            .get_field_word(0x08)
+            .and_then(|raw| Some(ProbeVoltage::from(raw)))
     }
 
     /// Resolution
     ///
     /// Resolution for the probe’s reading, in tenths of millivolts
-    ///
-    /// If the value is unknown, the field is set to 0x8000.
-    pub fn resolution(&self) -> Option<u16> {
-        self.parts.get_field_word(0x0A)
+    pub fn resolution(&self) -> Option<VoltageProbeResolution> {
+        self.parts
+            .get_field_word(0x0A)
+            .and_then(|raw| Some(VoltageProbeResolution::from(raw)))
     }
 
     /// Tolerance
     ///
     /// Tolerance for reading from this probe, in plus/minus
     /// millivolts
-    ///
-    /// If the value is unknown, the field is set to 0x8000.
-    pub fn tolerance(&self) -> Option<u16> {
-        self.parts.get_field_word(0x0C)
+    pub fn tolerance(&self) -> Option<ProbeVoltage> {
+        self.parts
+            .get_field_word(0x0C)
+            .and_then(|raw| Some(ProbeVoltage::from(raw)))
     }
 
     /// Accuracy
     ///
     /// Accuracy for reading from this probe, in plus/minus
     /// 1/100th of a percent
-    ///
-    /// If the value is unknown, the field is set to 0x8000.
-    pub fn accuracy(&self) -> Option<u16> {
-        self.parts.get_field_word(0x0E)
+    pub fn accuracy(&self) -> Option<VoltageProbeAccuracy> {
+        self.parts
+            .get_field_word(0x0E)
+            .and_then(|raw| Some(VoltageProbeAccuracy::from(raw)))
     }
 
     /// OEM defined
@@ -96,12 +98,12 @@ impl<'a> SMBiosVoltageProbe<'a> {
     /// Nominal value
     ///
     /// Nominal value for the probe’s reading in millivolts
-    ///
-    /// If the value is unknown, the field is set to 0x8000. This
-    /// field is present in the structure only if the structure’s
+    /// This field is present in the structure only if the structure's
     /// length is larger than 14h.
-    pub fn nominal_value(&self) -> Option<u16> {
-        self.parts.get_field_word(0x14)
+    pub fn nominal_value(&self) -> Option<ProbeVoltage> {
+        self.parts
+            .get_field_word(0x14)
+            .and_then(|raw| Some(ProbeVoltage::from(raw)))
     }
 }
 
@@ -119,5 +121,236 @@ impl fmt::Debug for SMBiosVoltageProbe<'_> {
             .field("oem_defined", &self.oem_defined())
             .field("nominal_value", &self.nominal_value())
             .finish()
+    }
+}
+
+/// # Voltage Probe Location and Status
+#[derive(PartialEq, Eq)]
+pub struct VoltageProbeLocationAndStatus {
+    /// Raw value
+    pub raw: u8,
+}
+
+impl From<u8> for VoltageProbeLocationAndStatus {
+    fn from(raw: u8) -> Self {
+        VoltageProbeLocationAndStatus { raw }
+    }
+}
+
+impl VoltageProbeLocationAndStatus {
+    /// Voltage Probe Location
+    pub fn location(&self) -> VoltageProbeLocation {
+        VoltageProbeLocation::from(self.raw)
+    }
+
+    /// Voltage Probe Status
+    pub fn status(&self) -> VoltageProbeStatus {
+        VoltageProbeStatus::from(self.raw)
+    }
+}
+
+impl fmt::Debug for VoltageProbeLocationAndStatus {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<VoltageProbeLocationAndStatus>())
+            .field("raw", &self.raw)
+            .field("location", &self.location())
+            .field("status", &self.status())
+            .finish()
+    }
+}
+
+/// # Voltage Probe Status
+#[derive(Debug, PartialEq, Eq)]
+pub enum VoltageProbeStatus {
+    /// Other
+    Other,
+    /// Unknown
+    Unknown,
+    /// OK
+    OK,
+    /// Non-critical
+    NonCritical,
+    /// Critical
+    Critical,
+    /// Non-recoverable
+    NonRecoverable,
+    /// A value unknown to this standard, check the raw value
+    None,
+}
+
+impl From<u8> for VoltageProbeStatus {
+    fn from(raw: u8) -> Self {
+        match raw & 0b1110_0000 {
+            0b0000_0000 => VoltageProbeStatus::None,
+            0b0010_0000 => VoltageProbeStatus::Other,
+            0b0100_0000 => VoltageProbeStatus::Unknown,
+            0b0110_0000 => VoltageProbeStatus::OK,
+            0b1000_0000 => VoltageProbeStatus::NonCritical,
+            0b1010_0000 => VoltageProbeStatus::Critical,
+            0b1100_0000 => VoltageProbeStatus::NonRecoverable,
+            0b1110_0000 => VoltageProbeStatus::None,
+            _ => panic!("impossible value"),
+        }
+    }
+}
+
+/// # Voltage Probe Location
+#[derive(Debug, PartialEq, Eq)]
+pub enum VoltageProbeLocation {
+    /// Other
+    Other,
+    /// Unknown
+    Unknown,
+    /// Processor
+    Processor,
+    /// Disk
+    Disk,
+    /// Peripheral Bay
+    PeripheralBay,
+    /// System Management Moduel
+    SystemManagementModule,
+    /// Motherboard
+    Motherboard,
+    /// Memory Module
+    MemoryModule,
+    /// Processor Module
+    ProcessorModule,
+    /// Power Unit
+    PowerUnit,
+    /// Add-in Card
+    AddInCard,
+    /// Front Panel Board
+    FrontPanelBoard,
+    /// Back Panel Board
+    BackPanelBoard,
+    /// Power System Board
+    PowerSystemBoard,
+    /// Drive Back Plane
+    DriveBackPlane,
+    /// A value unknown to this standard, check the raw value
+    None,
+}
+
+impl From<u8> for VoltageProbeLocation {
+    fn from(raw: u8) -> Self {
+        match raw & 0b0001_1111 {
+            0b0000_0001 => VoltageProbeLocation::Other,
+            0b0000_0010 => VoltageProbeLocation::Unknown,
+            0b0000_0011 => VoltageProbeLocation::Processor,
+            0b0000_0100 => VoltageProbeLocation::Disk,
+            0b0000_0101 => VoltageProbeLocation::PeripheralBay,
+            0b0000_0110 => VoltageProbeLocation::SystemManagementModule,
+            0b0000_0111 => VoltageProbeLocation::Motherboard,
+            0b0000_1000 => VoltageProbeLocation::MemoryModule,
+            0b0000_1001 => VoltageProbeLocation::ProcessorModule,
+            0b0000_1010 => VoltageProbeLocation::PowerUnit,
+            0b0000_1011 => VoltageProbeLocation::AddInCard,
+            0b0000_1100 => VoltageProbeLocation::FrontPanelBoard,
+            0b0000_1101 => VoltageProbeLocation::BackPanelBoard,
+            0b0000_1110 => VoltageProbeLocation::PowerSystemBoard,
+            0b0000_1111 => VoltageProbeLocation::DriveBackPlane,
+            _ => VoltageProbeLocation::None,
+        }
+    }
+}
+
+/// # Probe Voltage
+#[derive(Debug)]
+pub enum ProbeVoltage {
+    /// Voltage in millivolts
+    Millivolts(u16),
+    /// Voltage is unknown
+    Unknown,
+}
+
+impl From<u16> for ProbeVoltage {
+    fn from(raw: u16) -> Self {
+        match raw {
+            0x8000 => ProbeVoltage::Unknown,
+            _ => ProbeVoltage::Millivolts(raw),
+        }
+    }
+}
+
+/// # Voltage Probe Resolution
+#[derive(Debug)]
+pub enum VoltageProbeResolution {
+    /// Resolution for the probe's reading in tenths of millivolts
+    TenthsOfMillivolts(u16),
+    /// Resolution is unknown
+    Unknown,
+}
+
+impl From<u16> for VoltageProbeResolution {
+    fn from(raw: u16) -> Self {
+        match raw {
+            0x8000 => VoltageProbeResolution::Unknown,
+            _ => VoltageProbeResolution::TenthsOfMillivolts(raw),
+        }
+    }
+}
+
+/// # Voltage Probe Accuracy
+#[derive(Debug)]
+pub enum VoltageProbeAccuracy {
+    /// Accuracy for the probe's reading in 1/100th of a percent
+    OneOneHundredthPercent(u16),
+    /// Accuracy is unknown
+    Unknown,
+}
+
+impl From<u16> for VoltageProbeAccuracy {
+    fn from(raw: u16) -> Self {
+        match raw {
+            0x8000 => VoltageProbeAccuracy::Unknown,
+            _ => VoltageProbeAccuracy::OneOneHundredthPercent(raw),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unit_test() {
+        let struct_type26 = vec![
+            26, 0x16, 0x2A, 0x00, 0x01, 0x67, 0x00, 0x80, 0x00, 0x80, 0x00, 0x80, 0x00, 0x80, 0x00,
+            0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x4C, 0x4D, 0x37, 0x38, 0x41, 0x00, 0x00,
+        ];
+
+        let parts = SMBiosStructParts::new(struct_type26.as_slice());
+        let test_struct = SMBiosVoltageProbe::new(&parts);
+
+        assert_eq!(test_struct.description(), Some("LM78A".to_string()));
+        assert_eq!(
+            test_struct.location_and_status(),
+            Some(VoltageProbeLocationAndStatus::from(103))
+        );
+        match test_struct.maximum_value().unwrap() {
+            ProbeVoltage::Millivolts(_) => panic!("expected unknown"),
+            ProbeVoltage::Unknown => (),
+        }
+        match test_struct.minimum_value().unwrap() {
+            ProbeVoltage::Millivolts(_) => panic!("expected unknown"),
+            ProbeVoltage::Unknown => (),
+        }
+        match test_struct.resolution().unwrap() {
+            VoltageProbeResolution::TenthsOfMillivolts(_) => panic!("expected unknown"),
+            VoltageProbeResolution::Unknown => (),
+        }
+        match test_struct.tolerance().unwrap() {
+            ProbeVoltage::Millivolts(_) => panic!("expected unknown"),
+            ProbeVoltage::Unknown => (),
+        }
+        match test_struct.accuracy().unwrap() {
+            VoltageProbeAccuracy::OneOneHundredthPercent(_) => panic!("expected unknown"),
+            VoltageProbeAccuracy::Unknown => (),
+        }
+        assert_eq!(test_struct.oem_defined(), Some(0));
+        match test_struct.nominal_value().unwrap() {
+            ProbeVoltage::Millivolts(_) => panic!("expected unknown"),
+            ProbeVoltage::Unknown => (),
+        }
     }
 }

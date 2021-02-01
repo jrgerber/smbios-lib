@@ -64,9 +64,6 @@ mod tests {
         assert_eq!(*unknown.parts().header.handle(), 0x0021);
         assert_eq!(unknown.parts().header.length(), 0x16);
 
-        // basic field tests
-        //assert_eq!(bios_language_information.current_language().expect("current_language field exists"), "en|US|iso8859-1".to_string());
-
         // debug print test
         println!("unknown structure: {:?}", unknown);
     }
