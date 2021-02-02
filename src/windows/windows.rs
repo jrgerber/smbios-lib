@@ -18,7 +18,7 @@
 //! }
 //! ```
 
-use crate::*;
+use super::WinSMBiosData;
 
 mod ffi {
     // https://doc.rust-lang.org/nomicon/ffi.html

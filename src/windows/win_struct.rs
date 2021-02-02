@@ -1,4 +1,8 @@
+use std::{convert::TryInto, fs, io};
+
 use crate::*;
+
+use super::{DataError, WinSMBiosDataResult};
 
 /// # Raw SMBIOS Data
 ///

@@ -15,6 +15,8 @@ mod windows;
 mod dev_tools;
 
 use structs::*;
+
+#[cfg(target_family = "windows")]
 use windows::*;
 
 pub use crate::core::*;

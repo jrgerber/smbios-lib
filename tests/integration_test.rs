@@ -1,5 +1,6 @@
 use smbios;
 
+#[cfg(target_family = "windows")]
 #[test]
 fn windows_dump() {
     match smbios::get_raw_smbios_data() {

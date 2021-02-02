@@ -1,3 +1,5 @@
+use std::convert::TryInto;
+
 use crate::*;
 
 /// # The three basic parts of an SMBIOS structure
