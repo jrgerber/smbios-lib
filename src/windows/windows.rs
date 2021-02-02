@@ -18,6 +18,8 @@
 //! }
 //! ```
 
+use std::convert::TryInto;
+
 use super::WinSMBiosData;
 
 mod ffi {
