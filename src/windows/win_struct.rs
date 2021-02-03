@@ -2,7 +2,20 @@ use std::{convert::TryInto, fs, io};
 
 use crate::*;
 
-use super::{DataError, WinSMBiosDataResult};
+/// Result returned when calling get_raw_smbios_data() or is_valid_win_smbios_data()
+pub type WinSMBiosDataResult = Result<WinSMBiosData, DataError>;
+
+/// Raw SMBIOS data errors
+#[derive(Debug)]
+pub enum DataError {
+    /// [GetSystemFirmwareTable](https://docs.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-getsystemfirmwaretable)
+    /// threw a Win32 exception.
+    Win32Exception,
+    /// Out of memory exception.
+    MemoryException,
+    /// The structure is invalid.
+    InvalidStructure,
+}
 
 /// # Raw SMBIOS Data
 ///

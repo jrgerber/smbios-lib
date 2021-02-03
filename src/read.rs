@@ -2,7 +2,6 @@
 //!
 //! When testing this library it is useful to read stored
 //! raw data and then load it into the structures.
-#[cfg(target_family = "windows")]
 use windows::WinSMBiosData;
 
 use crate::*;
@@ -13,7 +12,6 @@ use std::io::Error;
 ///
 /// Currently supports reading raw files containing only SMBIOS table data or
 /// Windows raw files containing the windows header and SMBIOS table data.
-#[cfg(target_family = "windows")]
 pub fn load_smbios_data_from_file(filename: &str) -> Result<SMBiosTableData, Error> {
     let data = read(filename)?;
     if WinSMBiosData::is_valid_win_smbios_data(&data) {
@@ -26,7 +24,6 @@ pub fn load_smbios_data_from_file(filename: &str) -> Result<SMBiosTableData, Err
 }
 
 /// Loads raw smbios data files from a given _folder_ and returns [Vec<SMBiosTableData>]
-#[cfg(target_family = "windows")]
 pub fn load_raw_files(folder: &str) -> Vec<SMBiosTableData> {
     let mut result = Vec::new();
 
@@ -56,9 +53,9 @@ pub fn load_raw_files(folder: &str) -> Vec<SMBiosTableData> {
 mod tests {
     use super::*;
 
-    #[cfg(target_family = "windows")]
     #[test]
     fn test_load_smbios_table_data() {
+        // TODO: This path has back slashes which don't work on linux
         let filename = r".\tests\jeffgerlap_3_2_0.dat";
 
         match load_smbios_data_from_file(&filename) {

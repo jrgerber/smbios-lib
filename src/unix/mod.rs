@@ -1,5 +1,5 @@
 #[cfg(target_family = "unix")]
-mod unix;
+mod platform;
 
 #[cfg(target_family = "unix")]
-pub use unix::*;
+pub use platform::*;

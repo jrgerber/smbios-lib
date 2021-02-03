@@ -1,6 +1,6 @@
 use std::convert::TryInto;
 
-use super::WinSMBiosData;
+use super::{WinSMBiosData, WinSMBiosDataResult};
 
 mod ffi {
     // https://doc.rust-lang.org/nomicon/ffi.html
@@ -17,23 +17,7 @@ mod ffi {
     }
 }
 
-/// Raw SMBIOS data errors
-#[derive(Debug)]
-pub enum DataError {
-    /// [GetSystemFirmwareTable](https://docs.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-getsystemfirmwaretable)
-    /// threw a Win32 exception.
-    Win32Exception,
-    /// Out of memory exception.
-    MemoryException,
-    /// The structure is invalid.
-    InvalidStructure,
-}
-
-/// Result returned when calling get_raw_smbios_data()
-pub type WinSMBiosDataResult = Result<WinSMBiosData, DataError>;
-
 /// Calls the Windows kernel32 function [GetSystemFirmwareTable](https://docs.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-getsystemfirmwaretable)
-#[cfg(target_family = "windows")]
 pub fn get_raw_smbios_data() -> WinSMBiosDataResult {
     use std::ptr;
 
