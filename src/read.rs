@@ -62,7 +62,6 @@ mod tests {
         path.push("jeffgerlap_3_2_0");
         path.set_extension("dat");
 
-        // TODO: This path has doesn't work on linux, why?
         let filename = path.display().to_string();
 
         match load_smbios_data_from_file(&filename) {

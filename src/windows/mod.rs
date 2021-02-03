@@ -4,6 +4,7 @@
 //!
 //! # Example
 //! ```rust
+//! #[cfg(target_family = "windows")]
 //! fn windows_dump() {
 //!     match smbios::get_raw_smbios_data() {
 //!         Ok(raw_data) => {

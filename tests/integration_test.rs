@@ -1,9 +1,9 @@
-use smbios;
+use smbios::*;
 
 #[cfg(target_family = "windows")]
 #[test]
 fn windows_dump() {
-    match smbios::get_raw_smbios_data() {
+    match get_raw_smbios_data() {
         Ok(raw_data) => {
             println!("raw_data: {:?}", raw_data);
 
