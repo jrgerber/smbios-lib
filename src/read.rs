@@ -52,11 +52,18 @@ pub fn load_raw_files(folder: &str) -> Vec<SMBiosTableData> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::path::PathBuf;
 
     #[test]
     fn test_load_smbios_table_data() {
-        // TODO: This path has back slashes which don't work on linux
-        let filename = r".\tests\jeffgerlap_3_2_0.dat";
+        let mut path = PathBuf::new();
+        path.push(".");
+        path.push("tests");
+        path.push("jeffgerlap_3_2_0");
+        path.set_extension("dat");
+
+        // TODO: This path has doesn't work on linux, why?
+        let filename = path.display().to_string();
 
         match load_smbios_data_from_file(&filename) {
             Ok(table_data) => {

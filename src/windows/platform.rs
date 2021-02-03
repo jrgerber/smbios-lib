@@ -1,6 +1,6 @@
 use std::convert::TryInto;
 
-use super::{WinSMBiosData, WinSMBiosDataResult};
+use super::{DataError, WinSMBiosData, WinSMBiosDataResult};
 
 mod ffi {
     // https://doc.rust-lang.org/nomicon/ffi.html
