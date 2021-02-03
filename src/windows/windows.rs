@@ -1,23 +1,3 @@
-//! Windows SMBIOS.
-//!
-//! Functions and structures for working with SMBIOS on Windows.
-//!
-//! # Example
-//! ```rust
-//! fn windows_dump() {
-//!     match smbios::get_raw_smbios_data() {
-//!         Ok(raw_data) => {
-//!             println!("raw_data: {:?}", raw_data);
-//!
-//!             for parts in &raw_data.smbios_table_data {
-//!                 println!("{:?}", parts.struct_type_name());
-//!             }
-//!         }
-//!         Err(err) => panic!("failure: {:?}", err),
-//!     }
-//! }
-//! ```
-
 use std::convert::TryInto;
 
 use super::WinSMBiosData;

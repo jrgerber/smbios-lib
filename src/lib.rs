@@ -11,6 +11,7 @@ mod core;
 mod read;
 mod structs;
 mod windows;
+mod unix;
 // Temporary tools
 mod dev_tools;
 
@@ -21,3 +22,6 @@ pub use read::*;
 
 #[cfg(target_family = "windows")]
 pub use windows::{get_raw_smbios_data, WinSMBiosData};
+
+#[cfg(target_family = "unix")]
+pub use unix::*;
