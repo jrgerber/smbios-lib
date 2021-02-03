@@ -1,3 +1,5 @@
+use std::convert::TryInto;
+
 use crate::*;
 
 /// # Processor Information (Type 4)

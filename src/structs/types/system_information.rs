@@ -1,5 +1,8 @@
 use crate::*;
-use std::{array::TryFromSliceError, convert::TryFrom};
+use std::{
+    array::TryFromSliceError,
+    convert::{TryFrom, TryInto},
+};
 
 /// # System Information (Type 1)
 ///

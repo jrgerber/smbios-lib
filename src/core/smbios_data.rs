@@ -1,4 +1,6 @@
 use crate::*;
+use std::fs::read;
+use std::io::Error;
 
 /// # SMBIOS Raw Table Data
 ///
@@ -15,10 +17,10 @@ impl SMBiosTableData {
     }
 
     /// Loads raw SMBios table data and return [SMBiosTableData] or [std::io::Error]
-    pub fn from_file(filename: &str) -> Result<Self, io::Error> {
+    pub fn from_file(filename: &str) -> Result<Self, Error> {
         // TODO: implement a fn that checks whether the structure is valid table data.
         // If it's not return that error here.
-        let data = fs::read(filename)?;
+        let data = read(filename)?;
         let result = Self { data };
         Ok(result)
     }

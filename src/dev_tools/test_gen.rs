@@ -32,6 +32,7 @@ mod tests {
     use super::*;
     use std::io::Write;
 
+    #[cfg(target_family = "windows")]
     #[test]
     #[ignore = "dev tool, this won't work since folder with data is located locally"]
     fn test_find_type() {
