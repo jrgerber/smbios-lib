@@ -99,6 +99,7 @@ impl fmt::Debug for SMBiosSystemReset<'_> {
 /// # System Reset Capabilities
 #[derive(PartialEq, Eq)]
 pub struct SystemResetCapabilities {
+    /// Raw byte of the system reset capabilities
     pub raw: u8,
 }
 

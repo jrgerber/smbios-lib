@@ -68,7 +68,7 @@ pub struct PointingDeviceTypeData {
     /// this library code has not been updated to match the current
     /// standard.
     pub raw: u8,
-    /// The contained [BuiltInPointingDeviceType] value
+    /// The contained [PointingDeviceType] value
     pub value: PointingDeviceType,
 }
 

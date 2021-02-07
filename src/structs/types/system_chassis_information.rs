@@ -575,6 +575,7 @@ impl<'a> fmt::Debug for ContainedElements<'a> {
 
 /// # Contained Chassis Element
 pub struct ChassisElement<'a> {
+    /// Raw byte slice for this chassis element
     pub raw: &'a [u8],
 }
 

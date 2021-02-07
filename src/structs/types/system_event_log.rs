@@ -428,6 +428,7 @@ impl From<u8> for AccessMethod {
 /// variable data that accompanies the first bytes of the log’s variable data — a specific log record might
 /// have more variable data than specified by its Variable Data Format Type.
 pub struct EventLogTypeDescriptor<'a> {
+    /// Raw byte slice for this event log type descriptor
     pub raw: &'a [u8],
 }
 

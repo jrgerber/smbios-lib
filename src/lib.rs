@@ -10,20 +10,18 @@
 mod core;
 mod read;
 mod structs;
-mod windows;
 mod unix;
-// Temporary tools
-mod dev_tools;
+mod windows;
 
-use structs::*;
+pub use structs::*;
 
 pub use crate::core::*;
 pub use read::*;
 
 #[cfg(target_family = "windows")]
-pub use windows::{get_raw_smbios_data};
+pub use windows::get_raw_smbios_data;
 
-pub use windows::{WinSMBiosData};
+pub use windows::WinSMBiosData;
 
 #[cfg(target_family = "unix")]
 pub use unix::*;
