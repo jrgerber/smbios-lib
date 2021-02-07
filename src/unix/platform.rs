@@ -1,7 +1,10 @@
+use crate::*;
+use std::fs::*;
+use std::io::Error;
 
 // Example of Linux structure:
 /*
-    /sys/firmware/dmi/tables$ sudo hexdump -C smbios_entry_point 
+    /sys/firmware/dmi/tables$ sudo hexdump -C smbios_entry_point
     00000000  5f 53 4d 33 5f 7e 18 03  03 00 01 00 83 04 00 00  |_SM3_~..........|
     00000010  00 20 b0 7b 00 00 00 00                           |. .{....|
     00000018
@@ -28,12 +31,48 @@
 */
 
 // Note: /sys/class/dmi/id contains some of the BIOS values, already parsed by the kernel.
-// These are useful for cross checking against the results this library produces when reading 
+// These are useful for cross checking against the results this library produces when reading
 // /sys/firmware/dmi/tables/DMI
 
-/// Temporary placeholder for Unix functions
-pub fn hello_world() {    
-    println!("Hello world!");
+/// # Table Load from Device Error
+///
+/// Error returned when there is a failure loading raw
+/// SMBIOS table data from the device.
+#[derive(Debug)]
+pub enum TableLoadFromDeviceError {
+    /// Failed to load a file due to [Error]
+    IOError(Error),
+    /// The structure is invalid.
+    InvalidData(String),
+    /// Some other error.
+    GeneralError(String),
+}
+
+impl From<Error> for TableLoadFromDeviceError {
+    fn from(error: Error) -> Self {
+        Self::IOError(error)
+    }
+}
+
+impl From<String> for TableLoadFromDeviceError {
+    fn from(error: String) -> Self {
+        Self::GeneralError(error)
+    }
+}
+
+impl From<&'static str> for TableLoadFromDeviceError {
+    fn from(error: &'static str) -> Self {
+        Self::GeneralError(error.to_string())
+    }
+}
+
+/// Loads SMBIOS table data from the device
+pub fn table_load_from_device() -> Result<SMBiosTableData, TableLoadFromDeviceError> {
+    const SYS_TABLE_FILE: &'static str = "/sys/firmware/dmi/tables/DMI";
+
+    let raw_table_data = read(SYS_TABLE_FILE)?;
+
+    Ok(SMBiosTableData::new(raw_table_data))
 }
 
 #[cfg(test)]
@@ -42,6 +81,16 @@ mod tests {
 
     #[test]
     fn unit_test() {
-        hello_world();
+        println!("hello world?");
+        match table_load_from_device() {
+            Ok(raw_data) => {
+                println!("raw_data: {:?}", raw_data);
+
+                for parts in raw_data.into_iter() {
+                    println!("{:?}", parts.struct_type_name());
+                }
+            }
+            Err(err) => panic!("failure: {:?}", err),
+        }
     }
 }
