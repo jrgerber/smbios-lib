@@ -1,27 +1,36 @@
 use crate::*;
+use std::cmp::Ordering;
 use std::fs::read;
 use std::io::Error;
 
-/// # SMBIOS Raw Table Data
+/// # SMBIOS Table Data
 ///
 /// Contains the raw data of BIOS and provides iteration of
 /// the structures contained within the raw data.
 pub struct SMBiosTableData {
     data: Vec<u8>,
+    /// Version of SMBIOS Table Data Structures
+    pub version: Option<SMBiosVersion>,
 }
 
 impl SMBiosTableData {
-    /// Creates a wrapper around raw SMBIOS data
-    pub fn new(data: Vec<u8>) -> Self {
-        Self { data }
+    /// Creates an SMBIOS table data parser which can be iterated
+    ///
+    /// `data` is a block of bytes representing the raw table data.
+    /// `version` is optional and represents the SMBIOS standard version of the bytes in `data`.
+    pub fn from_vec_and_version(data: Vec<u8>, version: Option<SMBiosVersion>) -> Self {
+        Self { data, version }
     }
 
-    /// Loads raw SMBios table data and return [SMBiosTableData] or [std::io::Error]
-    pub fn from_file(filename: &str) -> Result<Self, Error> {
-        // TODO: implement a fn that checks whether the structure is valid table data.
-        // If it's not return that error here.
+    /// Loads raw SMBios table data and returns [SMBiosTableData] or [std::io::Error]
+    pub fn from_table_data_file(
+        filename: &str,
+        version: Option<SMBiosVersion>,
+    ) -> Result<Self, Error> {
+        // TODO: There should be an offset parameter and length parameter given.
+        // In some cases on Unix a non-zero offset is given by the entry point structure.
         let data = read(filename)?;
-        let result = Self { data };
+        let result = Self { data, version };
         Ok(result)
     }
 }
@@ -120,5 +129,42 @@ impl<'a> Iterator for RawStructIterator<'a> {
             Some(val) => Some(SMBiosStructParts::new(val)),
             None => None,
         }
+    }
+}
+
+/// # Version of SMBIOS Structure
+#[derive(Debug, Eq, PartialEq)]
+pub struct SMBiosVersion {
+    /// SMBIOS major version
+    pub major: u8,
+    /// SMBIOS minor version
+    pub minor: u8,
+    /// SMBIOS version revision
+    pub revision: u8,
+}
+
+impl Ord for SMBiosVersion {
+    fn cmp(&self, other: &Self) -> Ordering {
+        if self.major < other.major {
+            Ordering::Less
+        } else if self.major > other.major {
+            Ordering::Greater
+        } else if self.minor < other.minor {
+            Ordering::Less
+        } else if self.minor > other.minor {
+            Ordering::Greater
+        } else if self.revision < other.revision {
+            Ordering::Less
+        } else if self.revision > other.revision {
+            Ordering::Greater
+        } else {
+            Ordering::Equal
+        }
+    }
+}
+
+impl PartialOrd for SMBiosVersion {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
     }
 }

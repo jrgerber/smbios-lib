@@ -2,9 +2,13 @@
 name = "smbios"
 version = "0.7.0"
 authors = ["Jeffrey R. Gerber <jeffreygerber@gmail.com>, Ante Čulo <dante2711@gmail.com>"]
+license-file = "LICENSE"
 edition = "2018"
-readme = "README.md"
 description = "SMBIOS Library"
+repository = "https://github.com/jrgerber/smbios-lib"
+readme = "README.md"
+keywords = ["bios", "smbios", "dmtf"]
+categories = ["hardware-support"]
 
 # prevention from accidentally publishing
 publish = false

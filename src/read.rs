@@ -19,7 +19,7 @@ pub fn load_smbios_data_from_file(filename: &str) -> Result<SMBiosTableData, Err
             .expect("Structure shouldn't be invalid it was already checked.");
         Ok(win_smbios.smbios_table_data)
     } else {
-        Ok(SMBiosTableData::new(data))
+        Ok(SMBiosTableData::from_vec_and_version(data, None))
     }
 }
 

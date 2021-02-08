@@ -12,7 +12,8 @@ This project reads raw SMBIOS data from either a device or file.
 ### Supports
 * [DMTF System Management BIOS (SMBIOS) Reference
 Specification 3.4.0](https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.4.0.pdf)
-* Operating Systems: Linux and Windows
+* Unix family
+* Windows family
 
 ### Planned Support
 * MacOS

@@ -57,17 +57,19 @@ impl WinSMBiosData {
         if !WinSMBiosData::is_valid_win_smbios_data(&raw_smbios_data) {
             Err(DataError::InvalidStructure)
         } else {
+            if !WinSMBiosData::is_valid_win_smbios_data(&raw_smbios_data) {
+                return Err(DataError::InvalidStructure);
+            }
+            let windows_header =
+                Vec::from(&raw_smbios_data[..WinSMBiosData::SMBIOS_TABLE_DATA_OFFSET]);
+            let version = WinSMBiosData::version_from_raw_header(&windows_header);
             Ok(WinSMBiosData {
-                windows_header: {
-                    if !WinSMBiosData::is_valid_win_smbios_data(&raw_smbios_data) {
-                        panic!("Invalid structure")
-                    }
-                    Vec::from(&raw_smbios_data[..WinSMBiosData::SMBIOS_TABLE_DATA_OFFSET])
-                },
+                windows_header,
                 smbios_table_data: {
-                    SMBiosTableData::new(Vec::from(
-                        &raw_smbios_data[WinSMBiosData::SMBIOS_TABLE_DATA_OFFSET..],
-                    ))
+                    SMBiosTableData::from_vec_and_version(
+                        Vec::from(&raw_smbios_data[WinSMBiosData::SMBIOS_TABLE_DATA_OFFSET..]),
+                        Some(version),
+                    )
                 },
             })
         }
@@ -122,6 +124,14 @@ impl WinSMBiosData {
     /// DMI revision
     pub fn dmi_revision(&self) -> u8 {
         self.windows_header[WinSMBiosData::DMI_REVISION_OFFSET]
+    }
+
+    fn version_from_raw_header(windows_header: &Vec<u8>) -> SMBiosVersion {
+        SMBiosVersion {
+            major: windows_header[WinSMBiosData::SMBIOS_MAJOR_VERSION_OFFSET],
+            minor: windows_header[WinSMBiosData::SMBIOS_MINOR_VERSION_OFFSET],
+            revision: windows_header[WinSMBiosData::DMI_REVISION_OFFSET],
+        }
     }
 
     /// Length of the smbios table data
