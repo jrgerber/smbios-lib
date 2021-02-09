@@ -3,39 +3,36 @@ use std::cmp::Ordering;
 use std::fs::read;
 use std::io::Error;
 
-/// # SMBIOS Table Data
+/// # SMBIOS Struture Table
 ///
-/// Contains the raw data of BIOS and provides iteration of
-/// the structures contained within the raw data.
-pub struct SMBiosTableData {
+/// Contains an array of SMBIOS structures.
+pub struct SMBiosStructTable {
     data: Vec<u8>,
-    /// Version of SMBIOS Table Data Structures
+    /// Version of the contained SMBIOS structures.
     pub version: Option<SMBiosVersion>,
 }
 
-impl SMBiosTableData {
-    /// Creates an SMBIOS table data parser which can be iterated
+impl SMBiosStructTable {
+    /// Creates an SMBIOS table parser which can be iterated
     ///
     /// `data` is a block of bytes representing the raw table data.
-    /// `version` is optional and represents the SMBIOS standard version of the bytes in `data`.
+    /// `version` is optional and represents the DMTF SMBIOS Standard version of the bytes in `data`.
     pub fn from_vec_and_version(data: Vec<u8>, version: Option<SMBiosVersion>) -> Self {
         Self { data, version }
     }
 
-    /// Loads raw SMBios table data and returns [SMBiosTableData] or [std::io::Error]
-    pub fn from_table_data_file(
+    /// Loads raw SMBios table data from a file
+    pub fn try_load_from_file(
         filename: &str,
         version: Option<SMBiosVersion>,
-    ) -> Result<Self, Error> {
-        // TODO: There should be an offset parameter and length parameter given.
-        // In some cases on Unix a non-zero offset is given by the entry point structure.
+    ) -> Result<SMBiosStructTable, Error> {
         let data = read(filename)?;
         let result = Self { data, version };
         Ok(result)
     }
 }
 
-impl<'a> IntoIterator for &'a SMBiosTableData {
+impl<'a> IntoIterator for &'a SMBiosStructTable {
     type Item = SMBiosStructParts<'a>;
 
     type IntoIter = RawStructIterator<'a>;
@@ -45,16 +42,16 @@ impl<'a> IntoIterator for &'a SMBiosTableData {
     }
 }
 
-impl<'a> fmt::Debug for SMBiosTableData {
+impl<'a> fmt::Debug for SMBiosStructTable {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // TODO: format as an array, make a function on SMBiosStructParts to return an enum of variants of the struct types
         self.into_iter().map(|x| writeln!(f, "{:?}", x)).collect()
     }
 }
 
-/// # Iterator of [SMBiosTableData]
+/// # Iterator of [SMBiosStructTable]
 ///
-/// Allows iteration of [SMBiosTableData] and returns [SMBiosStructParts].
+/// Allows iteration of [SMBiosStructTable] and returns [SMBiosStructParts].
 pub struct RawStructIterator<'a> {
     data: &'a [u8],
     current_index: usize,

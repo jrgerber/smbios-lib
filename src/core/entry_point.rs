@@ -1,4 +1,4 @@
-use std::{convert::TryFrom, convert::TryInto, num::Wrapping};
+use std::{convert::TryFrom, convert::TryInto, fs::read, io::Error, io::ErrorKind, num::Wrapping};
 
 /// # SMBIOS 2.1 (32 bit) Entry Point structure
 ///
@@ -11,11 +11,11 @@ use std::{convert::TryFrom, convert::TryInto, num::Wrapping};
 /// Configuration Table for the SMBIOS GUID (SMBIOS_TABLE_GUID, {EB9D2D31-2D88-11D3-9A16-
 /// 0090273FC14D}) and using the associated pointer. See section 4.6 of the UEFI Specification for details.
 /// See section 2.3 of the UEFI Specification for how to report the containing memory type.
-pub struct SMBiosEntryPoint32<'a> {
-    raw: &'a [u8],
+pub struct SMBiosEntryPoint32 {
+    raw: Vec<u8>,
 }
 
-impl<'a> SMBiosEntryPoint32<'a> {
+impl<'a> SMBiosEntryPoint32 {
     /// Minimum acceptable size of this structure
     ///
     /// TODO: Review DMTF SMBIOS document history and see
@@ -141,7 +141,7 @@ impl<'a> SMBiosEntryPoint32<'a> {
     ///
     /// Value present in the `entry_point_revision` field defines the
     /// interpretation to be placed upon these 5 bytes
-    pub fn formatted_area(&self) -> &'a [u8; 5] {
+    pub fn formatted_area(&self) -> [u8; 5] {
         self.raw[Self::FORMATTED_AREA_OFFSET..Self::FORMATTED_AREA_OFFSET + 5]
             .try_into()
             .expect("5 bytes")
@@ -150,7 +150,7 @@ impl<'a> SMBiosEntryPoint32<'a> {
     /// Intermediate Anchor String
     ///
     /// _DMI_, specified as five ASCII characters (5F 44 4D 49 5F).
-    pub fn intermediate_anchor(&self) -> &'a [u8; 5] {
+    pub fn intermediate_anchor(&self) -> [u8; 5] {
         self.raw[Self::INTERMEDIATE_ANCHOR_OFFSET..Self::INTERMEDIATE_ANCHOR_OFFSET + 5]
             .try_into()
             .expect("5 bytes")
@@ -221,14 +221,22 @@ impl<'a> SMBiosEntryPoint32<'a> {
     pub fn bcd_revision(&self) -> u8 {
         self.raw[Self::BCD_REVISION]
     }
+
+    /// Load this structure from a file
+    pub fn try_load_from_file(filename: &str) -> Result<Self, Error> {
+        read(filename)?.try_into()
+    }
 }
 
-impl<'a> TryFrom<&'a [u8]> for SMBiosEntryPoint32<'a> {
-    type Error = &'static str;
+impl<'a> TryFrom<Vec<u8>> for SMBiosEntryPoint32 {
+    type Error = Error;
 
-    fn try_from(raw: &'a [u8]) -> Result<Self, Self::Error> {
+    fn try_from(raw: Vec<u8>) -> Result<Self, Self::Error> {
         if raw.len() < Self::MINIMUM_SIZE {
-            return Err("Slice is smaller than SMBiosEntryPoint32::MINIMUM_SIZE");
+            return Err(Error::new(
+                ErrorKind::InvalidData,
+                "Slice is smaller than SMBiosEntryPoint32::MINIMUM_SIZE",
+            ));
         }
 
         if !raw
@@ -236,7 +244,7 @@ impl<'a> TryFrom<&'a [u8]> for SMBiosEntryPoint32<'a> {
             .zip(Self::SM_ANCHOR.iter())
             .all(|pair| pair.0 == pair.1)
         {
-            return Err("_SM_ anchor not found");
+            return Err(Error::new(ErrorKind::InvalidData, "_SM_ anchor not found"));
         }
 
         // Verify the EPS checksum
@@ -245,10 +253,12 @@ impl<'a> TryFrom<&'a [u8]> for SMBiosEntryPoint32<'a> {
         match raw.get(0..entry_point_length) {
             Some(checked_bytes) => {
                 if !verify_checksum(checked_bytes) {
-                    return Err("Entry Point Structure checksum verification failed");
+                    return Err(Error::new(
+                ErrorKind::InvalidData,"Entry Point Structure checksum verification failed"));
                 }
             }
-            None => return Err("The Entry Point Length field specified a value which exceeded the bounds of the Entry Point Structure"),
+            None => return Err(Error::new(
+                ErrorKind::InvalidData,"The Entry Point Length field specified a value which exceeded the bounds of the Entry Point Structure")),
         }
 
         let intermediate_anchor: [u8; 5] = raw
@@ -261,7 +271,7 @@ impl<'a> TryFrom<&'a [u8]> for SMBiosEntryPoint32<'a> {
             .zip(Self::DMI_ANCHOR.iter())
             .all(|pair| pair.0 == pair.1)
         {
-            return Err("_DMI_ anchor not found");
+            return Err(Error::new(ErrorKind::InvalidData, "_DMI_ anchor not found"));
         }
 
         // Verify the IEPS checksum
@@ -272,7 +282,10 @@ impl<'a> TryFrom<&'a [u8]> for SMBiosEntryPoint32<'a> {
             .expect("0x0F bytes");
 
         if !verify_checksum(&intermediate_entry_point_structure) {
-            return Err("Intermediate entry point structure checksum verification failed");
+            return Err(Error::new(
+                ErrorKind::InvalidData,
+                "Intermediate entry point structure checksum verification failed",
+            ));
         }
 
         Ok(SMBiosEntryPoint32 { raw })
@@ -288,11 +301,11 @@ impl<'a> TryFrom<&'a [u8]> for SMBiosEntryPoint32<'a> {
 /// On UEFI-based systems, the SMBIOS Entry Point structure can be located by looking in the EFI
 /// Configuration Table for the SMBIOS 3.x GUID (SMBIOS3_TABLE_GUID, {F2FD1544-9794-4A2C-992E836 E5BBCF20E394}) and using the associated pointer. See section 4.6 of the UEFI Specification for details.
 /// See section 2.3 of the UEFI Specification for how to report the containing memory type.
-pub struct SMBiosEntryPoint64<'a> {
-    raw: &'a [u8],
+pub struct SMBiosEntryPoint64 {
+    raw: Vec<u8>,
 }
 
-impl<'a> SMBiosEntryPoint64<'a> {
+impl<'a> SMBiosEntryPoint64 {
     /// Minimum acceptable size of this structure
     ///
     /// TODO: Review DMTF SMBIOS document history and see
@@ -413,14 +426,22 @@ impl<'a> SMBiosEntryPoint64<'a> {
                 .expect("u64 is 8 bytes"),
         )
     }
+
+    /// Load this structure from a file
+    pub fn try_load_from_file(filename: &str) -> Result<Self, Error> {
+        read(filename)?.try_into()
+    }
 }
 
-impl<'a> TryFrom<&'a [u8]> for SMBiosEntryPoint64<'a> {
-    type Error = &'static str;
+impl<'a> TryFrom<Vec<u8>> for SMBiosEntryPoint64 {
+    type Error = Error;
 
-    fn try_from(raw: &'a [u8]) -> Result<Self, Self::Error> {
+    fn try_from(raw: Vec<u8>) -> Result<Self, Self::Error> {
         if raw.len() < Self::MINIMUM_SIZE {
-            return Err("Slice is smaller than SMBiosEntryPoint64::MINIMUM_SIZE");
+            return Err(Error::new(
+                ErrorKind::InvalidData,
+                "Slice is smaller than SMBiosEntryPoint64::MINIMUM_SIZE",
+            ));
         }
 
         if !raw
@@ -428,7 +449,10 @@ impl<'a> TryFrom<&'a [u8]> for SMBiosEntryPoint64<'a> {
             .zip(Self::SM3_ANCHOR.iter())
             .all(|pair| pair.0 == pair.1)
         {
-            return Err("Expected _SM3_ identifier not found");
+            return Err(Error::new(
+                ErrorKind::InvalidData,
+                "Expected _SM3_ identifier not found",
+            ));
         }
 
         // Verify the checksum
@@ -437,10 +461,10 @@ impl<'a> TryFrom<&'a [u8]> for SMBiosEntryPoint64<'a> {
         match raw.get(0..entry_point_length) {
             Some(checked_bytes) => {
                 if !verify_checksum(checked_bytes) {
-                    return Err("Entry Point Structure checksum verification failed");
+                    return Err(Error::new(ErrorKind::InvalidData,"Entry Point Structure checksum verification failed"));
                 }
             }
-            None => return Err("The Entry Point Length field specified a value which exceeded the bounds of the Entry Point Structure"),
+            None => return Err(Error::new(ErrorKind::InvalidData,"The Entry Point Length field specified a value which exceeded the bounds of the Entry Point Structure")),
         }
 
         Ok(SMBiosEntryPoint64 { raw })

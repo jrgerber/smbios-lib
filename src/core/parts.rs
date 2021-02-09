@@ -152,8 +152,8 @@ impl<'a> SMBiosStructParts<'a> {
         }
     }
 
-    /// Casts the current structure to its specific defined BIOS structure type
-    pub fn struct_type_name(&self) -> DefinedStruct {
+    /// Down casts the current structure to its specific defined BIOS structure type
+    pub fn defined_struct(&self) -> DefinedStruct {
         match self.header.struct_type() {
             SMBiosInformation::STRUCT_TYPE => {
                 DefinedStruct::Information(SMBiosInformation::new(self))

@@ -1,6 +1,5 @@
 use crate::*;
-use std::fs::*;
-use std::io::Error;
+use std::{io::Error, io::ErrorKind};
 
 // Example of Linux structure:
 /*
@@ -34,45 +33,38 @@ use std::io::Error;
 // These are useful for cross checking against the results this library produces when reading
 // /sys/firmware/dmi/tables/DMI
 
-/// # Table Load from Device Error
-///
-/// Error returned when there is a failure loading raw
-/// SMBIOS table data from the device.
-#[derive(Debug)]
-pub enum TableLoadFromDeviceError {
-    /// Failed to load a file due to [Error]
-    IOError(Error),
-    /// The structure is invalid.
-    InvalidData(String),
-    /// Some other error.
-    GeneralError(String),
-}
-
-impl From<Error> for TableLoadFromDeviceError {
-    fn from(error: Error) -> Self {
-        Self::IOError(error)
-    }
-}
-
-impl From<String> for TableLoadFromDeviceError {
-    fn from(error: String) -> Self {
-        Self::GeneralError(error)
-    }
-}
-
-impl From<&'static str> for TableLoadFromDeviceError {
-    fn from(error: &'static str) -> Self {
-        Self::GeneralError(error.to_string())
-    }
-}
-
-/// Loads SMBIOS table data from the device
-pub fn table_load_from_device() -> Result<SMBiosTableData, TableLoadFromDeviceError> {
+/// Loads SMBIOS table data ([SMBiosTableData]) from the device
+pub fn table_load_from_device() -> Result<SMBiosTableData, Error> {
+    const SYS_ENTRY_FILE: &'static str = "/sys/firmware/dmi/tables/smbios_entry_point";
     const SYS_TABLE_FILE: &'static str = "/sys/firmware/dmi/tables/DMI";
 
-    let raw_table_data = read(SYS_TABLE_FILE)?;
+    let version: SMBiosVersion;
+    match SMBiosEntryPoint64::try_load_from_file(SYS_ENTRY_FILE) {
+        Ok(entry_point) => {
+            version = SMBiosVersion {
+                major: entry_point.major_version(),
+                minor: entry_point.minor_version(),
+                revision: entry_point.docrev(),
+            }
+        }
+        Err(err) => match err.kind() {
+            ErrorKind::InvalidData => {
+                match SMBiosEntryPoint32::try_load_from_file(SYS_ENTRY_FILE) {
+                    Ok(entry_point) => {
+                        version = SMBiosVersion {
+                            major: entry_point.major_version(),
+                            minor: entry_point.minor_version(),
+                            revision: 0,
+                        }
+                    }
+                    Err(err) => return Err(err),
+                }
+            }
+            _ => return Err(err),
+        },
+    }
 
-    Ok(SMBiosTableData::new(raw_table_data))
+    SMBiosTableData::try_load_from_file(SYS_TABLE_FILE, Some(version))
 }
 
 #[cfg(test)]
@@ -80,14 +72,13 @@ mod tests {
     use super::*;
 
     #[test]
-    fn unit_test() {
-        println!("hello world?");
+    fn device_load_unit_test() {
         match table_load_from_device() {
-            Ok(raw_data) => {
-                println!("raw_data: {:?}", raw_data);
+            Ok(table) => {
+                println!("table_data: {:?}", table);
 
-                for parts in raw_data.into_iter() {
-                    println!("{:?}", parts.struct_type_name());
+                for smbios_structure in table.into_iter() {
+                    println!("{:#?}", smbios_structure.defined_struct());
                 }
             }
             Err(err) => panic!("failure: {:?}", err),

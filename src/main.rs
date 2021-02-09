@@ -1,25 +1,14 @@
 use smbioslib::*;
 
-#[cfg(target_family = "windows")]
-fn main() {
-    match get_raw_smbios_data() {
-        Ok(raw_data) => {
-            for parts in &raw_data.smbios_table_data {
-                println!("{:?}", parts.struct_type_name());
-            }
-        }
-        Err(err) => panic!("failure: {:?}", err),
-    }
-}
-
-#[cfg(target_family = "unix")]
 fn main() {
     match table_load_from_device() {
-        Ok(raw_data) => {
-            // println!("raw_data: {:?}", raw_data);
+        Ok(table) => {
+            // TODO: Make SMBiosTableData dump all contents for fmt::Debug
+            // and then remove the below for loop
+            // println!("table_data: {:#?}", table);
 
-            for parts in raw_data.into_iter() {
-                println!("{:?}", parts.struct_type_name());
+            for smbios_structure in table.into_iter() {
+                println!("{:#?}", smbios_structure.defined_struct());
             }
         }
         Err(err) => panic!("failure: {:?}", err),
