@@ -348,7 +348,9 @@ impl From<u8> for MemoryArrayErrorCorrectionData {
 /// # Maximum memory capacity, in kilobytes, for this array
 #[derive(Debug, PartialEq, Eq)]
 pub enum MaximumMemoryCapacity {
+    /// Maximum memory capacity in Kilobytes
     Kilobytes(u32),
+    /// Use `extended_maximum_capacity` to retrieve the maximum capacity
     SeeExtendedMaximumCapacity,
 }
 

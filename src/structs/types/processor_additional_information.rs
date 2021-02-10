@@ -60,6 +60,7 @@ impl fmt::Debug for SMBiosProcessorAdditionalInformation<'_> {
 
 /// # Processor Specific Block contained within [SMBiosProcessorAdditionalInformation]
 pub struct ProcessorSpecificBlock<'a> {
+    /// Raw byte slice for this processor specific block
     pub raw: &'a [u8],
 }
 

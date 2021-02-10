@@ -1,6 +1,11 @@
-use std::convert::TryInto;
+use std::{
+    convert::TryInto,
+    io::{Error, ErrorKind},
+};
 
-use super::{DataError, WinSMBiosData, WinSMBiosDataResult};
+use crate::SMBiosStructTable;
+
+use super::WinSMBiosData;
 
 mod ffi {
     // https://doc.rust-lang.org/nomicon/ffi.html
@@ -18,10 +23,11 @@ mod ffi {
 }
 
 /// Calls the Windows kernel32 function [GetSystemFirmwareTable](https://docs.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-getsystemfirmwaretable)
-pub fn get_raw_smbios_data() -> WinSMBiosDataResult {
+pub fn load_windows_smbios_data() -> Result<WinSMBiosData, Error> {
     use std::ptr;
 
     unsafe {
+        const MEMORY_ERROR_MESSAGE: &'static str = "Memory error";
         const RAW_SMBIOS_SIGNATURE: u32 = 1381190978u32; // 'RSMB' ASCII bytes == 1381190978
         let max_i32: u32 = i32::MAX.try_into().unwrap();
         let firmware_table_buffer_ptr: *mut u8 = ptr::null_mut();
@@ -31,7 +37,7 @@ pub fn get_raw_smbios_data() -> WinSMBiosDataResult {
 
         // 0 is win32 exception, > i32::MAX is memory exception
         if buffer_size == 0 || buffer_size > max_i32 {
-            return Err(DataError::MemoryException);
+            return Err(Error::new(ErrorKind::Other, MEMORY_ERROR_MESSAGE));
         }
 
         let mut firmware_table_buffer = Vec::with_capacity(buffer_size as usize);
@@ -45,15 +51,20 @@ pub fn get_raw_smbios_data() -> WinSMBiosDataResult {
         );
         // 0 is win32 exception
         if buffer_size == 0 {
-            Err(DataError::Win32Exception)
+            Err(Error::last_os_error())
         }
         // > i32::MAX is memory exception
         else if buffer_size > max_i32 {
-            Err(DataError::MemoryException)
+            Err(Error::new(ErrorKind::Other, MEMORY_ERROR_MESSAGE))
         } else {
             firmware_table_buffer.set_len(buffer_size as usize);
 
             WinSMBiosData::new(firmware_table_buffer)
         }
     }
+}
+
+/// Loads SMBIOS table data ([SMBiosStructTable]) from the device
+pub fn table_load_from_device() -> Result<SMBiosStructTable, Error> {
+    Ok(load_windows_smbios_data()?.smbios_table_data)
 }

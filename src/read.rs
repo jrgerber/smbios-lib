@@ -8,23 +8,23 @@ use crate::*;
 use std::fs::{read, read_dir};
 use std::io::Error;
 
-/// Loads raw smbios data from a file and returns [SMBiosTableData] or [std::io::Error] on error.
+/// Loads raw smbios data from a file and returns [SMBiosStructTable] or [std::io::Error] on error.
 ///
 /// Currently supports reading raw files containing only SMBIOS table data or
 /// Windows raw files containing the windows header and SMBIOS table data.
-pub fn load_smbios_data_from_file(filename: &str) -> Result<SMBiosTableData, Error> {
+pub fn load_smbios_data_from_file(filename: &str) -> Result<SMBiosStructTable, Error> {
     let data = read(filename)?;
     if WinSMBiosData::is_valid_win_smbios_data(&data) {
         let win_smbios = WinSMBiosData::new(data)
             .expect("Structure shouldn't be invalid it was already checked.");
         Ok(win_smbios.smbios_table_data)
     } else {
-        Ok(SMBiosTableData::new(data))
+        Ok(SMBiosStructTable::from_vec_and_version(data, None))
     }
 }
 
-/// Loads raw smbios data files from a given _folder_ and returns [Vec<SMBiosTableData>]
-pub fn load_raw_files(folder: &str) -> Vec<SMBiosTableData> {
+/// Loads raw smbios data files from a given _folder_ and returns [Vec<SMBiosStructTable>]
+pub fn load_raw_files(folder: &str) -> Vec<SMBiosStructTable> {
     let mut result = Vec::new();
 
     let entries = read_dir(folder)
@@ -67,7 +67,7 @@ mod tests {
         match load_smbios_data_from_file(&filename) {
             Ok(table_data) => {
                 for parts in table_data.into_iter() {
-                    println!("{:?}", parts.struct_type_name());
+                    println!("{:?}", parts.defined_struct());
                 }
             }
             _ => panic!("Expected data!"),

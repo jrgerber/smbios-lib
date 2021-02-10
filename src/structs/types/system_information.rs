@@ -147,30 +147,37 @@ impl<'a> TryFrom<&'a [u8]> for SystemUuidData<'a> {
 /// # System - UUID
 #[derive(PartialEq, Eq)]
 pub struct SystemUuid<'a> {
+    /// Raw byte array for this UUID
     pub raw: &'a [u8; 0x10],
 }
 
 impl<'a> SystemUuid<'a> {
+    /// Low field of the timestamp
     pub fn time_low(&self) -> u32 {
         u32::from_le_bytes(self.raw[..0x4].try_into().expect("incorrect size"))
     }
 
+    /// Middle field of the timestamp
     pub fn time_mid(&self) -> u16 {
         u16::from_le_bytes(self.raw[0x4..0x6].try_into().expect("incorrect size"))
     }
 
+    /// High field of the timestamp multiplexed with the version number
     pub fn time_high_and_version(&self) -> u16 {
         u16::from_le_bytes(self.raw[0x6..0x8].try_into().expect("incorrect size"))
     }
 
+    /// High field of the clock sequence multiplexed with the variant
     pub fn clock_seq_high_and_reserved(&self) -> u8 {
         self.raw[0x8]
     }
 
+    /// Low field of the clock sequence
     pub fn clock_seq_low(&self) -> u8 {
         self.raw[0x9]
     }
 
+    /// Spatially unique node identifier
     pub fn node(&self) -> &[u8; 6] {
         self.raw[0xA..0x10].try_into().expect("incorrect size")
     }

@@ -199,6 +199,7 @@ impl From<u16> for PowerSupplyCharacteristics {
 }
 
 impl PowerSupplyCharacteristics {
+    /// Power Supply Types
     pub fn power_supply_type(&self) -> PowerSupplyType {
         PowerSupplyType::from(self.raw)
     }

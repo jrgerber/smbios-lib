@@ -1,15 +1,27 @@
 [package]
 name = "smbios"
-version = "1.0.0"
+version = "0.7.0"
 authors = ["Jeffrey R. Gerber <jeffreygerber@gmail.com>, Ante Čulo <dante2711@gmail.com>"]
+license-file = "LICENSE"
 edition = "2018"
-readme = "README.md"
 description = "SMBIOS Library"
+repository = "https://github.com/jrgerber/smbios-lib"
+readme = "README.md"
+keywords = ["bios", "smbios", "dmtf"]
+categories = ["hardware-support"]
 
 # prevention from accidentally publishing
 publish = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "smbioslib"
+path = "src/lib.rs"
+
+[[bin]]
+name = "smbiosdump"
+path = "src/main.rs"
 
 [dependencies]
 

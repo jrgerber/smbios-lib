@@ -1595,6 +1595,7 @@ impl ProcessorStatus {
         self.raw & 0b0100_0000 == 0b0100_0000
     }
 
+    /// CPU Status
     pub fn cpu_status(&self) -> CpuStatus {
         CpuStatus::from(self.raw)
     }

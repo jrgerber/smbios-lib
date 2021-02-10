@@ -1,32 +1,38 @@
 use crate::*;
+use std::cmp::Ordering;
 use std::fs::read;
 use std::io::Error;
 
-/// # SMBIOS Raw Table Data
+/// # SMBIOS Struture Table
 ///
-/// Contains the raw data of BIOS and provides iteration of
-/// the structures contained within the raw data.
-pub struct SMBiosTableData {
+/// Contains an array of SMBIOS structures.
+pub struct SMBiosStructTable {
     data: Vec<u8>,
+    /// Version of the contained SMBIOS structures.
+    pub version: Option<SMBiosVersion>,
 }
 
-impl SMBiosTableData {
-    /// Creates a wrapper around raw SMBIOS data
-    pub fn new(data: Vec<u8>) -> Self {
-        Self { data }
+impl SMBiosStructTable {
+    /// Creates an SMBIOS table parser which can be iterated
+    ///
+    /// `data` is a block of bytes representing the raw table data.
+    /// `version` is optional and represents the DMTF SMBIOS Standard version of the bytes in `data`.
+    pub fn from_vec_and_version(data: Vec<u8>, version: Option<SMBiosVersion>) -> Self {
+        Self { data, version }
     }
 
-    /// Loads raw SMBios table data and return [SMBiosTableData] or [std::io::Error]
-    pub fn from_file(filename: &str) -> Result<Self, Error> {
-        // TODO: implement a fn that checks whether the structure is valid table data.
-        // If it's not return that error here.
+    /// Loads raw SMBios table data from a file
+    pub fn try_load_from_file(
+        filename: &str,
+        version: Option<SMBiosVersion>,
+    ) -> Result<SMBiosStructTable, Error> {
         let data = read(filename)?;
-        let result = Self { data };
+        let result = Self { data, version };
         Ok(result)
     }
 }
 
-impl<'a> IntoIterator for &'a SMBiosTableData {
+impl<'a> IntoIterator for &'a SMBiosStructTable {
     type Item = SMBiosStructParts<'a>;
 
     type IntoIter = RawStructIterator<'a>;
@@ -36,16 +42,16 @@ impl<'a> IntoIterator for &'a SMBiosTableData {
     }
 }
 
-impl<'a> fmt::Debug for SMBiosTableData {
+impl<'a> fmt::Debug for SMBiosStructTable {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // TODO: format as an array, make a function on SMBiosStructParts to return an enum of variants of the struct types
         self.into_iter().map(|x| writeln!(f, "{:?}", x)).collect()
     }
 }
 
-/// # Iterator of [SMBiosTableData]
+/// # Iterator of [SMBiosStructTable]
 ///
-/// Allows iteration of [SMBiosTableData] and returns [SMBiosStructParts].
+/// Allows iteration of [SMBiosStructTable] and returns [SMBiosStructParts].
 pub struct RawStructIterator<'a> {
     data: &'a [u8],
     current_index: usize,
@@ -120,5 +126,42 @@ impl<'a> Iterator for RawStructIterator<'a> {
             Some(val) => Some(SMBiosStructParts::new(val)),
             None => None,
         }
+    }
+}
+
+/// # Version of SMBIOS Structure
+#[derive(Debug, Eq, PartialEq)]
+pub struct SMBiosVersion {
+    /// SMBIOS major version
+    pub major: u8,
+    /// SMBIOS minor version
+    pub minor: u8,
+    /// SMBIOS version revision
+    pub revision: u8,
+}
+
+impl Ord for SMBiosVersion {
+    fn cmp(&self, other: &Self) -> Ordering {
+        if self.major < other.major {
+            Ordering::Less
+        } else if self.major > other.major {
+            Ordering::Greater
+        } else if self.minor < other.minor {
+            Ordering::Less
+        } else if self.minor > other.minor {
+            Ordering::Greater
+        } else if self.revision < other.revision {
+            Ordering::Less
+        } else if self.revision > other.revision {
+            Ordering::Greater
+        } else {
+            Ordering::Equal
+        }
+    }
+}
+
+impl PartialOrd for SMBiosVersion {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
     }
 }

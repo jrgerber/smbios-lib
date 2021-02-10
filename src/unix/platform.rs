@@ -1,7 +1,9 @@
+use crate::*;
+use std::{io::Error, io::ErrorKind};
 
 // Example of Linux structure:
 /*
-    /sys/firmware/dmi/tables$ sudo hexdump -C smbios_entry_point 
+    /sys/firmware/dmi/tables$ sudo hexdump -C smbios_entry_point
     00000000  5f 53 4d 33 5f 7e 18 03  03 00 01 00 83 04 00 00  |_SM3_~..........|
     00000010  00 20 b0 7b 00 00 00 00                           |. .{....|
     00000018
@@ -28,12 +30,41 @@
 */
 
 // Note: /sys/class/dmi/id contains some of the BIOS values, already parsed by the kernel.
-// These are useful for cross checking against the results this library produces when reading 
+// These are useful for cross checking against the results this library produces when reading
 // /sys/firmware/dmi/tables/DMI
 
-/// Temporary placeholder for Unix functions
-pub fn hello_world() {    
-    println!("Hello world!");
+/// Loads SMBIOS table data ([SMBiosStructTable]) from the device
+pub fn table_load_from_device() -> Result<SMBiosStructTable, Error> {
+    const SYS_ENTRY_FILE: &'static str = "/sys/firmware/dmi/tables/smbios_entry_point";
+    const SYS_TABLE_FILE: &'static str = "/sys/firmware/dmi/tables/DMI";
+
+    let version: SMBiosVersion;
+    match SMBiosEntryPoint64::try_load_from_file(SYS_ENTRY_FILE) {
+        Ok(entry_point) => {
+            version = SMBiosVersion {
+                major: entry_point.major_version(),
+                minor: entry_point.minor_version(),
+                revision: entry_point.docrev(),
+            }
+        }
+        Err(err) => match err.kind() {
+            ErrorKind::InvalidData => {
+                match SMBiosEntryPoint32::try_load_from_file(SYS_ENTRY_FILE) {
+                    Ok(entry_point) => {
+                        version = SMBiosVersion {
+                            major: entry_point.major_version(),
+                            minor: entry_point.minor_version(),
+                            revision: 0,
+                        }
+                    }
+                    Err(err) => return Err(err),
+                }
+            }
+            _ => return Err(err),
+        },
+    }
+
+    SMBiosStructTable::try_load_from_file(SYS_TABLE_FILE, Some(version))
 }
 
 #[cfg(test)]
@@ -41,7 +72,16 @@ mod tests {
     use super::*;
 
     #[test]
-    fn unit_test() {
-        hello_world();
+    fn device_load_unit_test() {
+        match table_load_from_device() {
+            Ok(table) => {
+                println!("table_data: {:?}", table);
+
+                for smbios_structure in table.into_iter() {
+                    println!("{:#?}", smbios_structure.defined_struct());
+                }
+            }
+            Err(err) => panic!("failure: {:?}", err),
+        }
     }
 }
