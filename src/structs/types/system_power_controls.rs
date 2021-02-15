@@ -14,17 +14,17 @@ use crate::*;
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
 pub struct SMBiosSystemPowerControls<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosSystemPowerControls<'a> {
     const STRUCT_TYPE: u8 = 25u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -72,8 +72,8 @@ impl<'a> SMBiosSystemPowerControls<'a> {
 }
 
 impl fmt::Debug for SMBiosSystemPowerControls<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosSystemPowerControls>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosSystemPowerControls<'_>>())
             .field("header", &self.parts.header)
             .field(
                 "next_scheduled_power_on_month",
@@ -109,7 +109,7 @@ mod tests {
             0x19, 0x09, 0x27, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type25.as_slice());
+        let parts = UndefinedStruct::new(&struct_type25);
         let test_struct = SMBiosSystemPowerControls::new(&parts);
 
         assert_eq!(test_struct.next_scheduled_power_on_month(), Some(0));

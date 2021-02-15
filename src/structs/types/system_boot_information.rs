@@ -11,17 +11,17 @@ use crate::*;
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
 pub struct SMBiosSystemBootInformation<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosSystemBootInformation<'a> {
     const STRUCT_TYPE: u8 = 32u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -34,7 +34,7 @@ impl<'a> SMBiosSystemBootInformation<'a> {
     const BOOT_STATUS_MAX_SIZE: usize = 0x0A;
 
     /// Status and Additional Data fields that identify the boot status
-    pub fn boot_status_data(&self) -> Option<SystemBootStatusData> {
+    pub fn boot_status_data(&self) -> Option<SystemBootStatusData<'_>> {
         // boot_status is from 1 to 10 bytes in length.  The entire structure must be at least 0xB in length
         // and boot_status starts at offset 0xA;
         // meaning, at least 1 byte of boot_status exists, but not more than 10 bytes total.
@@ -57,8 +57,8 @@ impl<'a> SMBiosSystemBootInformation<'a> {
 }
 
 impl fmt::Debug for SMBiosSystemBootInformation<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosSystemBootInformation>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosSystemBootInformation<'_>>())
             .field("header", &self.parts.header)
             .field("boot_status_data", &self.boot_status_data())
             .finish()
@@ -91,8 +91,8 @@ impl<'a> SystemBootStatusData<'a> {
 }
 
 impl fmt::Debug for SystemBootStatusData<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosSystemBootInformation>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosSystemBootInformation<'_>>())
             .field("system_boot_status", &self.system_boot_status())
             .finish()
     }
@@ -142,7 +142,7 @@ mod tests {
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type32.as_slice());
+        let parts = UndefinedStruct::new(&struct_type32);
         let test_struct = SMBiosSystemBootInformation::new(&parts);
 
         let boot_status_data = test_struct.boot_status_data().unwrap();
@@ -160,7 +160,7 @@ mod tests {
             0x20, 0x0C, 0x25, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type32.as_slice());
+        let parts = UndefinedStruct::new(&struct_type32);
         let test_struct = SMBiosSystemBootInformation::new(&parts);
 
         let boot_status_data = test_struct.boot_status_data().unwrap();
@@ -176,7 +176,7 @@ mod tests {
             0x20, 0x0F, 0x25, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type32.as_slice());
+        let parts = UndefinedStruct::new(&struct_type32);
         let test_struct = SMBiosSystemBootInformation::new(&parts);
 
         assert!(test_struct.boot_status_data().is_none());

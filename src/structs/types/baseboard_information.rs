@@ -6,17 +6,17 @@ use crate::*;
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
 pub struct SMBiosBaseboardInformation<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosBaseboardInformation<'a> {
     const STRUCT_TYPE: u8 = 2u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -83,8 +83,8 @@ impl<'a> SMBiosBaseboardInformation<'a> {
 }
 
 impl fmt::Debug for SMBiosBaseboardInformation<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosBaseboardInformation>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosBaseboardInformation<'_>>())
             .field("header", &self.parts.header)
             .field("manufacturer", &self.manufacturer())
             .field("product", &self.product())
@@ -121,7 +121,7 @@ pub struct BoardTypeData {
 }
 
 impl fmt::Debug for BoardTypeData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<BoardTypeData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -242,7 +242,7 @@ impl BaseboardFeatures {
 }
 
 impl fmt::Debug for BaseboardFeatures {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<BaseboardFeatures>())
             .field("raw", &self.raw)
             .field("hosting_board", &self.hosting_board())
@@ -326,7 +326,7 @@ impl<'a> Iterator for ObjectHandleIterator<'a> {
 }
 
 impl<'a> fmt::Debug for ObjectHandleIterator<'a> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_list().entries(self.into_iter()).finish()
     }
 }
@@ -356,7 +356,7 @@ mod tests {
             0x00,
         ];
 
-        let parts = SMBiosStructParts::new(baseboard_information_bytes.as_slice());
+        let parts = UndefinedStruct::new(&baseboard_information_bytes);
         let baseboard_information = SMBiosBaseboardInformation::new(&parts);
 
         // header tests

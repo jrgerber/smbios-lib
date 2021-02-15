@@ -8,17 +8,17 @@ use crate::*;
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
 pub struct SMBiosMemoryModuleInformation<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosMemoryModuleInformation<'a> {
     const STRUCT_TYPE: u8 = 6u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -73,8 +73,8 @@ impl<'a> SMBiosMemoryModuleInformation<'a> {
 }
 
 impl fmt::Debug for SMBiosMemoryModuleInformation<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosMemoryModuleInformation>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosMemoryModuleInformation<'_>>())
             .field("header", &self.parts.header)
             .field("socket_designation", &self.socket_designation())
             .field("bank_connections", &self.bank_connections())
@@ -108,7 +108,7 @@ mod tests {
             0x00,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type6.as_slice());
+        let parts = UndefinedStruct::new(&struct_type6);
         let test_struct = SMBiosMemoryModuleInformation::new(&parts);
 
         assert_eq!(test_struct.socket_designation(), Some("A1".to_string()));

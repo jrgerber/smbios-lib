@@ -7,17 +7,17 @@ use crate::*;
 ///
 /// NOTE This structure type was added in version 2.2 of this specification.
 pub struct SMBiosTemperatureProbe<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosTemperatureProbe<'a> {
     const STRUCT_TYPE: u8 = 28u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -115,8 +115,8 @@ impl<'a> SMBiosTemperatureProbe<'a> {
 }
 
 impl fmt::Debug for SMBiosTemperatureProbe<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosTemperatureProbe>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosTemperatureProbe<'_>>())
             .field("header", &self.parts.header)
             .field("description", &self.description())
             .field("location_and_status", &self.location_and_status())
@@ -157,7 +157,7 @@ impl TemperatureProbeLocationAndStatus {
 }
 
 impl fmt::Debug for TemperatureProbeLocationAndStatus {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<TemperatureProbeLocationAndStatus>())
             .field("raw", &self.raw)
             .field("location", &self.location())
@@ -327,7 +327,7 @@ mod tests {
             0x00,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type28.as_slice());
+        let parts = UndefinedStruct::new(&struct_type28);
         let test_struct = SMBiosTemperatureProbe::new(&parts);
 
         assert_eq!(test_struct.description(), Some("LM78A".to_string()));

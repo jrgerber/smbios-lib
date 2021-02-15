@@ -11,17 +11,17 @@ use crate::*;
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
 pub struct SMBiosCacheInformation<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosCacheInformation<'a> {
     const STRUCT_TYPE: u8 = 7u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -102,8 +102,8 @@ impl<'a> SMBiosCacheInformation<'a> {
 }
 
 impl fmt::Debug for SMBiosCacheInformation<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosCacheInformation>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosCacheInformation<'_>>())
             .field("header", &self.parts.header)
             .field("socket_designation", &self.socket_designation())
             .field("cache_configuration", &self.cache_configuration())
@@ -135,7 +135,7 @@ pub struct CacheAssociativityData {
 }
 
 impl fmt::Debug for CacheAssociativityData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<CacheAssociativityData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -225,7 +225,7 @@ pub struct SystemCacheTypeData {
 }
 
 impl fmt::Debug for SystemCacheTypeData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SystemCacheTypeData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -288,7 +288,7 @@ pub struct ErrorCorrectionTypeData {
 }
 
 impl fmt::Debug for ErrorCorrectionTypeData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<ErrorCorrectionTypeData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -399,7 +399,7 @@ impl SramTypes {
 }
 
 impl fmt::Debug for SramTypes {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SramTypes>())
             .field("raw", &self.raw)
             .field("other", &self.other())
@@ -494,7 +494,7 @@ impl CacheConfiguaration {
 }
 
 impl fmt::Debug for CacheConfiguaration {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<CacheConfiguaration>())
             .field("raw", &self.raw)
             .field("cache_level", &self.cache_level())
@@ -543,7 +543,7 @@ mod tests {
             0x31, 0x20, 0x2D, 0x20, 0x43, 0x61, 0x63, 0x68, 0x65, 0x00, 0x00,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type7.as_slice());
+        let parts = UndefinedStruct::new(&struct_type7);
         let test_struct = SMBiosCacheInformation::new(&parts);
 
         let cache_configuration = test_struct.cache_configuration().unwrap();

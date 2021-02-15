@@ -14,17 +14,17 @@ use crate::*;
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
 pub struct SMBiosOnBoardDeviceInformation<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosOnBoardDeviceInformation<'a> {
     const STRUCT_TYPE: u8 = 10u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -44,8 +44,8 @@ impl<'a> SMBiosOnBoardDeviceInformation<'a> {
 }
 
 impl fmt::Debug for SMBiosOnBoardDeviceInformation<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosOnBoardDeviceInformation>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosOnBoardDeviceInformation<'_>>())
             .field("header", &self.parts.header)
             .field("number_of_devices", &self.number_of_devices())
             .field("onboard_device_iterator", &self.onboard_device_iterator())
@@ -95,8 +95,8 @@ impl<'a> OnBoardDevice<'a> {
 }
 
 impl fmt::Debug for OnBoardDevice<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<OnBoardDevice>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<OnBoardDevice<'_>>())
             .field("device_type", &self.device_type())
             .field("description", &self.description())
             .finish()
@@ -145,8 +145,8 @@ impl From<u8> for OnBoardDeviceType {
 }
 
 impl fmt::Debug for OnBoardDeviceType {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<OnBoardDevice>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<OnBoardDevice<'_>>())
             .field("raw", &self.raw)
             .field("type_of_device", &self.type_of_device())
             .field("status", &self.status())
@@ -260,7 +260,7 @@ impl<'a> Iterator for OnBoardDeviceIterator<'a> {
 }
 
 impl<'a> fmt::Debug for OnBoardDeviceIterator<'a> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_list().entries(self.into_iter()).finish()
     }
 }
@@ -277,7 +277,7 @@ mod tests {
             0x2E, 0x4D, 0x2E, 0x00, 0x00,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type10.as_slice());
+        let parts = UndefinedStruct::new(&struct_type10);
         let test_struct = SMBiosOnBoardDeviceInformation::new(&parts);
 
         println!("{:?}", test_struct);

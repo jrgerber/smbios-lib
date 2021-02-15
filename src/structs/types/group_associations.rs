@@ -10,17 +10,17 @@ use crate::*;
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
 pub struct SMBiosGroupAssociations<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosGroupAssociations<'a> {
     const STRUCT_TYPE: u8 = 14u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -55,8 +55,8 @@ impl<'a> SMBiosGroupAssociations<'a> {
 }
 
 impl fmt::Debug for SMBiosGroupAssociations<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosGroupAssociations>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosGroupAssociations<'_>>())
             .field("header", &self.parts.header)
             .field("group_name", &self.group_name())
             .field("number_of_items", &self.number_of_items())
@@ -102,8 +102,8 @@ impl<'a> GroupAssociationItem<'a> {
 }
 
 impl fmt::Debug for GroupAssociationItem<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<GroupAssociationItem>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<GroupAssociationItem<'_>>())
             .field("struct_type", &self.struct_type())
             .field("item_handle", &self.item_handle())
             .finish()
@@ -180,7 +180,7 @@ impl<'a> Iterator for GroupAssociationItemIterator<'a> {
 }
 
 impl<'a> fmt::Debug for GroupAssociationItemIterator<'a> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_list().entries(self.into_iter()).finish()
     }
 }
@@ -197,7 +197,7 @@ mod tests {
             0x6F, 0x00, 0x00,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type14.as_slice());
+        let parts = UndefinedStruct::new(&struct_type14);
         let test_struct = SMBiosGroupAssociations::new(&parts);
 
         println!("{:?}", test_struct);

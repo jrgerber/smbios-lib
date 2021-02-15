@@ -8,17 +8,17 @@ use crate::*;
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
 pub struct SMBiosHardwareSecurity<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosHardwareSecurity<'a> {
     const STRUCT_TYPE: u8 = 24u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -33,8 +33,8 @@ impl<'a> SMBiosHardwareSecurity<'a> {
 }
 
 impl fmt::Debug for SMBiosHardwareSecurity<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosHardwareSecurity>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosHardwareSecurity<'_>>())
             .field("header", &self.parts.header)
             .field(
                 "hardware_security_settings",
@@ -60,7 +60,7 @@ pub struct HardwareSecuritySettings {
 }
 
 impl fmt::Debug for HardwareSecuritySettings {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<HardwareSecuritySettings>())
             .field("raw", &self.raw)
             .field("power_on_password_status", &self.power_on_password_status)
@@ -130,7 +130,7 @@ mod tests {
     fn unit_test() {
         let struct_type24 = vec![0x18, 0x05, 0x24, 0x00, 0x16, 0x00, 0x00];
 
-        let parts = SMBiosStructParts::new(struct_type24.as_slice());
+        let parts = UndefinedStruct::new(&struct_type24);
         let test_struct = SMBiosHardwareSecurity::new(&parts);
 
         assert_eq!(

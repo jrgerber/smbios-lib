@@ -32,17 +32,17 @@ use crate::*;
 /// bisapi037.pdf, section 3.1.3
 /// typedef struct _BIS_ENTRY_POINT
 pub struct SMBiosBisEntryPoint<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosBisEntryPoint<'a> {
     const STRUCT_TYPE: u8 = 31u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -94,8 +94,8 @@ impl<'a> SMBiosBisEntryPoint<'a> {
 }
 
 impl fmt::Debug for SMBiosBisEntryPoint<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosBisEntryPoint>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosBisEntryPoint<'_>>())
             .field("header", &self.parts.header)
             .field("checksum", &self.checksum())
             .field("bis_entry_16", &self.bis_entry_16())

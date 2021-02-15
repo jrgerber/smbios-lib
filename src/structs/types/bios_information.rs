@@ -2,17 +2,17 @@ use crate::*;
 
 /// #  BIOS Information (Type 0)
 pub struct SMBiosInformation<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosInformation<'a> {
     const STRUCT_TYPE: u8 = 0u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -225,8 +225,8 @@ impl From<u16> for ExtendedRomSize {
 }
 
 impl fmt::Debug for SMBiosInformation<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosInformation>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosInformation<'_>>())
             .field("header", &self.parts.header)
             .field("vendor", &self.vendor())
             .field("version", &self.version())
@@ -445,7 +445,7 @@ impl BiosCharacteristics {
 }
 
 impl fmt::Debug for BiosCharacteristics {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<BiosCharacteristics>())
             .field("raw", &self.raw)
             .field("unknown", &self.unknown())
@@ -579,7 +579,7 @@ impl BiosCharacteristicsExtension0 {
 }
 
 impl fmt::Debug for BiosCharacteristicsExtension0 {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<BiosCharacteristicsExtension0>())
             .field("raw", &self.raw)
             .field("acpi_is_supported", &self.acpi_is_supported())
@@ -658,7 +658,7 @@ impl BiosCharacteristicsExtension1 {
 }
 
 impl fmt::Debug for BiosCharacteristicsExtension1 {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<BiosCharacteristicsExtension1>())
             .field("raw", &self.raw)
             .field(
@@ -723,7 +723,7 @@ mod tests {
             0x2F, 0x30, 0x36, 0x2F, 0x32, 0x30, 0x31, 0x39, 0x00, 0x00,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type0.as_slice());
+        let parts = UndefinedStruct::new(&struct_type0);
         let test_struct = SMBiosInformation::new(&parts);
 
         assert_eq!(test_struct.vendor(), Some("LENOVO".to_string()));
@@ -765,7 +765,7 @@ mod tests {
             0x30, 0x38, 0x2F, 0x30, 0x36, 0x2F, 0x32, 0x30, 0x31, 0x39, 0x00, 0x00,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type0.as_slice());
+        let parts = UndefinedStruct::new(&struct_type0);
         let test_struct = SMBiosInformation::new(&parts);
 
         let extended_rom_size = test_struct.extended_rom_size().unwrap();

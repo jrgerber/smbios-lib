@@ -8,17 +8,17 @@ use crate::*;
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
 pub struct SMBiosMemoryErrorInformation64<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosMemoryErrorInformation64<'a> {
     const STRUCT_TYPE: u8 = 33u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -85,8 +85,8 @@ impl<'a> SMBiosMemoryErrorInformation64<'a> {
 }
 
 impl fmt::Debug for SMBiosMemoryErrorInformation64<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosMemoryErrorInformation64>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosMemoryErrorInformation64<'_>>())
             .field("header", &self.parts.header)
             .field("error_type", &self.error_type())
             .field("error_granularity", &self.error_granularity())
@@ -114,7 +114,7 @@ mod tests {
             0x00, 0x00, 0x80, 0x00, 0x00,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type33.as_slice());
+        let parts = UndefinedStruct::new(&struct_type33);
         let test_struct = SMBiosMemoryErrorInformation64::new(&parts);
 
         assert_eq!(*test_struct.error_type().unwrap(), MemoryErrorType::OK);

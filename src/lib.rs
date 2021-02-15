@@ -6,6 +6,7 @@
 //! BIOS data.
 
 #![warn(missing_docs)]
+#![deny(rust_2018_idioms)]
 
 mod core;
 mod read;

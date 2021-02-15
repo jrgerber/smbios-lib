@@ -8,17 +8,17 @@ use crate::*;
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
 pub struct SMBiosElectricalCurrentProbe<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosElectricalCurrentProbe<'a> {
     const STRUCT_TYPE: u8 = 29u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -73,8 +73,8 @@ impl<'a> SMBiosElectricalCurrentProbe<'a> {
 }
 
 impl fmt::Debug for SMBiosElectricalCurrentProbe<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosElectricalCurrentProbe>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosElectricalCurrentProbe<'_>>())
             .field("header", &self.parts.header)
             .field("description", &self.description())
             .field("location_and_status", &self.location_and_status())
@@ -106,7 +106,7 @@ pub struct CurrentProbeLocationAndStatus {
 }
 
 impl fmt::Debug for CurrentProbeLocationAndStatus {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<CurrentProbeLocationAndStatus>())
             .field("raw", &self.raw)
             .field("status", &self.status)
@@ -205,7 +205,7 @@ mod tests {
             0x00, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x41, 0x42, 0x43, 0x00, 0x00,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type29.as_slice());
+        let parts = UndefinedStruct::new(&struct_type29);
         let test_struct = SMBiosElectricalCurrentProbe::new(&parts);
 
         assert_eq!(test_struct.description(), Some("ABC".to_string()));

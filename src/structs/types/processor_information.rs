@@ -18,17 +18,17 @@ use crate::*;
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
 pub struct SMBiosProcessorInformation<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosProcessorInformation<'a> {
     const STRUCT_TYPE: u8 = 4u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -285,8 +285,8 @@ impl<'a> SMBiosProcessorInformation<'a> {
 }
 
 impl fmt::Debug for SMBiosProcessorInformation<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosProcessorInformation>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosProcessorInformation<'_>>())
             .field("header", &self.parts.header)
             .field("socket_designation", &self.socket_designation())
             .field("processor_type", &self.processor_type())
@@ -335,7 +335,7 @@ pub struct ProcessorTypeData {
 }
 
 impl fmt::Debug for ProcessorTypeData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<ProcessorTypeData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -401,7 +401,7 @@ pub struct ProcessorFamilyData {
 }
 
 impl fmt::Debug for ProcessorFamilyData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<ProcessorFamilyData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -440,7 +440,7 @@ pub struct ProcessorFamilyData2 {
 }
 
 impl fmt::Debug for ProcessorFamilyData2 {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<ProcessorFamilyData2>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -1138,7 +1138,7 @@ pub struct ProcessorUpgradeData {
 }
 
 impl fmt::Debug for ProcessorUpgradeData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<ProcessorUpgradeData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -1427,7 +1427,7 @@ impl ProcessorCharacteristics {
 }
 
 impl fmt::Debug for ProcessorCharacteristics {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<ProcessorCharacteristics>())
             .field("raw", &self.raw)
             .field("unknown", &self.unknown())
@@ -1524,7 +1524,7 @@ impl ProcessorSupportedVoltages {
 }
 
 impl fmt::Debug for ProcessorSupportedVoltages {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<ProcessorSupportedVoltages>())
             .field("raw", &self.raw)
             .field("voltages", &self.voltages().as_slice())
@@ -1602,7 +1602,7 @@ impl ProcessorStatus {
 }
 
 impl fmt::Debug for ProcessorStatus {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<ProcessorStatus>())
             .field("raw", &self.raw)
             .field("socket_populated", &self.socket_populated())
@@ -1791,7 +1791,7 @@ mod tests {
             0x55, 0x4E, 0x4B, 0x4E, 0x4F, 0x57, 0x4E, 0x00, 0x00,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type4.as_slice());
+        let parts = UndefinedStruct::new(&struct_type4);
         let test_struct = SMBiosProcessorInformation::new(&parts);
 
         assert_eq!(test_struct.socket_designation(), Some("CPU0".to_string()));

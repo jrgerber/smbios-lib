@@ -10,10 +10,10 @@ pub trait SMBiosStruct<'a> {
     const STRUCT_TYPE: u8;
 
     /// Creates a new instance of the implementing SMBIOS type
-    fn new(parts: &'a SMBiosStructParts<'a>) -> Self;
+    fn new(parts: &'a UndefinedStruct) -> Self;
 
     /// Contains the standard parts/sections of the implementing SMBIOS type.
-    fn parts(&self) -> &'a SMBiosStructParts<'a>;
+    fn parts(&self) -> &'a UndefinedStruct;
 }
 
 /// # Structure Handle
@@ -38,7 +38,7 @@ impl Deref for Handle {
 }
 
 impl fmt::Debug for Handle {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<Handle>())
             .field("handle", &self.0)
             .finish()
@@ -61,7 +61,7 @@ impl Deref for SMBiosType {
 }
 
 impl fmt::Debug for SMBiosType {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosType>())
             .field("type", &self.0)
             .finish()

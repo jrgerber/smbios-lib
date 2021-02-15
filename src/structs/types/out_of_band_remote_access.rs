@@ -12,17 +12,17 @@ use crate::*;
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
 pub struct SMBiosOutOfBandRemoteAccess<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosOutOfBandRemoteAccess<'a> {
     const STRUCT_TYPE: u8 = 30u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -85,7 +85,7 @@ impl Connections {
 }
 
 impl fmt::Debug for Connections {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<Connections>())
             .field("raw", &self.raw)
             .field(
@@ -101,8 +101,8 @@ impl fmt::Debug for Connections {
 }
 
 impl fmt::Debug for SMBiosOutOfBandRemoteAccess<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosOutOfBandRemoteAccess>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosOutOfBandRemoteAccess<'_>>())
             .field("header", &self.parts.header)
             .field("manufacturer_name", &self.manufacturer_name())
             .field("connections", &self.connections())
@@ -120,7 +120,7 @@ mod tests {
             30, 0x06, 0x3B, 0x00, 0x01, 0x03, 0x69, 0x6A, 0x6B, 0x6C, 0x00, 0x00,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type41.as_slice());
+        let parts = UndefinedStruct::new(&struct_type41);
         let test_struct = SMBiosOutOfBandRemoteAccess::new(&parts);
 
         assert_eq!(test_struct.manufacturer_name(), Some("ijkl".to_string()));

@@ -4,17 +4,17 @@ use crate::*;
 
 /// # TPM Device (Type 43)
 pub struct SMBiosTpmDevice<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosTpmDevice<'a> {
     const STRUCT_TYPE: u8 = 43u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -28,7 +28,7 @@ impl<'a> SMBiosTpmDevice<'a> {
     /// For example:
     /// Vendor ID string of "ABC" = (41 42 43 00)
     /// Vendor ID string of "ABCD" = (41 42 43 44)
-    pub fn vendor_id(&self) -> Option<VendorId> {
+    pub fn vendor_id(&self) -> Option<VendorId<'_>> {
         self.parts
             .get_field_data(0x04, 0x08)
             .and_then(|array| Some(VendorId::try_from(array).expect("Vendor Id is 4 bytes")))
@@ -105,8 +105,8 @@ impl<'a> SMBiosTpmDevice<'a> {
 }
 
 impl fmt::Debug for SMBiosTpmDevice<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosTpmDevice>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosTpmDevice<'_>>())
             .field("header", &self.parts.header)
             .field("vendor_id", &self.vendor_id())
             .field("major_spec_version", &self.major_spec_version())
@@ -142,8 +142,8 @@ impl<'a> TryFrom<&'a [u8]> for VendorId<'a> {
 }
 
 impl<'a> fmt::Debug for VendorId<'a> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<VendorId>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<VendorId<'_>>())
             .field("array", &self.array)
             .field("string", &String::from_utf8_lossy(self.array))
             .finish()
@@ -203,7 +203,7 @@ impl TpmDeviceCharacteristics {
 }
 
 impl fmt::Debug for TpmDeviceCharacteristics {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<TpmDeviceCharacteristics>())
             .field("raw", &self.raw)
             .field("reserved_0", &self.reserved_0())
@@ -238,7 +238,7 @@ mod tests {
             0x49, 0x4E, 0x45, 0x4F, 0x4E, 0x00, 0x00,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type43.as_slice());
+        let parts = UndefinedStruct::new(&struct_type43);
         let test_struct = SMBiosTpmDevice::new(&parts);
 
         println!("{:?}", test_struct);

@@ -9,17 +9,17 @@ use crate::*;
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
 pub struct SMBiosManagementDeviceComponent<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosManagementDeviceComponent<'a> {
     const STRUCT_TYPE: u8 = 35u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -50,8 +50,8 @@ impl<'a> SMBiosManagementDeviceComponent<'a> {
 }
 
 impl fmt::Debug for SMBiosManagementDeviceComponent<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosManagementDeviceComponent>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosManagementDeviceComponent<'_>>())
             .field("header", &self.parts.header)
             .field("description", &self.description())
             .field("management_device_handle", &self.management_device_handle())
@@ -72,7 +72,7 @@ mod tests {
             0x61, 0x75, 0x6C, 0x74, 0x20, 0x73, 0x74, 0x72, 0x69, 0x6E, 0x67, 0x00, 0x00,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type35.as_slice());
+        let parts = UndefinedStruct::new(&struct_type35);
         let test_struct = SMBiosManagementDeviceComponent::new(&parts);
 
         assert_eq!(

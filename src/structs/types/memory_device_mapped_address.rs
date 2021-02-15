@@ -8,17 +8,17 @@ use crate::*;
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
 pub struct SMBiosMemoryDeviceMappedAddress<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosMemoryDeviceMappedAddress<'a> {
     const STRUCT_TYPE: u8 = 20u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -131,8 +131,8 @@ impl<'a> SMBiosMemoryDeviceMappedAddress<'a> {
 }
 
 impl fmt::Debug for SMBiosMemoryDeviceMappedAddress<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosMemoryDeviceMappedAddress>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosMemoryDeviceMappedAddress<'_>>())
             .field("header", &self.parts.header)
             .field("starting_address", &self.starting_address())
             .field("ending_address", &self.ending_address())
@@ -165,7 +165,7 @@ mod tests {
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type20.as_slice());
+        let parts = UndefinedStruct::new(&struct_type20);
         let test_struct = SMBiosMemoryDeviceMappedAddress::new(&parts);
 
         assert_eq!(test_struct.starting_address(), Some(0));

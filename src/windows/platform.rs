@@ -3,14 +3,12 @@ use std::{
     io::{Error, ErrorKind},
 };
 
-use crate::SMBiosStructTable;
+use crate::SMBiosData;
 
 use super::WinSMBiosData;
 
 mod ffi {
     // https://doc.rust-lang.org/nomicon/ffi.html
-    extern crate libc;
-
     #[link(name = "kernel32")]
     extern "system" {
         pub fn GetSystemFirmwareTable(
@@ -64,7 +62,7 @@ pub fn load_windows_smbios_data() -> Result<WinSMBiosData, Error> {
     }
 }
 
-/// Loads SMBIOS table data ([SMBiosStructTable]) from the device
-pub fn table_load_from_device() -> Result<SMBiosStructTable, Error> {
-    Ok(load_windows_smbios_data()?.smbios_table_data)
+/// Loads SMBIOS table data ([SMBiosData]) from the device
+pub fn table_load_from_device() -> Result<SMBiosData, Error> {
+    Ok(load_windows_smbios_data()?.smbios_data)
 }

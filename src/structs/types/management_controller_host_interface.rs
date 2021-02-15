@@ -17,17 +17,17 @@ use crate::*;
 /// SMBIOS 3.2, when Interface Type = OEM, the first four bytes following the Interface Type field is the
 /// IANA-assigned vendor ID.
 pub struct SMBiosManagementControllerHostInterface<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosManagementControllerHostInterface<'a> {
     const STRUCT_TYPE: u8 = 42u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -83,30 +83,32 @@ impl<'a> SMBiosManagementControllerHostInterface<'a> {
     }
 
     /// Protocol Records
-    pub fn protocol_record_iterator(&self) -> ProtocolRecordIterator {
+    pub fn protocol_record_iterator(&self) -> ProtocolRecordIterator<'_> {
         ProtocolRecordIterator::new(self)
     }
 }
 
 impl fmt::Debug for SMBiosManagementControllerHostInterface<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosManagementControllerHostInterface>())
-            .field("header", &self.parts.header)
-            .field("interface_type", &self.interface_type())
-            .field(
-                "interface_type_specific_data_length",
-                &self.interface_type_specific_data_length(),
-            )
-            .field(
-                "interface_type_specific_data",
-                &self.interface_type_specific_data(),
-            )
-            .field(
-                "number_of_protocol_records",
-                &self.number_of_protocol_records(),
-            )
-            .field("protocol_record_iterator", &self.protocol_record_iterator())
-            .finish()
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<
+            SMBiosManagementControllerHostInterface<'_>,
+        >())
+        .field("header", &self.parts.header)
+        .field("interface_type", &self.interface_type())
+        .field(
+            "interface_type_specific_data_length",
+            &self.interface_type_specific_data_length(),
+        )
+        .field(
+            "interface_type_specific_data",
+            &self.interface_type_specific_data(),
+        )
+        .field(
+            "number_of_protocol_records",
+            &self.number_of_protocol_records(),
+        )
+        .field("protocol_record_iterator", &self.protocol_record_iterator())
+        .finish()
     }
 }
 
@@ -160,7 +162,7 @@ pub struct HostInterfaceTypeData {
 }
 
 impl fmt::Debug for HostInterfaceTypeData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<HostInterfaceType>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -258,7 +260,7 @@ impl From<u8> for HostProtocolTypeData {
 }
 
 impl fmt::Debug for HostProtocolTypeData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<HostProtocolTypeData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -322,8 +324,8 @@ impl<'a> ProtocolRecord<'a> {
 }
 
 impl fmt::Debug for ProtocolRecord<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<ProtocolRecord>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<ProtocolRecord<'_>>())
             .field("protocol_type", &self.protocol_type())
             .field(
                 "protocol_type_specific_data_length",
@@ -429,7 +431,7 @@ impl<'a> Iterator for ProtocolRecordIterator<'a> {
 }
 
 impl<'a> fmt::Debug for ProtocolRecordIterator<'a> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_list().entries(self.into_iter()).finish()
     }
 }
@@ -445,7 +447,7 @@ mod tests {
             0x02, 0x01, 0xEE, 0x00, 0x00,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type42.as_slice());
+        let parts = UndefinedStruct::new(&struct_type42);
         let test_struct = SMBiosManagementControllerHostInterface::new(&parts);
 
         assert_eq!(
