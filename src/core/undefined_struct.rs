@@ -1,7 +1,4 @@
-use std::{
-    convert::{TryFrom, TryInto},
-    slice::Iter,
-};
+use std::{convert::TryInto, slice::Iter};
 
 use crate::*;
 

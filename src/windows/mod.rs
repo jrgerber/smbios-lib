@@ -9,11 +9,7 @@
 //! fn windows_dump() {
 //!     match load_windows_smbios_data() {
 //!         Ok(windows_data) => {
-//!             println!("windows_data: {:?}", windows_data);
-//!
-//!             for undefined_struct in windows_data.smbios_data.into_iter() {
-//!                 println!("{:#?}", undefined_struct.defined_struct());
-//!             }
+//!             println!("windows_data: {:#?}", windows_data);
 //!         }
 //!         Err(err) => panic!("failure: {:?}", err),
 //!     }

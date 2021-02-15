@@ -6,7 +6,6 @@ use std::{cmp::Ordering, slice::Iter};
 /// # SMBIOS Data
 ///
 /// Contains an optional SMBIOS version and a collection of SMBIOS structures.
-#[derive(Debug)]
 pub struct SMBiosData {
     table: UndefinedStructTable,
     /// Version of the contained SMBIOS structures.
@@ -58,6 +57,18 @@ impl IntoIterator for SMBiosData {
 
     fn into_iter(self) -> Self::IntoIter {
         self.table.into_iter()
+    }
+}
+
+impl fmt::Debug for SMBiosData {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // Convert to defined structures to see the structure fields
+        let defined_table: DefinedStructTable<'_> = self.table.iter().collect();
+
+        fmt.debug_struct(std::any::type_name::<SMBiosData>())
+            .field("version", &self.version)
+            .field("table", &defined_table)
+            .finish()
     }
 }
 

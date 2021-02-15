@@ -282,8 +282,11 @@ impl<'a> From<&'a UndefinedStruct> for DefinedStruct<'a> {
     }
 }
 
+/// # Defined Struct Table
+///
+/// Contains a list of [DefinedStruct] items.
 #[derive(Debug)]
-struct DefinedStructTable<'a>(Vec<DefinedStruct<'a>>);
+pub struct DefinedStructTable<'a>(Vec<DefinedStruct<'a>>);
 
 impl<'a> DefinedStructTable<'a> {
     fn new() -> DefinedStructTable<'a> {
