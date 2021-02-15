@@ -8,17 +8,17 @@ use crate::*;
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
 pub struct SMBiosManagementDevice<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosManagementDevice<'a> {
     const STRUCT_TYPE: u8 = 34u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -50,8 +50,8 @@ impl<'a> SMBiosManagementDevice<'a> {
 }
 
 impl fmt::Debug for SMBiosManagementDevice<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosManagementDevice>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosManagementDevice<'_>>())
             .field("header", &self.parts.header)
             .field("description", &self.description())
             .field("device_type", &self.device_type())
@@ -75,7 +75,7 @@ pub struct ManagementDeviceTypeData {
 }
 
 impl fmt::Debug for ManagementDeviceTypeData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<ManagementDeviceTypeData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -162,7 +162,7 @@ pub struct ManagementDeviceAddressTypeData {
 }
 
 impl fmt::Debug for ManagementDeviceAddressTypeData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<ManagementDeviceAddressTypeData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -222,7 +222,7 @@ mod tests {
             0x38, 0x2D, 0x31, 0x00, 0x00,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type34.as_slice());
+        let parts = UndefinedStruct::new(&struct_type34);
         let test_struct = SMBiosManagementDevice::new(&parts);
 
         assert_eq!(test_struct.description(), Some("LM78-1".to_string()));

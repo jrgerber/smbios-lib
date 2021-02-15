@@ -8,17 +8,17 @@ use crate::*;
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
 pub struct SMBiosMemoryErrorInformation32<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosMemoryErrorInformation32<'a> {
     const STRUCT_TYPE: u8 = 18u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -82,8 +82,8 @@ impl<'a> SMBiosMemoryErrorInformation32<'a> {
 }
 
 impl fmt::Debug for SMBiosMemoryErrorInformation32<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosMemoryErrorInformation32>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosMemoryErrorInformation32<'_>>())
             .field("header", &self.parts.header)
             .field("error_type", &self.error_type())
             .field("error_granularity", &self.error_granularity())
@@ -113,7 +113,7 @@ pub struct MemoryErrorTypeData {
 }
 
 impl fmt::Debug for MemoryErrorTypeData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<MemoryErrorTypeData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -203,7 +203,7 @@ pub struct MemoryErrorGranularityData {
 }
 
 impl fmt::Debug for MemoryErrorGranularityData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<MemoryErrorGranularityData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -263,7 +263,7 @@ pub struct MemoryErrorOperationData {
 }
 
 impl fmt::Debug for MemoryErrorOperationData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<MemoryErrorOperationData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -323,7 +323,7 @@ mod tests {
             0x80, 0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00, 0x80, 0x00, 0x00,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type18.as_slice());
+        let parts = UndefinedStruct::new(&struct_type18);
         let test_struct = SMBiosMemoryErrorInformation32::new(&parts);
 
         assert_eq!(*test_struct.error_type().unwrap(), MemoryErrorType::OK);

@@ -13,7 +13,7 @@ use crate::*;
 pub struct WinSMBiosData {
     windows_header: Vec<u8>,
     /// SMBios table data
-    pub smbios_table_data: SMBiosStructTable,
+    pub smbios_data: SMBiosData,
 }
 
 impl WinSMBiosData {
@@ -53,8 +53,8 @@ impl WinSMBiosData {
             let version = WinSMBiosData::version_from_raw_header(&windows_header);
             Ok(WinSMBiosData {
                 windows_header,
-                smbios_table_data: {
-                    SMBiosStructTable::from_vec_and_version(
+                smbios_data: {
+                    SMBiosData::from_vec_and_version(
                         Vec::from(&raw_smbios_data[WinSMBiosData::SMBIOS_TABLE_DATA_OFFSET..]),
                         Some(version),
                     )
@@ -66,7 +66,7 @@ impl WinSMBiosData {
     /// Verify if a block of data is a valid WinSMBiosData structure
     ///
     /// This only checks if the structure itself is valid and not whether the contained
-    /// [SMBiosStructTable] structure is valid or not.
+    /// [SMBiosData] structure is valid or not.
     pub fn is_valid_win_smbios_data(raw_data: &Vec<u8>) -> bool {
         let length = raw_data.len();
         if length <= WinSMBiosData::SMBIOS_TABLE_DATA_OFFSET {
@@ -140,13 +140,14 @@ impl WinSMBiosData {
 }
 
 impl fmt::Debug for WinSMBiosData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<WinSMBiosData>())
             .field("used20_calling_method", &self.used20_calling_method())
             .field("smbios_major_version", &self.smbios_major_version())
             .field("smbios_minor_version", &self.smbios_minor_version())
             .field("dmi_revision", &self.dmi_revision())
             .field("table_data_length", &self.table_data_length())
+            .field("smbios_data", &self.smbios_data)
             .finish()
     }
 }

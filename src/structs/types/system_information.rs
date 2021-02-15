@@ -14,17 +14,17 @@ use std::{
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
 pub struct SMBiosSystemInformation<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosSystemInformation<'a> {
     const STRUCT_TYPE: u8 = 1u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -51,7 +51,7 @@ impl<'a> SMBiosSystemInformation<'a> {
     }
 
     /// System UUID
-    pub fn uuid(&self) -> Option<SystemUuidData> {
+    pub fn uuid(&self) -> Option<SystemUuidData<'_>> {
         self.parts
             .get_field_data(0x08, 0x18)
             .and_then(|raw| Some(SystemUuidData::try_from(raw).expect("A GUID is 0x10 bytes")))
@@ -98,8 +98,8 @@ impl<'a> SMBiosSystemInformation<'a> {
 }
 
 impl fmt::Debug for SMBiosSystemInformation<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosSystemInformation>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosSystemInformation<'_>>())
             .field("header", &self.parts.header)
             .field("manufacturer", &self.manufacturer())
             .field("product_name", &self.product_name())
@@ -224,7 +224,7 @@ pub struct SystemWakeUpTypeData {
 }
 
 impl fmt::Debug for SystemWakeUpTypeData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SystemWakeUpTypeData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -301,7 +301,7 @@ mod tests {
             b'i', b'o', b'n', b' ', b'P', b'5', b'2', b'0', 0x00, 0x00,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type1.as_slice());
+        let parts = UndefinedStruct::new(&struct_type1);
         let test_struct = SMBiosSystemInformation::new(&parts);
 
         assert_eq!(test_struct.manufacturer(), Some("LENOVO".to_string()));

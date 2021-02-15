@@ -9,17 +9,17 @@ use crate::*;
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
 pub struct SMBiosOemStrings<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosOemStrings<'a> {
     const STRUCT_TYPE: u8 = 11u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -37,8 +37,8 @@ impl<'a> SMBiosOemStrings<'a> {
 }
 
 impl fmt::Debug for SMBiosOemStrings<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosOemStrings>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosOemStrings<'_>>())
             .field("header", &self.parts.header)
             .field("count", &self.count())
             .field("oem_strings", &self.oem_strings())
@@ -64,7 +64,7 @@ mod tests {
             0x00,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type6.as_slice());
+        let parts = UndefinedStruct::new(&struct_type6);
         let test_struct = SMBiosOemStrings::new(&parts);
 
         assert_eq!(test_struct.count(), Some(0x03));

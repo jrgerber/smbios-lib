@@ -5,17 +5,17 @@ use crate::*;
 /// The information in this structure defines the attributes of a system slot. One
 /// structure is provided for each slot in the system.
 pub struct SMBiosSystemSlot<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosSystemSlot<'a> {
     const STRUCT_TYPE: u8 = 9u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -151,8 +151,8 @@ impl<'a> SMBiosSystemSlot<'a> {
 }
 
 impl fmt::Debug for SMBiosSystemSlot<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosSystemSlot>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosSystemSlot<'_>>())
             .field("header", &self.parts.header)
             .field("slot_designation", &self.slot_designation())
             .field("system_slot_type", &self.system_slot_type())
@@ -285,7 +285,7 @@ impl From<u8> for SystemSlotTypeData {
 }
 
 impl fmt::Debug for SystemSlotTypeData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SystemSlotTypeData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -499,7 +499,7 @@ impl From<u8> for SlotWidthData {
 }
 
 impl fmt::Debug for SlotWidthData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SlotWidthData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -580,7 +580,7 @@ impl From<u8> for SlotCurrentUsageData {
 }
 
 impl fmt::Debug for SlotCurrentUsageData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SlotCurrentUsageData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -644,7 +644,7 @@ impl From<u8> for SlotLengthData {
 }
 
 impl fmt::Debug for SlotLengthData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SlotLengthData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -734,7 +734,7 @@ impl SystemSlotCharacteristics1 {
 }
 
 impl fmt::Debug for SystemSlotCharacteristics1 {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SystemSlotCharacteristics1>())
             .field("raw", &self.raw)
             .field("unknown", &self.unknown())
@@ -816,7 +816,7 @@ impl SystemSlotCharacteristics2 {
 }
 
 impl fmt::Debug for SystemSlotCharacteristics2 {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SystemSlotCharacteristics2>())
             .field("raw", &self.raw)
             .field(
@@ -895,8 +895,8 @@ impl<'a> SlotPeerGroup<'a> {
 }
 
 impl fmt::Debug for SlotPeerGroup<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SlotPeerGroup>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SlotPeerGroup<'_>>())
             .field("segment_group_number", &self.segment_group_number())
             .field("bus_number", &self.bus_number())
             .field("device_function_number", &self.device_function_number())
@@ -975,7 +975,7 @@ impl<'a> Iterator for SlotPeerGroupIterator<'a> {
 }
 
 impl<'a> fmt::Debug for SlotPeerGroupIterator<'a> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_list().entries(self.into_iter()).finish()
     }
 }
@@ -998,7 +998,7 @@ mod tests {
             0x00, 0x00, 0x08, 0x4A, 0x36, 0x42, 0x32, 0x00, 0x00,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type9.as_slice());
+        let parts = UndefinedStruct::new(&struct_type9);
         let test_struct = SMBiosSystemSlot::new(&parts);
 
         assert_eq!(test_struct.slot_designation(), Some("J6B2".to_string()));
@@ -1019,7 +1019,7 @@ mod tests {
             0x00, 0x00, 0x08, 0x99, 0x01, 0x23, 0x01, 0x04, 0x05, 0x06, 0x07, 0x08, 0xAB, 0x09,
             0x4A, 0x36, 0x42, 0x32, 0x00, 0x00,
         ];
-        let parts = SMBiosStructParts::new(struct_type9.as_slice());
+        let parts = UndefinedStruct::new(&struct_type9);
         let test_struct = SMBiosSystemSlot::new(&parts);
 
         // 3.2 fields

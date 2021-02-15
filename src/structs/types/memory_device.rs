@@ -8,17 +8,17 @@ use crate::*;
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
 pub struct SMBiosMemoryDevice<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosMemoryDevice<'a> {
     const STRUCT_TYPE: u8 = 17u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -302,8 +302,8 @@ impl<'a> SMBiosMemoryDevice<'a> {
 }
 
 impl fmt::Debug for SMBiosMemoryDevice<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosMemoryDevice>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosMemoryDevice<'_>>())
             .field("header", &self.parts.header)
             .field(
                 "physical_memory_array_handle",
@@ -376,7 +376,7 @@ pub struct MemoryFormFactorData {
 }
 
 impl fmt::Debug for MemoryFormFactorData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<MemoryFormFactorData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -557,7 +557,7 @@ impl MemoryTypeDetails {
 }
 
 impl fmt::Debug for MemoryTypeDetails {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<MemoryTypeDetails>())
             .field("raw", &self.raw)
             .field("other", &self.other())
@@ -593,7 +593,7 @@ pub struct MemoryDeviceTechnologyData {
 }
 
 impl fmt::Debug for MemoryDeviceTechnologyData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<MemoryDeviceTechnologyData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -697,7 +697,7 @@ impl MemoryOperatingModeCapabilities {
 }
 
 impl fmt::Debug for MemoryOperatingModeCapabilities {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<MemoryOperatingModeCapabilities>())
             .field("raw", &self.raw)
             .field("other", &self.other())
@@ -825,7 +825,7 @@ mod tests {
             0x41, 0x46, 0x52, 0x38, 0x4E, 0x2D, 0x56, 0x4B, 0x20, 0x20, 0x20, 0x20, 0x00, 0x00,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type17.as_slice());
+        let parts = UndefinedStruct::new(&struct_type17);
         let test_struct = SMBiosMemoryDevice::new(&parts);
         assert_eq!(test_struct.physical_memory_array_handle(), Some(62));
         assert_eq!(test_struct.memory_error_information_handle(), Some(65534));
@@ -898,7 +898,7 @@ mod tests {
             0x00, 0x38, 0x00, 0x00,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type17.as_slice());
+        let parts = UndefinedStruct::new(&struct_type17);
         let test_struct = SMBiosMemoryDevice::new(&parts);
 
         assert_eq!(

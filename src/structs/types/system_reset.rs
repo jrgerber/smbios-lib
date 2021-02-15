@@ -14,17 +14,17 @@ use crate::*;
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
 pub struct SMBiosSystemReset<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosSystemReset<'a> {
     const STRUCT_TYPE: u8 = 23u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -84,8 +84,8 @@ impl<'a> SMBiosSystemReset<'a> {
 }
 
 impl fmt::Debug for SMBiosSystemReset<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosSystemReset>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosSystemReset<'_>>())
             .field("header", &self.parts.header)
             .field("capabilities", &self.capabilities())
             .field("reset_count", &self.reset_count())
@@ -142,7 +142,7 @@ impl SystemResetCapabilities {
 }
 
 impl fmt::Debug for SystemResetCapabilities {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SystemResetCapabilities>())
             .field("raw", &self.raw)
             .field("has_watchdog_timer", &self.has_watchdog_timer())
@@ -298,7 +298,7 @@ mod tests {
             0x00,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type23.as_slice());
+        let parts = UndefinedStruct::new(&struct_type23);
         let test_struct = SMBiosSystemReset::new(&parts);
 
         assert_eq!(

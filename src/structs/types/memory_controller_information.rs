@@ -9,17 +9,17 @@ use crate::*;
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
 pub struct SMBiosMemoryControllerInformation<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosMemoryControllerInformation<'a> {
     const STRUCT_TYPE: u8 = 5u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -92,19 +92,19 @@ impl<'a> SMBiosMemoryControllerInformation<'a> {
     }
 
     /// Memory Module Configuration Handles
-    pub fn memory_module_handle_iterator(&self) -> ModuleHandleIterator {
+    pub fn memory_module_handle_iterator(&self) -> ModuleHandleIterator<'_> {
         ModuleHandleIterator::new(self)
     }
 
     /// Memory Moduel Error Correcting Capabilities
-    pub fn error_correcting_capabilities_iterator(&self) -> ErrorCapabilitiesIterator {
+    pub fn error_correcting_capabilities_iterator(&self) -> ErrorCapabilitiesIterator<'_> {
         ErrorCapabilitiesIterator::new(self)
     }
 }
 
 impl fmt::Debug for SMBiosMemoryControllerInformation<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosMemoryControllerInformation>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosMemoryControllerInformation<'_>>())
             .field("header", &self.parts.header)
             .field("error_detecting_method", &self.error_detecting_method())
             .field(
@@ -150,7 +150,7 @@ pub struct ErrorDetectingMethodData {
 }
 
 impl fmt::Debug for ErrorDetectingMethodData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<ErrorDetectingMethodData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -265,7 +265,7 @@ impl ErrorCorrectingCapabilities {
 }
 
 impl fmt::Debug for ErrorCorrectingCapabilities {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<ErrorCorrectingCapabilities>())
             .field("raw", &self.raw)
             .field("other", &self.other())
@@ -298,7 +298,7 @@ pub struct InterleaveSupportData {
 }
 
 impl fmt::Debug for InterleaveSupportData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<InterleaveSupportData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -402,7 +402,7 @@ impl MemorySpeeds {
 }
 
 impl fmt::Debug for MemorySpeeds {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<MemorySpeeds>())
             .field("raw", &self.raw)
             .field("other", &self.other())
@@ -493,7 +493,7 @@ impl MemoryTypes {
 }
 
 impl fmt::Debug for MemoryTypes {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<MemoryTypes>())
             .field("raw", &self.raw)
             .field("other", &self.other())
@@ -550,7 +550,7 @@ impl ModuleVoltage {
 }
 
 impl fmt::Debug for ModuleVoltage {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<ModuleVoltage>())
             .field("raw", &self.raw)
             .field("volts_5", &self.volts_5())
@@ -627,7 +627,7 @@ impl<'a> Iterator for ModuleHandleIterator<'a> {
 }
 
 impl<'a> fmt::Debug for ModuleHandleIterator<'a> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_list().entries(self.into_iter()).finish()
     }
 }
@@ -704,7 +704,7 @@ impl<'a> Iterator for ErrorCapabilitiesIterator<'a> {
 }
 
 impl<'a> fmt::Debug for ErrorCapabilitiesIterator<'a> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_list().entries(self.into_iter()).finish()
     }
 }
@@ -733,7 +733,7 @@ mod tests {
             0x00, 0x00,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type5.as_slice());
+        let parts = UndefinedStruct::new(&struct_type5);
         let test_struct = SMBiosMemoryControllerInformation::new(&parts);
 
         assert_eq!(

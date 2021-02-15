@@ -1,5 +1,9 @@
-use crate::*;
+//! [DefinedStruct] and [DefinedStructTable] perform downcast operations
+//! via into() and into_iter() trait functions for [UndefinedStruct].
+
 use std::iter::FromIterator;
+
+use crate::*;
 
 /// # SMBIOS Standard Defined Structure
 ///
@@ -106,176 +110,183 @@ pub enum DefinedStruct<'a> {
     /// - A structure with a type value not yet defined, such as by a DMTF specification
     /// that supercedes the types known by this library
     /// - An OEM type with a value > 127.
-    Unknown(SMBiosUnknown<'a>),
+    Undefined(SMBiosUnknown<'a>),
 }
 
-impl<'a> From<&'a SMBiosStructParts<'a>> for DefinedStruct<'a> {
-    fn from(parts: &'a SMBiosStructParts<'a>) -> Self {
-        match parts.header.struct_type() {
+impl<'a> From<&'a UndefinedStruct> for DefinedStruct<'a> {
+    fn from(undefined_struct: &'a UndefinedStruct) -> Self {
+        match undefined_struct.header.struct_type() {
             SMBiosInformation::STRUCT_TYPE => {
-                DefinedStruct::Information(SMBiosInformation::new(parts))
+                DefinedStruct::Information(SMBiosInformation::new(undefined_struct))
             }
             SMBiosSystemInformation::STRUCT_TYPE => {
-                DefinedStruct::SystemInformation(SMBiosSystemInformation::new(parts))
+                DefinedStruct::SystemInformation(SMBiosSystemInformation::new(undefined_struct))
             }
-            SMBiosBaseboardInformation::STRUCT_TYPE => {
-                DefinedStruct::BaseBoardInformation(SMBiosBaseboardInformation::new(parts))
-            }
-            SMBiosSystemChassisInformation::STRUCT_TYPE => {
-                DefinedStruct::SystemChassisInformation(SMBiosSystemChassisInformation::new(parts))
-            }
-            SMBiosProcessorInformation::STRUCT_TYPE => {
-                DefinedStruct::ProcessorInformation(SMBiosProcessorInformation::new(parts))
-            }
+            SMBiosBaseboardInformation::STRUCT_TYPE => DefinedStruct::BaseBoardInformation(
+                SMBiosBaseboardInformation::new(undefined_struct),
+            ),
+            SMBiosSystemChassisInformation::STRUCT_TYPE => DefinedStruct::SystemChassisInformation(
+                SMBiosSystemChassisInformation::new(undefined_struct),
+            ),
+            SMBiosProcessorInformation::STRUCT_TYPE => DefinedStruct::ProcessorInformation(
+                SMBiosProcessorInformation::new(undefined_struct),
+            ),
             SMBiosMemoryControllerInformation::STRUCT_TYPE => {
                 DefinedStruct::MemoryControllerInformation(SMBiosMemoryControllerInformation::new(
-                    parts,
+                    undefined_struct,
                 ))
             }
-            SMBiosMemoryModuleInformation::STRUCT_TYPE => {
-                DefinedStruct::MemoryModuleInformation(SMBiosMemoryModuleInformation::new(parts))
-            }
+            SMBiosMemoryModuleInformation::STRUCT_TYPE => DefinedStruct::MemoryModuleInformation(
+                SMBiosMemoryModuleInformation::new(undefined_struct),
+            ),
             SMBiosCacheInformation::STRUCT_TYPE => {
-                DefinedStruct::CacheInformation(SMBiosCacheInformation::new(parts))
+                DefinedStruct::CacheInformation(SMBiosCacheInformation::new(undefined_struct))
             }
-            SMBiosPortConnectorInformation::STRUCT_TYPE => {
-                DefinedStruct::PortConnectorInformation(SMBiosPortConnectorInformation::new(parts))
-            }
+            SMBiosPortConnectorInformation::STRUCT_TYPE => DefinedStruct::PortConnectorInformation(
+                SMBiosPortConnectorInformation::new(undefined_struct),
+            ),
             SMBiosSystemSlot::STRUCT_TYPE => {
-                DefinedStruct::SystemSlot(SMBiosSystemSlot::new(parts))
+                DefinedStruct::SystemSlot(SMBiosSystemSlot::new(undefined_struct))
             }
-            SMBiosOnBoardDeviceInformation::STRUCT_TYPE => {
-                DefinedStruct::OnBoardDeviceInformation(SMBiosOnBoardDeviceInformation::new(parts))
-            }
+            SMBiosOnBoardDeviceInformation::STRUCT_TYPE => DefinedStruct::OnBoardDeviceInformation(
+                SMBiosOnBoardDeviceInformation::new(undefined_struct),
+            ),
             SMBiosOemStrings::STRUCT_TYPE => {
-                DefinedStruct::OemStrings(SMBiosOemStrings::new(parts))
+                DefinedStruct::OemStrings(SMBiosOemStrings::new(undefined_struct))
             }
             SMBiosSystemConfigurationOptions::STRUCT_TYPE => {
                 DefinedStruct::SystemConfigurationOptions(SMBiosSystemConfigurationOptions::new(
-                    parts,
+                    undefined_struct,
                 ))
             }
-            SMBiosBiosLanguageInformation::STRUCT_TYPE => {
-                DefinedStruct::LanguageInformation(SMBiosBiosLanguageInformation::new(parts))
-            }
+            SMBiosBiosLanguageInformation::STRUCT_TYPE => DefinedStruct::LanguageInformation(
+                SMBiosBiosLanguageInformation::new(undefined_struct),
+            ),
             SMBiosGroupAssociations::STRUCT_TYPE => {
-                DefinedStruct::GroupAssociations(SMBiosGroupAssociations::new(parts))
+                DefinedStruct::GroupAssociations(SMBiosGroupAssociations::new(undefined_struct))
             }
             SMBiosSystemEventLog::STRUCT_TYPE => {
-                DefinedStruct::EventLog(SMBiosSystemEventLog::new(parts))
+                DefinedStruct::EventLog(SMBiosSystemEventLog::new(undefined_struct))
             }
             SMBiosPhysicalMemoryArray::STRUCT_TYPE => {
-                DefinedStruct::PhysicalMemoryArray(SMBiosPhysicalMemoryArray::new(parts))
+                DefinedStruct::PhysicalMemoryArray(SMBiosPhysicalMemoryArray::new(undefined_struct))
             }
             SMBiosMemoryDevice::STRUCT_TYPE => {
-                DefinedStruct::MemoryDevice(SMBiosMemoryDevice::new(parts))
+                DefinedStruct::MemoryDevice(SMBiosMemoryDevice::new(undefined_struct))
             }
             SMBiosMemoryErrorInformation32::STRUCT_TYPE => {
                 DefinedStruct::MemoryErrorInformation32Bit(SMBiosMemoryErrorInformation32::new(
-                    parts,
+                    undefined_struct,
                 ))
             }
-            SMBiosMemoryArrayMappedAddress::STRUCT_TYPE => {
-                DefinedStruct::MemoryArrayMappedAddress(SMBiosMemoryArrayMappedAddress::new(parts))
-            }
+            SMBiosMemoryArrayMappedAddress::STRUCT_TYPE => DefinedStruct::MemoryArrayMappedAddress(
+                SMBiosMemoryArrayMappedAddress::new(undefined_struct),
+            ),
             SMBiosMemoryDeviceMappedAddress::STRUCT_TYPE => {
                 DefinedStruct::MemoryDeviceMappedAddress(SMBiosMemoryDeviceMappedAddress::new(
-                    parts,
+                    undefined_struct,
                 ))
             }
-            SMBiosBuiltInPointingDevice::STRUCT_TYPE => {
-                DefinedStruct::BuiltInPointingDevice(SMBiosBuiltInPointingDevice::new(parts))
-            }
+            SMBiosBuiltInPointingDevice::STRUCT_TYPE => DefinedStruct::BuiltInPointingDevice(
+                SMBiosBuiltInPointingDevice::new(undefined_struct),
+            ),
             SMBiosPortableBattery::STRUCT_TYPE => {
-                DefinedStruct::PortableBattery(SMBiosPortableBattery::new(parts))
+                DefinedStruct::PortableBattery(SMBiosPortableBattery::new(undefined_struct))
             }
             SMBiosSystemReset::STRUCT_TYPE => {
-                DefinedStruct::SystemReset(SMBiosSystemReset::new(parts))
+                DefinedStruct::SystemReset(SMBiosSystemReset::new(undefined_struct))
             }
             SMBiosHardwareSecurity::STRUCT_TYPE => {
-                DefinedStruct::HardwareSecurity(SMBiosHardwareSecurity::new(parts))
+                DefinedStruct::HardwareSecurity(SMBiosHardwareSecurity::new(undefined_struct))
             }
             SMBiosSystemPowerControls::STRUCT_TYPE => {
-                DefinedStruct::SystemPowerControls(SMBiosSystemPowerControls::new(parts))
+                DefinedStruct::SystemPowerControls(SMBiosSystemPowerControls::new(undefined_struct))
             }
             SMBiosVoltageProbe::STRUCT_TYPE => {
-                DefinedStruct::VoltageProbe(SMBiosVoltageProbe::new(parts))
+                DefinedStruct::VoltageProbe(SMBiosVoltageProbe::new(undefined_struct))
             }
             SMBiosCoolingDevice::STRUCT_TYPE => {
-                DefinedStruct::CoolingDevice(SMBiosCoolingDevice::new(parts))
+                DefinedStruct::CoolingDevice(SMBiosCoolingDevice::new(undefined_struct))
             }
             SMBiosTemperatureProbe::STRUCT_TYPE => {
-                DefinedStruct::TemperatureProbe(SMBiosTemperatureProbe::new(parts))
+                DefinedStruct::TemperatureProbe(SMBiosTemperatureProbe::new(undefined_struct))
             }
-            SMBiosElectricalCurrentProbe::STRUCT_TYPE => {
-                DefinedStruct::ElectricalCurrentProbe(SMBiosElectricalCurrentProbe::new(parts))
-            }
-            SMBiosOutOfBandRemoteAccess::STRUCT_TYPE => {
-                DefinedStruct::OutOfBandRemoteAccess(SMBiosOutOfBandRemoteAccess::new(parts))
-            }
+            SMBiosElectricalCurrentProbe::STRUCT_TYPE => DefinedStruct::ElectricalCurrentProbe(
+                SMBiosElectricalCurrentProbe::new(undefined_struct),
+            ),
+            SMBiosOutOfBandRemoteAccess::STRUCT_TYPE => DefinedStruct::OutOfBandRemoteAccess(
+                SMBiosOutOfBandRemoteAccess::new(undefined_struct),
+            ),
             SMBiosBisEntryPoint::STRUCT_TYPE => {
-                DefinedStruct::BisEntryPoint(SMBiosBisEntryPoint::new(parts))
+                DefinedStruct::BisEntryPoint(SMBiosBisEntryPoint::new(undefined_struct))
             }
-            SMBiosSystemBootInformation::STRUCT_TYPE => {
-                DefinedStruct::SystemBootInformation(SMBiosSystemBootInformation::new(parts))
-            }
+            SMBiosSystemBootInformation::STRUCT_TYPE => DefinedStruct::SystemBootInformation(
+                SMBiosSystemBootInformation::new(undefined_struct),
+            ),
             SMBiosMemoryErrorInformation64::STRUCT_TYPE => {
                 DefinedStruct::MemoryErrorInformation64Bit(SMBiosMemoryErrorInformation64::new(
-                    parts,
+                    undefined_struct,
                 ))
             }
             SMBiosManagementDevice::STRUCT_TYPE => {
-                DefinedStruct::ManagementDevice(SMBiosManagementDevice::new(parts))
+                DefinedStruct::ManagementDevice(SMBiosManagementDevice::new(undefined_struct))
             }
             SMBiosManagementDeviceComponent::STRUCT_TYPE => {
                 DefinedStruct::ManagementDeviceComponent(SMBiosManagementDeviceComponent::new(
-                    parts,
+                    undefined_struct,
                 ))
             }
             SMBiosManagementDeviceThresholdData::STRUCT_TYPE => {
                 DefinedStruct::ManagementDeviceThresholdData(
-                    SMBiosManagementDeviceThresholdData::new(parts),
+                    SMBiosManagementDeviceThresholdData::new(undefined_struct),
                 )
             }
             SMBiosMemoryChannel::STRUCT_TYPE => {
-                DefinedStruct::MemoryChannel(SMBiosMemoryChannel::new(parts))
+                DefinedStruct::MemoryChannel(SMBiosMemoryChannel::new(undefined_struct))
             }
-            SMBiosIpmiDeviceInformation::STRUCT_TYPE => {
-                DefinedStruct::IpmiDeviceInformation(SMBiosIpmiDeviceInformation::new(parts))
-            }
+            SMBiosIpmiDeviceInformation::STRUCT_TYPE => DefinedStruct::IpmiDeviceInformation(
+                SMBiosIpmiDeviceInformation::new(undefined_struct),
+            ),
             SMBiosSystemPowerSupply::STRUCT_TYPE => {
-                DefinedStruct::SystemPowerSupply(SMBiosSystemPowerSupply::new(parts))
+                DefinedStruct::SystemPowerSupply(SMBiosSystemPowerSupply::new(undefined_struct))
             }
-            SMBiosAdditionalInformation::STRUCT_TYPE => {
-                DefinedStruct::AdditionalInformation(SMBiosAdditionalInformation::new(parts))
-            }
+            SMBiosAdditionalInformation::STRUCT_TYPE => DefinedStruct::AdditionalInformation(
+                SMBiosAdditionalInformation::new(undefined_struct),
+            ),
             SMBiosOnboardDevicesExtendedInformation::STRUCT_TYPE => {
                 DefinedStruct::OnboardDevicesExtendedInformation(
-                    SMBiosOnboardDevicesExtendedInformation::new(parts),
+                    SMBiosOnboardDevicesExtendedInformation::new(undefined_struct),
                 )
             }
             SMBiosManagementControllerHostInterface::STRUCT_TYPE => {
                 DefinedStruct::ManagementControllerHostInterface(
-                    SMBiosManagementControllerHostInterface::new(parts),
+                    SMBiosManagementControllerHostInterface::new(undefined_struct),
                 )
             }
-            SMBiosTpmDevice::STRUCT_TYPE => DefinedStruct::TpmDevice(SMBiosTpmDevice::new(parts)),
+            SMBiosTpmDevice::STRUCT_TYPE => {
+                DefinedStruct::TpmDevice(SMBiosTpmDevice::new(undefined_struct))
+            }
             SMBiosProcessorAdditionalInformation::STRUCT_TYPE => {
                 DefinedStruct::ProcessorAdditionalInformation(
-                    SMBiosProcessorAdditionalInformation::new(parts),
+                    SMBiosProcessorAdditionalInformation::new(undefined_struct),
                 )
             }
-            SMBiosInactive::STRUCT_TYPE => DefinedStruct::Inactive(SMBiosInactive::new(parts)),
-            SMBiosEndOfTable::STRUCT_TYPE => {
-                DefinedStruct::EndOfTable(SMBiosEndOfTable::new(parts))
+            SMBiosInactive::STRUCT_TYPE => {
+                DefinedStruct::Inactive(SMBiosInactive::new(undefined_struct))
             }
-            _ => DefinedStruct::Unknown(SMBiosUnknown::new(parts)),
+            SMBiosEndOfTable::STRUCT_TYPE => {
+                DefinedStruct::EndOfTable(SMBiosEndOfTable::new(undefined_struct))
+            }
+            _ => DefinedStruct::Undefined(SMBiosUnknown::new(undefined_struct)),
         }
     }
 }
 
+/// # Defined Struct Table
+///
+/// Contains a list of [DefinedStruct] items.
 #[derive(Debug)]
-struct DefinedStructTable<'a>(Vec<DefinedStruct<'a>>);
+pub struct DefinedStructTable<'a>(Vec<DefinedStruct<'a>>);
 
 impl<'a> DefinedStructTable<'a> {
     fn new() -> DefinedStructTable<'a> {
@@ -296,12 +307,12 @@ impl<'a> IntoIterator for DefinedStructTable<'a> {
     }
 }
 
-impl<'a> FromIterator<&'a SMBiosStructParts<'a>> for DefinedStructTable<'a> {
-    fn from_iter<I: IntoIterator<Item = &'a SMBiosStructParts<'a>>>(iter: I) -> Self {
+impl<'a> FromIterator<&'a UndefinedStruct> for DefinedStructTable<'a> {
+    fn from_iter<I: IntoIterator<Item = &'a UndefinedStruct>>(iter: I) -> Self {
         let mut defined_struct_table = DefinedStructTable::new();
 
-        for struct_parts in iter {
-            defined_struct_table.add(struct_parts.into());
+        for undefined_struct in iter {
+            defined_struct_table.add(undefined_struct.into());
         }
 
         defined_struct_table

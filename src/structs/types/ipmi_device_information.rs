@@ -9,17 +9,17 @@ use crate::*;
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
 pub struct SMBiosIpmiDeviceInformation<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosIpmiDeviceInformation<'a> {
     const STRUCT_TYPE: u8 = 38u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -74,8 +74,8 @@ impl<'a> SMBiosIpmiDeviceInformation<'a> {
 }
 
 impl fmt::Debug for SMBiosIpmiDeviceInformation<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosIpmiDeviceInformation>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosIpmiDeviceInformation<'_>>())
             .field("header", &self.parts.header)
             .field("interface_type", &self.interface_type())
             .field(
@@ -112,7 +112,7 @@ pub struct BaseAddressModifier {
 }
 
 impl fmt::Debug for BaseAddressModifier {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<BaseAddressModifier>())
             .field("raw", &self.raw)
             .field("register_spacing", &self.register_spacing)
@@ -241,7 +241,7 @@ pub struct IpmiInterfaceTypeData {
 }
 
 impl fmt::Debug for IpmiInterfaceTypeData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<IpmiInterfaceType>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -284,7 +284,7 @@ mod tests {
             0x02, 0x01, 0b10010010, 0x00,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type38.as_slice());
+        let parts = UndefinedStruct::new(&struct_type38);
         let test_struct = SMBiosIpmiDeviceInformation::new(&parts);
 
         assert_eq!(

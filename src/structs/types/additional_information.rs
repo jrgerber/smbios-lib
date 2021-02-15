@@ -69,8 +69,8 @@ impl<'a> AdditionalInformationEntry<'a> {
 }
 
 impl fmt::Debug for AdditionalInformationEntry<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosAdditionalInformation>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosAdditionalInformation<'_>>())
             .field("entry_length", &self.entry_length())
             .field("referenced_handle", &self.referenced_handle())
             .field("referenced_offset", &self.referenced_offset())
@@ -164,7 +164,7 @@ impl<'a> Iterator for AdditionalInformationEntryIterator<'a> {
 }
 
 impl<'a> fmt::Debug for AdditionalInformationEntryIterator<'a> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_list().entries(self.into_iter()).finish()
     }
 }
@@ -178,17 +178,17 @@ impl<'a> fmt::Debug for AdditionalInformationEntryIterator<'a> {
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
 pub struct SMBiosAdditionalInformation<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosAdditionalInformation<'a> {
     const STRUCT_TYPE: u8 = 40u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -206,8 +206,8 @@ impl<'a> SMBiosAdditionalInformation<'a> {
 }
 
 impl fmt::Debug for SMBiosAdditionalInformation<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosAdditionalInformation>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosAdditionalInformation<'_>>())
             .field("header", &self.parts.header)
             .field("number_of_entries", &self.number_of_entries())
             .field("entry_iterator", &self.entry_iterator())
@@ -229,7 +229,7 @@ mod tests {
             0x00,
         ]; // end of structure (offset 0x0D)
 
-        let parts = SMBiosStructParts::new(additional_information_bytes.as_slice());
+        let parts = UndefinedStruct::new(&additional_information_bytes);
         let additional_information = SMBiosAdditionalInformation::new(&parts);
 
         assert_eq!(*additional_information.parts().header.handle(), 0x0102);
@@ -264,7 +264,7 @@ mod tests {
             0x00, // null string (offsets 0x0B-0x0C)
             0x00,
         ]; // end of structure (offset 0x0D)
-        let parts = SMBiosStructParts::new(additional_information_bytes.as_slice());
+        let parts = UndefinedStruct::new(&additional_information_bytes);
         let additional_information = SMBiosAdditionalInformation::new(&parts);
 
         let mut counter = 0;

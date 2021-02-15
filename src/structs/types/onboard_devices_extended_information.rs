@@ -16,17 +16,17 @@ use crate::*;
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
 pub struct SMBiosOnboardDevicesExtendedInformation<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosOnboardDevicesExtendedInformation<'a> {
     const STRUCT_TYPE: u8 = 41u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -72,16 +72,18 @@ impl<'a> SMBiosOnboardDevicesExtendedInformation<'a> {
 }
 
 impl fmt::Debug for SMBiosOnboardDevicesExtendedInformation<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosOnboardDevicesExtendedInformation>())
-            .field("header", &self.parts.header)
-            .field("reference_designation", &self.reference_designation())
-            .field("device_type", &self.device_type())
-            .field("device_type_instance", &self.device_type_instance())
-            .field("segment_group_number", &self.segment_group_number())
-            .field("bus_number", &self.bus_number())
-            .field("device_function_number", &self.device_function_number())
-            .finish()
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<
+            SMBiosOnboardDevicesExtendedInformation<'_>,
+        >())
+        .field("header", &self.parts.header)
+        .field("reference_designation", &self.reference_designation())
+        .field("device_type", &self.device_type())
+        .field("device_type_instance", &self.device_type_instance())
+        .field("segment_group_number", &self.segment_group_number())
+        .field("bus_number", &self.bus_number())
+        .field("device_function_number", &self.device_function_number())
+        .finish()
     }
 }
 
@@ -164,7 +166,7 @@ mod tests {
             0x39, 0x00, 0x00,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type41.as_slice());
+        let parts = UndefinedStruct::new(&struct_type41);
         let test_struct = SMBiosOnboardDevicesExtendedInformation::new(&parts);
 
         assert_eq!(

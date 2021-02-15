@@ -7,17 +7,17 @@ use crate::*;
 ///
 /// NOTE This structure type was added in version 2.2 of this specification.
 pub struct SMBiosVoltageProbe<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosVoltageProbe<'a> {
     const STRUCT_TYPE: u8 = 26u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -108,8 +108,8 @@ impl<'a> SMBiosVoltageProbe<'a> {
 }
 
 impl fmt::Debug for SMBiosVoltageProbe<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosVoltageProbe>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosVoltageProbe<'_>>())
             .field("header", &self.parts.header)
             .field("description", &self.description())
             .field("location_and_status", &self.location_and_status())
@@ -150,7 +150,7 @@ impl VoltageProbeLocationAndStatus {
 }
 
 impl fmt::Debug for VoltageProbeLocationAndStatus {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<VoltageProbeLocationAndStatus>())
             .field("raw", &self.raw)
             .field("location", &self.location())
@@ -319,7 +319,7 @@ mod tests {
             0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x4C, 0x4D, 0x37, 0x38, 0x41, 0x00, 0x00,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type26.as_slice());
+        let parts = UndefinedStruct::new(&struct_type26);
         let test_struct = SMBiosVoltageProbe::new(&parts);
 
         assert_eq!(test_struct.description(), Some("LM78A".to_string()));

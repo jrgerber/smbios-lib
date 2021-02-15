@@ -8,17 +8,17 @@ use crate::*;
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
 pub struct SMBiosBiosLanguageInformation<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosBiosLanguageInformation<'a> {
     const STRUCT_TYPE: u8 = 13u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -51,8 +51,8 @@ impl<'a> SMBiosBiosLanguageInformation<'a> {
 }
 
 impl fmt::Debug for SMBiosBiosLanguageInformation<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosBiosLanguageInformation>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosBiosLanguageInformation<'_>>())
             .field("header", &self.parts.header)
             .field(
                 "number_of_installable_languages",
@@ -111,7 +111,7 @@ impl BiosLanguageFlags {
 }
 
 impl fmt::Debug for BiosLanguageFlags {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<BiosLanguageFlags>())
             .field("raw", &self.raw)
             .field("language_format", &self.language_format())
@@ -139,7 +139,7 @@ mod tests {
             0x00,
         ];
 
-        let parts = SMBiosStructParts::new(bios_language_information_bytes.as_slice());
+        let parts = UndefinedStruct::new(&bios_language_information_bytes);
         let bios_language_information = SMBiosBiosLanguageInformation::new(&parts);
 
         // header tests

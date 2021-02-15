@@ -11,26 +11,26 @@ use crate::*;
 /// its type is an OEM type in the 80h to FFh range,
 /// this structure is used to represent the type.
 pub struct SMBiosUnknown<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosUnknown<'a> {
     /// Creates an instance of this struct
-    pub fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    pub fn new(parts: &'a UndefinedStruct) -> Self {
         SMBiosUnknown { parts: parts }
     }
 
     /// Structure parts of this unknown structure
     ///
     /// Use this to inspect the structure in more detail.
-    pub fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    pub fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
 
 impl fmt::Debug for SMBiosUnknown<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosUnknown>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosUnknown<'_>>())
             .field("header", &self.parts.header)
             .field("strings", &self.parts.strings)
             .finish()
@@ -57,7 +57,7 @@ mod tests {
             0x00,
         ];
 
-        let parts = SMBiosStructParts::new(unknown_bytes.as_slice());
+        let parts = UndefinedStruct::new(&unknown_bytes);
         let unknown = SMBiosUnknown::new(&parts);
 
         // header tests

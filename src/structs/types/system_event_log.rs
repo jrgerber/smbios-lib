@@ -11,17 +11,17 @@ use crate::*;
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
 pub struct SMBiosSystemEventLog<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosSystemEventLog<'a> {
     const STRUCT_TYPE: u8 = 15u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -122,14 +122,14 @@ impl<'a> SMBiosSystemEventLog<'a> {
     }
 
     /// Type Descriptors
-    pub fn type_descriptors(&self) -> Option<TypeDescriptors> {
+    pub fn type_descriptors(&self) -> Option<TypeDescriptors<'_>> {
         TypeDescriptors::new(self)
     }
 }
 
 impl fmt::Debug for SMBiosSystemEventLog<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosSystemEventLog>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosSystemEventLog<'_>>())
             .field("header", &self.parts.header)
             .field("log_area_length", &self.log_area_length())
             .field("log_header_start_offset", &self.log_header_start_offset())
@@ -166,7 +166,7 @@ pub struct LogTypeData {
 }
 
 impl fmt::Debug for LogTypeData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<LogTypeData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -283,7 +283,7 @@ pub struct VariableDataFormatTypeData {
 }
 
 impl fmt::Debug for VariableDataFormatTypeData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<VariableDataFormatTypeData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -352,7 +352,7 @@ pub struct AccessMethodData {
 }
 
 impl fmt::Debug for AccessMethodData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<AccessMethodData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -461,8 +461,8 @@ impl<'a> EventLogTypeDescriptor<'a> {
 }
 
 impl<'a> fmt::Debug for EventLogTypeDescriptor<'a> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<EventLogTypeDescriptor>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<EventLogTypeDescriptor<'_>>())
             .field("raw", &self.raw)
             .field("log_type", &self.log_type())
             .field(
@@ -508,8 +508,8 @@ impl<'a> TypeDescriptors<'a> {
 }
 
 impl<'a> fmt::Debug for TypeDescriptors<'a> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<TypeDescriptors>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<TypeDescriptors<'_>>())
             .field("descriptors", &self.into_iter())
             .finish()
     }
@@ -567,7 +567,7 @@ impl<'a> Iterator for TypeDescriptorsIterator<'a> {
 }
 
 impl<'a> fmt::Debug for TypeDescriptorsIterator<'a> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_list()
             .entries(self.descriptors.into_iter())
             .finish()
@@ -608,7 +608,7 @@ impl LogStatus {
 }
 
 impl fmt::Debug for LogStatus {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<LogStatus>())
             .field("raw", &self.raw)
             .field("log_area_valid", &self.log_area_valid())
@@ -631,7 +631,7 @@ pub struct HeaderFormatData {
 }
 
 impl fmt::Debug for HeaderFormatData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<HeaderFormatData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -686,7 +686,7 @@ mod tests {
             0xE0, 0xE1, 0xE1, 0x00, 0x00,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type15.as_slice());
+        let parts = UndefinedStruct::new(&struct_type15);
         let test_struct = SMBiosSystemEventLog::new(&parts);
 
         println!("{:?}", test_struct);

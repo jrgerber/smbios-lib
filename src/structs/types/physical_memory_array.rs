@@ -8,17 +8,17 @@ use crate::*;
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
 pub struct SMBiosPhysicalMemoryArray<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosPhysicalMemoryArray<'a> {
     const STRUCT_TYPE: u8 = 16u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -94,8 +94,8 @@ impl<'a> SMBiosPhysicalMemoryArray<'a> {
 }
 
 impl fmt::Debug for SMBiosPhysicalMemoryArray<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosPhysicalMemoryArray>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosPhysicalMemoryArray<'_>>())
             .field("header", &self.parts.header)
             .field("location", &self.location())
             .field("usage", &self.usage())
@@ -128,7 +128,7 @@ pub struct MemoryArrayLocationData {
 }
 
 impl fmt::Debug for MemoryArrayLocationData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<MemoryArrayLocationData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -221,7 +221,7 @@ pub struct MemoryArrayUseData {
 }
 
 impl fmt::Debug for MemoryArrayUseData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<MemoryArrayUseData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -290,7 +290,7 @@ pub struct MemoryArrayErrorCorrectionData {
 }
 
 impl fmt::Debug for MemoryArrayErrorCorrectionData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<MemoryArrayErrorCorrectionData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -374,7 +374,7 @@ mod tests {
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type16.as_slice());
+        let parts = UndefinedStruct::new(&struct_type16);
         let test_struct = SMBiosPhysicalMemoryArray::new(&parts);
 
         assert_eq!(

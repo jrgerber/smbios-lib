@@ -11,17 +11,17 @@ use crate::*;
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
 pub struct SMBiosBuiltInPointingDevice<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosBuiltInPointingDevice<'a> {
     const STRUCT_TYPE: u8 = 21u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -49,8 +49,8 @@ impl<'a> SMBiosBuiltInPointingDevice<'a> {
 }
 
 impl fmt::Debug for SMBiosBuiltInPointingDevice<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosBuiltInPointingDevice>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosBuiltInPointingDevice<'_>>())
             .field("header", &self.parts.header)
             .field("device_type", &self.device_type())
             .field("interface", &self.interface())
@@ -73,7 +73,7 @@ pub struct PointingDeviceTypeData {
 }
 
 impl fmt::Debug for PointingDeviceTypeData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<PointingDeviceTypeData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -148,7 +148,7 @@ pub struct PointingDeviceInterfaceData {
 }
 
 impl fmt::Debug for PointingDeviceInterfaceData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<PointingDeviceInterfaceData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -223,7 +223,7 @@ mod tests {
     fn unit_test() {
         let struct_type21 = vec![0x15, 0x07, 0x31, 0x00, 0x05, 0x04, 0x03, 0x00, 0x00];
 
-        let parts = SMBiosStructParts::new(struct_type21.as_slice());
+        let parts = UndefinedStruct::new(&struct_type21);
         let test_struct = SMBiosBuiltInPointingDevice::new(&parts);
 
         assert_eq!(

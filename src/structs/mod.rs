@@ -1,7 +1,7 @@
-mod struct_type;
+mod defined_struct;
 mod structure;
 mod types;
 
-pub use struct_type::*;
+pub use defined_struct::*;
 pub use structure::*;
 pub use types::*;

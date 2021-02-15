@@ -16,17 +16,17 @@ use crate::*;
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
 pub struct SMBiosProcessorAdditionalInformation<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosProcessorAdditionalInformation<'a> {
     const STRUCT_TYPE: u8 = 44u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -43,18 +43,20 @@ impl<'a> SMBiosProcessorAdditionalInformation<'a> {
     }
 
     /// Processor-Specific Block
-    pub fn processor_specific_block(&self) -> Option<ProcessorSpecificBlock> {
+    pub fn processor_specific_block(&self) -> Option<ProcessorSpecificBlock<'_>> {
         ProcessorSpecificBlock::new(self)
     }
 }
 
 impl fmt::Debug for SMBiosProcessorAdditionalInformation<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosProcessorAdditionalInformation>())
-            .field("header", &self.parts.header)
-            .field("referenced_handle", &self.referenced_handle())
-            .field("processor_specific_block", &self.processor_specific_block())
-            .finish()
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<
+            SMBiosProcessorAdditionalInformation<'_>,
+        >())
+        .field("header", &self.parts.header)
+        .field("referenced_handle", &self.referenced_handle())
+        .field("processor_specific_block", &self.processor_specific_block())
+        .finish()
     }
 }
 
@@ -111,8 +113,8 @@ impl<'a> ProcessorSpecificBlock<'a> {
 }
 
 impl fmt::Debug for ProcessorSpecificBlock<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<ProcessorSpecificBlock>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<ProcessorSpecificBlock<'_>>())
             .field("block_length", &self.block_length())
             .field("processor_type", &self.processor_type())
             .field("processor_specific_data", &self.processor_specific_data())
@@ -134,7 +136,7 @@ pub struct ProcessorArchitectureTypeData {
 }
 
 impl fmt::Debug for ProcessorArchitectureTypeData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<ProcessorArchitectureTypeData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -217,7 +219,7 @@ mod tests {
             0x00,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type44.as_slice());
+        let parts = UndefinedStruct::new(&struct_type44);
         let test_struct = SMBiosProcessorAdditionalInformation::new(&parts);
 
         assert_eq!(*test_struct.referenced_handle().unwrap(), 0x0908);

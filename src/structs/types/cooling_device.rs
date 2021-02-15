@@ -8,17 +8,17 @@ use crate::*;
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
 pub struct SMBiosCoolingDevice<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosCoolingDevice<'a> {
     const STRUCT_TYPE: u8 = 27u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -74,8 +74,8 @@ impl<'a> SMBiosCoolingDevice<'a> {
 }
 
 impl fmt::Debug for SMBiosCoolingDevice<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosCoolingDevice>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosCoolingDevice<'_>>())
             .field("header", &self.parts.header)
             .field("temperature_probe_handle", &self.temperature_probe_handle())
             .field("device_type_and_status", &self.device_type_and_status())
@@ -104,7 +104,7 @@ pub struct CoolingDeviceTypeAndStatus {
 }
 
 impl fmt::Debug for CoolingDeviceTypeAndStatus {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<CoolingDeviceTypeAndStatus>())
             .field("raw", &self.raw)
             .field("device_status", &self.device_status)
@@ -204,7 +204,7 @@ mod tests {
             0x00, 0x00,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type27.as_slice());
+        let parts = UndefinedStruct::new(&struct_type27);
         let test_struct = SMBiosCoolingDevice::new(&parts);
 
         //assert_eq!(test_struct.temperature_probe_handle(), Some(Handle(42)));

@@ -8,17 +8,17 @@ use crate::*;
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
 pub struct SMBiosSystemConfigurationOptions<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosSystemConfigurationOptions<'a> {
     const STRUCT_TYPE: u8 = 12u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -40,8 +40,8 @@ impl<'a> SMBiosSystemConfigurationOptions<'a> {
 }
 
 impl fmt::Debug for SMBiosSystemConfigurationOptions<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosSystemConfigurationOptions>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosSystemConfigurationOptions<'_>>())
             .field("header", &self.parts.header)
             .field("count", &self.count())
             .field("configuration_strings", &self.configuration_strings())
@@ -59,7 +59,7 @@ mod tests {
             0x0C, 0x05, 0x23, 0x00, 0x01, b's', b'c', b'r', b'e', b'+', b'+', 0x00, 0x00,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type12.as_slice());
+        let parts = UndefinedStruct::new(&struct_type12);
         let test_struct = SMBiosSystemConfigurationOptions::new(&parts);
 
         assert_eq!(test_struct.count(), Some(1));

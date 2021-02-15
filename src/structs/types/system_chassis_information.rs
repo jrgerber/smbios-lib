@@ -12,17 +12,17 @@ use crate::*;
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
 /// Document Date: 2020-07-17
 pub struct SMBiosSystemChassisInformation<'a> {
-    parts: &'a SMBiosStructParts<'a>,
+    parts: &'a UndefinedStruct,
 }
 
 impl<'a> SMBiosStruct<'a> for SMBiosSystemChassisInformation<'a> {
     const STRUCT_TYPE: u8 = 3u8;
 
-    fn new(parts: &'a SMBiosStructParts<'_>) -> Self {
+    fn new(parts: &'a UndefinedStruct) -> Self {
         Self { parts }
     }
 
-    fn parts(&self) -> &'a SMBiosStructParts<'a> {
+    fn parts(&self) -> &'a UndefinedStruct {
         self.parts
     }
 }
@@ -164,7 +164,7 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
     }
 
     /// Contained Elements
-    pub fn contained_elements(&self) -> Option<ContainedElements> {
+    pub fn contained_elements(&self) -> Option<ContainedElements<'_>> {
         ContainedElements::new(self)
     }
 
@@ -180,8 +180,8 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
 }
 
 impl fmt::Debug for SMBiosSystemChassisInformation<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosSystemChassisInformation>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosSystemChassisInformation<'_>>())
             .field("header", &self.parts.header)
             .field("manufacturer", &self.manufacturer())
             .field("chassis_type", &self.chassis_type())
@@ -260,7 +260,7 @@ pub struct ChassisTypeData {
 }
 
 impl fmt::Debug for ChassisTypeData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<ChassisTypeData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -416,7 +416,7 @@ pub struct ChassisStateData {
 }
 
 impl fmt::Debug for ChassisStateData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<ChassisStateData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -482,7 +482,7 @@ pub struct ChassisSecurityStatusData {
 }
 
 impl fmt::Debug for ChassisSecurityStatusData {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<ChassisSecurityStatusData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
@@ -566,8 +566,8 @@ impl<'a> ContainedElements<'a> {
 }
 
 impl<'a> fmt::Debug for ContainedElements<'a> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<ContainedElements>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<ContainedElements<'_>>())
             .field("records", &self.into_iter())
             .finish()
     }
@@ -610,8 +610,8 @@ impl<'a> ChassisElement<'a> {
 }
 
 impl fmt::Debug for ChassisElement<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<ChassisElement>())
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<ChassisElement<'_>>())
             .field("raw", &self.raw)
             .field("element_type", &self.element_type())
             .field("element_minimum", &self.element_minimum())
@@ -738,7 +738,7 @@ impl<'a> Iterator for ContainedElementsIterator<'a> {
 }
 
 impl<'a> fmt::Debug for ContainedElementsIterator<'a> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_list()
             .entries(self.contained_elements.into_iter())
             .finish()
@@ -760,7 +760,7 @@ mod tests {
             b'g', 0x00, 0x00,
         ];
 
-        let parts = SMBiosStructParts::new(struct_type3.as_slice());
+        let parts = UndefinedStruct::new(&struct_type3);
         let test_struct = SMBiosSystemChassisInformation::new(&parts);
 
         assert_eq!(test_struct.manufacturer(), Some("LENOVO".to_string()));
