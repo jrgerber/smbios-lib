@@ -5,13 +5,14 @@
 //! # Example
 //! ```rust
 //! #[cfg(target_family = "windows")]
+//! #[test]
 //! fn windows_dump() {
-//!     match smbios::get_raw_smbios_data() {
-//!         Ok(raw_data) => {
-//!             println!("raw_data: {:?}", raw_data);
+//!     match load_windows_smbios_data() {
+//!         Ok(windows_data) => {
+//!             println!("windows_data: {:?}", windows_data);
 //!
-//!             for parts in &raw_data.smbios_table_data {
-//!                 println!("{:?}", parts.struct_type_name());
+//!             for undefined_struct in windows_data.smbios_data.into_iter() {
+//!                 println!("{:#?}", undefined_struct.defined_struct());
 //!             }
 //!         }
 //!         Err(err) => panic!("failure: {:?}", err),

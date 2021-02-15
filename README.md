@@ -27,7 +27,7 @@ The current development stage is to finalize the API design.
 * libc version: 0.2 (On Windows family only)
 	
 ## Example
-Example code that retrieves the System UUID from a device:
+Example code that retrieves the System UUID from a device (Windows or Linux family):
 
 ```rust
 #[test]
