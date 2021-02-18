@@ -24,3 +24,36 @@ fn retrieve_system_uuid() {
         Err(err) => println!("failure: {:?}", err),
     }
 }
+
+#[test]
+fn print_all_memory_devices() {
+    match table_load_from_device() {
+        Ok(data) => {
+            for memory_device in data.find_all::<SMBiosMemoryDevice>() {
+                println!("{:#?}", memory_device);
+            }
+        }
+        Err(err) => println!("failure: {:?}", err),
+    }
+}
+
+/// Finds an associated struct by handle
+#[test]
+fn struct_struct_association() {
+    match table_load_from_device() {
+        Ok(data) => match data.find_first::<SMBiosMemoryDevice>() {
+            Some(first_memory_device) => {
+                let handle = first_memory_device.physical_memory_array_handle().unwrap();
+                match data.find_by_handle(&handle) {
+                    Some(undefined_struct) => {
+                        let physical_memory_array = undefined_struct.defined_struct();
+                        println!("{:#?}", physical_memory_array)
+                    }
+                    None => println!("No Physical Memory Array (Type 16) structure found"),
+                }
+            }
+            None => println!("No Memory Device (Type 17) structure found"),
+        },
+        Err(err) => println!("failure: {:?}", err),
+    }
+}

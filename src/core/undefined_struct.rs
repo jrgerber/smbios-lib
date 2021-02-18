@@ -191,6 +191,29 @@ impl<'a> UndefinedStructTable {
             .find(|smbios_struct| smbios_struct.header.struct_type() == T::STRUCT_TYPE)
             .and_then(|undefined_struct| Some(T::new(&undefined_struct)))
     }
+
+    /// Finds the structure matching the given handle
+    pub fn find_by_handle(&'a self, handle: &Handle) -> Option<&'a UndefinedStruct> {
+        self.iter()
+            .find(|smbios_struct| smbios_struct.header.handle() == *handle)
+            .and_then(|undefined_struct| Some(undefined_struct))
+    }
+
+    /// Finds all occurances of the structure
+    pub fn find_all<T>(&'a self) -> Vec<T>
+    where
+        T: SMBiosStruct<'a>,
+    {
+        self.iter()
+            .filter_map(|smbios_struct| {
+                if smbios_struct.header.struct_type() == T::STRUCT_TYPE {
+                    Some(T::new(smbios_struct))
+                } else {
+                    None
+                }
+            })
+            .collect()
+    }
 }
 
 impl From<Vec<u8>> for UndefinedStructTable {
