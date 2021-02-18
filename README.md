@@ -1,5 +1,5 @@
 # smbios-lib
-An SMBIOS Library created in Rust that reads (decodes) raw BIOS data
+An SMBIOS Library created in Rust that reads and parses raw BIOS data
 
 ## Table of contents
 * [General info](#general-info)
@@ -8,7 +8,7 @@ An SMBIOS Library created in Rust that reads (decodes) raw BIOS data
 * [Examples](#examples)
 
 ## General info
-This project reads raw SMBIOS data from either a device or file.
+This project reads raw [SMBIOS](https://en.wikipedia.org/wiki/BIOS) data from either a device or file and provides the data as an API.
 
 ### Supports
 * [DMTF System Management BIOS (SMBIOS) Reference
@@ -36,7 +36,7 @@ SMBIOS has been around for decades and has undergone many versions and revisions
 
 ## Examples
 ### Retrieve a Field of a Single Instance Structure - find_first()
-Some structures are required and a single instance. (e.g. [SMBiosSystemInformation](structs/types/system_information.rs))
+Some structures are required and a single instance. (e.g. [SMBiosSystemInformation](src/structs/types/system_information.rs))
 
 ```rust
 #[test]
@@ -63,7 +63,7 @@ test retrieve_system_uuid ... ok
 ```
 
 ### Retrieve Multiple Instances of a Structure - find_all()
-Some structures are allowed to have more than one instance. (e.g. [SMBiosMemoryDevice](structs/types/memory_device.rs))
+Some structures are allowed to have more than one instance. (e.g. [SMBiosMemoryDevice](src/structs/types/memory_device.rs))
 
 ```rust
 #[test]
@@ -100,7 +100,7 @@ smbioslib::structs::types::memory_device::SMBiosMemoryDevice {
 ```
 
 ### Retrieve a Structure Given a Handle - find_by_handle()
-Some structures point to other structures via handles. (e.g. [SMBiosMemoryDevice](structs/types/memory_device.rs) points to [SMBiosPhysicalMemoryArray](structs/types/physical_memory_array.rs))
+Some structures point to other structures via handles. (e.g. [SMBiosMemoryDevice](src/structs/types/memory_device.rs) points to [SMBiosPhysicalMemoryArray](src/structs/types/physical_memory_array.rs))
 
 ```rust
 /// Finds an associated struct by handle
