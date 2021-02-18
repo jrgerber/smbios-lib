@@ -30,8 +30,10 @@ impl<'a> SMBiosUnknown<'a> {
 
 impl fmt::Debug for SMBiosUnknown<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let fields = &self.parts.fields[Header::SIZE..];
         fmt.debug_struct(std::any::type_name::<SMBiosUnknown<'_>>())
             .field("header", &self.parts.header)
+            .field("fields", &fields)
             .field("strings", &self.parts.strings)
             .finish()
     }

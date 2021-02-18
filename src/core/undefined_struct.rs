@@ -155,8 +155,10 @@ impl<'a> UndefinedStruct {
 
 impl fmt::Debug for UndefinedStruct {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let fields = &self.fields[Header::SIZE..];
         fmt.debug_struct(std::any::type_name::<UndefinedStruct>())
             .field("header", &self.header)
+            .field("fields", &fields)
             .field("strings", &self.strings)
             .finish()
     }
