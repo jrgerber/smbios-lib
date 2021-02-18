@@ -37,7 +37,7 @@ impl SMBiosData {
         Ok(result)
     }
 
-    /// Iterator of the contained [UndefinedStruct] items.
+    /// Iterator of the contained [UndefinedStruct] items
     pub fn iter(&self) -> Iter<'_, UndefinedStruct> {
         self.table.iter()
     }
@@ -48,6 +48,19 @@ impl SMBiosData {
         T: SMBiosStruct<'a>,
     {
         self.table.find_first()
+    }
+
+    /// Finds the structure matching the given handle
+    pub fn find_by_handle<'a>(&'a self, handle: &Handle) -> Option<&UndefinedStruct> {
+        self.table.find_by_handle(handle)
+    }
+
+    /// Finds all occurances of the structure
+    pub fn find_all<'a, T>(&'a self) -> Vec<T>
+    where
+        T: SMBiosStruct<'a>,
+    {
+        self.table.find_all()
     }
 }
 

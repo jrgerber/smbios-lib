@@ -26,8 +26,8 @@ impl<'a> SMBiosStruct<'a> for SMBiosMemoryDevice<'a> {
 impl<'a> SMBiosMemoryDevice<'a> {
     /// Handle, or instance number, associated with the
     /// [SMBiosPhysicalMemoryArray] to which this device belongs
-    pub fn physical_memory_array_handle(&self) -> Option<u16> {
-        self.parts.get_field_word(0x04)
+    pub fn physical_memory_array_handle(&self) -> Option<Handle> {
+        self.parts.get_field_handle(0x04)
     }
 
     /// Handle, or instance number, associated with any
@@ -38,8 +38,8 @@ impl<'a> SMBiosMemoryDevice<'a> {
     /// detected) or the handle of the error-information
     /// structure ([SMBiosMemoryErrorInformation32] or
     /// [SMBiosMemoryErrorInformation64]).
-    pub fn memory_error_information_handle(&self) -> Option<u16> {
-        self.parts.get_field_word(0x06)
+    pub fn memory_error_information_handle(&self) -> Option<Handle> {
+        self.parts.get_field_handle(0x06)
     }
 
     /// Total width, in bits, of this memory device, including
