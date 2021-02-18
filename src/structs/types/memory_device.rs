@@ -364,7 +364,8 @@ impl fmt::Debug for SMBiosMemoryDevice<'_> {
     }
 }
 
-/// #
+/// # Memory Device - Type Data
+#[derive(PartialEq, Eq)]
 pub struct MemoryDeviceTypeData {
     /// Raw value
     ///
@@ -973,8 +974,11 @@ mod tests {
 
         let parts = UndefinedStruct::new(&struct_type17);
         let test_struct = SMBiosMemoryDevice::new(&parts);
-        assert_eq!(test_struct.physical_memory_array_handle(), Some(62));
-        assert_eq!(test_struct.memory_error_information_handle(), Some(65534));
+        assert_eq!(test_struct.physical_memory_array_handle(), Some(Handle(62)));
+        assert_eq!(
+            test_struct.memory_error_information_handle(),
+            Some(Handle(65534))
+        );
         assert_eq!(test_struct.total_width(), Some(72));
         assert_eq!(test_struct.data_width(), Some(64));
         match test_struct.size().unwrap() {
@@ -988,7 +992,10 @@ mod tests {
             Some("CPU1_DIMM_1".to_string())
         );
         assert_eq!(test_struct.bank_locator(), Some("NODE 1".to_string()));
-        assert_eq!(test_struct.memory_type(), Some(26));
+        assert_eq!(
+            test_struct.memory_type(),
+            Some(MemoryDeviceTypeData::from(26))
+        );
         assert_eq!(
             test_struct.type_detail(),
             Some(MemoryTypeDetails::from(128))
