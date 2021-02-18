@@ -33,8 +33,8 @@ use std::{io::Error, io::ErrorKind};
 // These are useful for cross checking against the results this library produces when reading
 // /sys/firmware/dmi/tables/DMI
 
-/// Loads SMBIOS table data ([SMBiosStructTable]) from the device
-pub fn table_load_from_device() -> Result<SMBiosStructTable, Error> {
+/// Loads SMBIOS table data ([SMBiosData]) from the device
+pub fn table_load_from_device() -> Result<SMBiosData, Error> {
     const SYS_ENTRY_FILE: &'static str = "/sys/firmware/dmi/tables/smbios_entry_point";
     const SYS_TABLE_FILE: &'static str = "/sys/firmware/dmi/tables/DMI";
 
@@ -64,7 +64,7 @@ pub fn table_load_from_device() -> Result<SMBiosStructTable, Error> {
         },
     }
 
-    SMBiosStructTable::try_load_from_file(SYS_TABLE_FILE, Some(version))
+    SMBiosData::try_load_from_file(SYS_TABLE_FILE, Some(version))
 }
 
 #[cfg(test)]
