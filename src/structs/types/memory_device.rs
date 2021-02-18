@@ -102,8 +102,10 @@ impl<'a> SMBiosMemoryDevice<'a> {
     }
 
     /// Type of memory used in this device
-    pub fn memory_type(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x12)
+    pub fn memory_type(&self) -> Option<MemoryDeviceTypeData> {
+        self.parts
+            .get_field_byte(0x12)
+            .and_then(|raw| Some(MemoryDeviceTypeData::from(raw)))
     }
 
     /// Additional detail on the memory device type
@@ -359,6 +361,150 @@ impl fmt::Debug for SMBiosMemoryDevice<'_> {
                 &self.extended_configured_memory_speed(),
             )
             .finish()
+    }
+}
+
+/// #
+pub struct MemoryDeviceTypeData {
+    /// Raw value
+    ///
+    /// _raw_ is most useful when _value_ is None.
+    /// This is most likely to occur when the standard was updated but
+    /// this library code has not been updated to match the current
+    /// standard.
+    pub raw: u8,
+    /// The contained [MemoryDeviceType] value
+    pub value: MemoryDeviceType,
+}
+
+impl fmt::Debug for MemoryDeviceTypeData {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<MemoryDeviceTypeData>())
+            .field("raw", &self.raw)
+            .field("value", &self.value)
+            .finish()
+    }
+}
+
+impl Deref for MemoryDeviceTypeData {
+    type Target = MemoryDeviceType;
+
+    fn deref(&self) -> &Self::Target {
+        &self.value
+    }
+}
+
+/// # Memory Device -Type
+#[derive(Debug, PartialEq, Eq)]
+pub enum MemoryDeviceType {
+    /// Other
+    Other,
+    /// Unknown
+    Unknown,
+    /// DRAM
+    Dram,
+    /// EDRAM
+    Edram,
+    /// VRAM
+    Vram,
+    /// SRAM
+    Sram,
+    /// RAM
+    Ram,
+    /// ROM
+    Rom,
+    /// FLASH
+    Flash,
+    /// EEPROM
+    Eeprom,
+    /// FEPROM
+    Feprom,
+    /// EPROM
+    Eprom,
+    /// CDRAM
+    Cdram,
+    /// 3DRAM
+    ThreeDram,
+    /// SDRAM
+    Sdram,
+    /// SGRAM
+    Sgram,
+    /// RDRAM
+    Rdram,
+    /// DDR
+    Ddr,
+    /// DDR2
+    Ddr2,
+    /// DDR2 FB-DIMM
+    Ddr2Fbdimm,
+    /// DDR3
+    Ddr3,
+    /// FBD2
+    Fbd2,
+    /// DDR4
+    Ddr4,
+    /// LPDDR
+    Lpddr,
+    /// LPDDR2
+    Lpddr2,
+    /// LPDDR3
+    Lpddr3,
+    /// LPDDR4
+    Lpddr4,
+    /// Logical non-volatile device
+    LogicalNonVolatileDevice,
+    /// HBM (High Bandwidth Memory)
+    Hbm,
+    /// HBM2 (High Bandwidth Memory Generation 2)
+    Hbm2,
+    /// DDR5
+    Ddr5,
+    /// LPDDR5
+    Lpddr5,
+    /// A value unknown to this standard, check the raw value
+    None,
+}
+
+impl From<u8> for MemoryDeviceTypeData {
+    fn from(raw: u8) -> Self {
+        MemoryDeviceTypeData {
+            value: match raw {
+                0x01 => MemoryDeviceType::Other,
+                0x02 => MemoryDeviceType::Unknown,
+                0x03 => MemoryDeviceType::Dram,
+                0x04 => MemoryDeviceType::Edram,
+                0x05 => MemoryDeviceType::Vram,
+                0x06 => MemoryDeviceType::Sram,
+                0x07 => MemoryDeviceType::Ram,
+                0x08 => MemoryDeviceType::Rom,
+                0x09 => MemoryDeviceType::Flash,
+                0x0A => MemoryDeviceType::Eeprom,
+                0x0B => MemoryDeviceType::Feprom,
+                0x0C => MemoryDeviceType::Eprom,
+                0x0D => MemoryDeviceType::Cdram,
+                0x0E => MemoryDeviceType::ThreeDram,
+                0x0F => MemoryDeviceType::Sdram,
+                0x10 => MemoryDeviceType::Sgram,
+                0x11 => MemoryDeviceType::Rdram,
+                0x12 => MemoryDeviceType::Ddr,
+                0x13 => MemoryDeviceType::Ddr2,
+                0x14 => MemoryDeviceType::Ddr2Fbdimm,
+                0x18 => MemoryDeviceType::Ddr3,
+                0x19 => MemoryDeviceType::Fbd2,
+                0x1A => MemoryDeviceType::Ddr4,
+                0x1B => MemoryDeviceType::Lpddr,
+                0x1C => MemoryDeviceType::Lpddr2,
+                0x1D => MemoryDeviceType::Lpddr3,
+                0x1E => MemoryDeviceType::Lpddr4,
+                0x1F => MemoryDeviceType::LogicalNonVolatileDevice,
+                0x20 => MemoryDeviceType::Hbm,
+                0x21 => MemoryDeviceType::Hbm2,
+                0x22 => MemoryDeviceType::Ddr5,
+                0x23 => MemoryDeviceType::Lpddr5,
+                _ => MemoryDeviceType::None,
+            },
+            raw,
+        }
     }
 }
 
