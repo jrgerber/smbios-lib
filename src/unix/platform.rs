@@ -72,8 +72,8 @@ mod tests {
     use super::*;
 
     // This test must be run elevated and we ignore it for test passes
-    #[ignore]
     #[test]
+    #[ignore]
     fn device_load_unit_test() {
         match table_load_from_device() {
             Ok(table) => {
