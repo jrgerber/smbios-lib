@@ -1,7 +1,8 @@
 # smbios-lib
 An SMBIOS Library created in Rust that reads and parses raw BIOS data
 
-![Latest PR](https://github.com/jrgerber/smbios-lib/actions/workflows/rust.yml/badge.svg)
+![Windows](https://github.com/jrgerber/smbios-lib/actions/workflows/windows.yml/badge.svg)
+![Linux](https://github.com/jrgerber/smbios-lib/actions/workflows/linux.yml/badge.svg)
 
 ## Table of contents
 * [General info](#general-info)
