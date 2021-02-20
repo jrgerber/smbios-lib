@@ -1,6 +1,8 @@
 # smbios-lib
 An SMBIOS Library created in Rust that reads and parses raw BIOS data
 
+![Latest PR](https://github.com/jrgerber/smbios-lib/actions/workflows/rust.yml/badge.svg)
+
 ## Table of contents
 * [General info](#general-info)
 * [Dependencies](#dependencies)
@@ -32,7 +34,7 @@ The current development stage is to finalize the API design.
 ## Security
 This library design follows a strict security mantra: *"Never trust the input"*.
 
-SMBIOS has been around for decades and has undergone many versions and revisions.  Many OEM vendors have interpreted and implemented the specifications over the years. Known cases of incorrect firmware implementations exist.  This presents a veritable labrynth of logic for both the known and the unknown. Rather than creating such a complex state machine, we take advantage of Rust's [Option<>](https://doc.rust-lang.org/std/option/) trait and assert that the act of retrival for any and all information may fail.  The burden of proof thus shifts from the library to the library consumer who is required to implement the failing condition arm.
+SMBIOS has been around for decades and has undergone many versions and revisions.  Many OEM vendors have interpreted and implemented the specifications over the years. Known cases of incorrect firmware implementations exist.  This presents a veritable labrynth of logic for both the known and the unknown. Rather than creating such a complex state machine, we take advantage of Rust's [Option<>](https://doc.rust-lang.org/std/option/) trait and assert that the act of retrieval for any and all information may fail.  The burden of proof thus shifts from the library to the library consumer who is required to implement the failing condition arm.
 
 ## Examples
 ### Retrieve a Field of a Single Instance Structure - find_first()
