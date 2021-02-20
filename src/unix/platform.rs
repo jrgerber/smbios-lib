@@ -67,12 +67,12 @@ pub fn table_load_from_device() -> Result<SMBiosData, Error> {
     SMBiosData::try_load_from_file(SYS_TABLE_FILE, Some(version))
 }
 
-// This test must be run elevated and we ignore it for test passes
-#[ignore]
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    // This test must be run elevated and we ignore it for test passes
+    #[ignore]
     #[test]
     fn device_load_unit_test() {
         match table_load_from_device() {
