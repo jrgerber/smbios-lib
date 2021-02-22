@@ -153,7 +153,7 @@ pub fn table_load_from_device() -> Result<SMBiosData, Error> {
             ));
         }
 
-        let entry_point_len: isize = 0x20;
+        let entry_point_len: isize = 0x1F;
         let mut entry_point = Vec::with_capacity(entry_point_len as usize);
         let entry_point_ptr = entry_point.as_mut_ptr();
 
