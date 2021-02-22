@@ -1,7 +1,7 @@
-#[cfg(target_family = "unix")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 mod platform;
 
-#[cfg(target_family = "unix")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 pub use platform::*;
 
 pub use std::convert::TryInto;
