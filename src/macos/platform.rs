@@ -1,8 +1,8 @@
 use crate::*;
 use core_foundation::base::{kCFAllocatorDefault, mach_port_t, TCFTypeRef};
 use core_foundation::{
-    base::{CFRange, CFRelease},
-    data::{CFDataGetBytes, CFDataRef},
+    base::{CFRelease},
+    data::{CFDataGetLength, CFDataGetBytePtr, CFDataRef},
 };
 use io_kit_sys::{
     types::{io_service_t, IOOptionBits},
@@ -153,19 +153,16 @@ pub fn table_load_from_device() -> Result<SMBiosData, Error> {
             ));
         }
 
-        let entry_point_len: isize = 0x1F;
-        let mut entry_point = Vec::with_capacity(entry_point_len as usize);
-        let entry_point_ptr = entry_point.as_mut_ptr();
-
-        CFDataGetBytes(data_ref, CFRange::init(0, entry_point_len), entry_point_ptr);
-
         if !data_ref.is_null() {
             CFRelease(data_ref.as_void_ptr());
         }
 
-        IOObjectRelease(service);
+        let data_ptr = CFDataGetBytePtr(data_ref);
+        let data_length = CFDataGetLength(data_ref);
+        let mut entry_point = Vec::with_capacity(data_length as usize);
 
-        entry_point.set_len(entry_point_len as usize);
+        std::ptr::copy(data_ptr, entry_point.as_mut_ptr(), data_length as usize);
+        entry_point.set_len(data_length as usize);
 
         match SMBiosEntryPoint32::try_from(entry_point) {
             Ok(entry_point) => {
