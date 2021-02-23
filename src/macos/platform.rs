@@ -5,8 +5,8 @@ use core_foundation::{
     dictionary::{CFDictionaryGetValueIfPresent, CFMutableDictionaryRef},
 };
 use core_foundation::{
-    base::{CFRange, CFRelease},
-    data::{CFDataGetBytes, CFDataRef},
+    base::{CFRelease},
+    data::{CFDataGetLength, CFDataGetBytePtr, CFDataRef},
 };
 //use core_foundation_sys::dictionary::CFMutableDictionaryRef;
 use io_kit_sys::{
@@ -82,19 +82,16 @@ fn try_load_macos_entry_point() -> Result<SMBiosEntryPoint32, Error> {
             ));
         }
 
-        let entry_point_len: isize = 0x1F;
-        let mut entry_point = Vec::with_capacity(entry_point_len as usize);
-        let entry_point_ptr = entry_point.as_mut_ptr();
-
-        CFDataGetBytes(data_ref, CFRange::init(0, entry_point_len), entry_point_ptr);
-
-        let len = CFDataGetLength(data_ref);
-
         if !data_ref.is_null() {
             CFRelease(data_ref.as_void_ptr());
         }
 
-        entry_point.set_len(len as usize);
+        let data_ptr = CFDataGetBytePtr(data_ref);
+        let data_length = CFDataGetLength(data_ref);
+        let mut entry_point = Vec::with_capacity(data_length as usize);
+
+        std::ptr::copy(data_ptr, entry_point.as_mut_ptr(), data_length as usize);
+        entry_point.set_len(data_length as usize);
 
         SMBiosEntryPoint32::try_from(entry_point)
     }
