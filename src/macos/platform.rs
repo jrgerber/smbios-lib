@@ -2,26 +2,23 @@ use crate::*;
 use core_foundation::{
     base::{kCFAllocatorDefault, mach_port_t, TCFTypeRef},
     data::CFDataGetLength,
-    dictionary::{CFDictionaryGetValueIfPresent, CFMutableDictionaryRef},
 };
 use core_foundation::{
     base::{CFRelease},
-    data::{CFDataGetLength, CFDataGetBytePtr, CFDataRef},
+    data::{CFDataGetBytePtr, CFDataRef},
 };
 //use core_foundation_sys::dictionary::CFMutableDictionaryRef;
 use io_kit_sys::{
-    ret::kIOReturnSuccess,
     types::{io_service_t, IOOptionBits},
-    IOMasterPort, IOObjectRelease, IORegistryEntryCreateCFProperties,
+    IOMasterPort, IOObjectRelease,
     IORegistryEntryCreateCFProperty, IOServiceGetMatchingService, IOServiceMatching, CFSTR,
 };
 use mach::*;
 use std::{
     convert::TryFrom,
-    ffi::{c_void, CString},
+    ffi::{CString},
     io::Error,
     io::ErrorKind,
-    ptr::null_mut,
 };
 
 struct AppleSMBiosService {
@@ -78,7 +75,7 @@ fn try_load_macos_entry_point() -> Result<SMBiosEntryPoint32, Error> {
         if data_ref.is_null() {
             return Err(Error::new(
                 ErrorKind::NotFound,
-                "SMBIOS entry point is unreachable",
+                "SMBIOS-EPS entry point is unreachable",
             ));
         }
 
@@ -102,55 +99,32 @@ fn try_load_macos_table() -> Result<Vec<u8>, Error> {
 
     unsafe {
         let smbios_table_name = CString::new("SMBIOS").expect("CString::new failed");
+
         let option_bits: IOOptionBits = 0;
-        let properties: CFMutableDictionaryRef = null_mut();
-        let properties_ptr: *mut CFMutableDictionaryRef = &mut properties;
+        let data_ref = IORegistryEntryCreateCFProperty(
+            service.service_handle,
+            CFSTR(smbios_table_name.as_ptr()),
+            kCFAllocatorDefault,
+            option_bits,
+        ) as CFDataRef;
 
-        println!("here");
-
-        if kIOReturnSuccess
-            != IORegistryEntryCreateCFProperties(
-                service.service_handle,
-                properties_ptr,
-                kCFAllocatorDefault,
-                option_bits,
-            )
-        {
+        if data_ref.is_null() {
             return Err(Error::new(
                 ErrorKind::NotFound,
-                "No data in AppleSMBIOS IOService",
+                "SMBIOS is unreachable",
             ));
         }
 
-        let mut data_ref: CFDataRef = null_mut();
-        let data_ref_ptr: *mut CFDataRef = &mut data_ref;
-
-        if CFDictionaryGetValueIfPresent(
-            properties,
-            smbios_table_name.as_ptr() as *const c_void,
-            data_ref_ptr as *mut *const c_void,
-        ) != 0
-        {
-            return Err(Error::new(
-                ErrorKind::NotFound,
-                "SMBIOS property data is unreachable",
-            ));
+        if !data_ref.is_null() {
+            CFRelease(data_ref.as_void_ptr());
         }
 
         let len = CFDataGetLength(data_ref);
 
         let mut table: Vec<u8> = Vec::with_capacity(len as usize);
         let table_ptr = table.as_mut_ptr();
-
-        CFDataGetBytes(data_ref, CFRange::init(0, len), table_ptr);
-
-        if !data_ref.is_null() {
-            CFRelease(data_ref.as_void_ptr());
-        }
-
-        if !properties.is_null() {
-            CFRelease(properties.as_void_ptr());
-        }
+        std::ptr::copy(table_ptr, table.as_mut_ptr(), len as usize);
+        table.set_len(len as usize);
 
         Ok(table)
     }
