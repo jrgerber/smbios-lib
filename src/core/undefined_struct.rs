@@ -258,6 +258,9 @@ impl From<Vec<u8>> for UndefinedStructTable {
             let mut a: bool;
             let mut b = true;
             loop {
+                if next_index >= len {
+                    break;
+                }
                 a = data[next_index] != 0;
                 next_index = next_index + 1;
                 if a || b {
