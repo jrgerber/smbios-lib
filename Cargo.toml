@@ -9,6 +9,7 @@ repository = "https://github.com/jrgerber/smbios-lib"
 readme = "README.md"
 keywords = ["bios", "smbios", "dmtf"]
 categories = ["hardware-support"]
+build = "build.rs"
 
 # prevention from accidentally publishing
 publish = false
@@ -33,4 +34,4 @@ libc = "^0.2"
 mach = "^0.3"
 core-foundation = "~0.6"
 core-foundation-sys = "~0.6"
-io-kit-sys = "0.1.0"
+#io-kit-sys = "0.1.0"
