@@ -1,25 +1,15 @@
 use crate::*;
 use core_foundation::{
-    base::{kCFAllocatorDefault, mach_port_t, TCFTypeRef},
-    data::CFDataGetLength,
+    base::{kCFAllocatorDefault, mach_port_t, CFRelease, TCFTypeRef},
+    data::{CFDataGetBytePtr, CFDataGetLength, CFDataRef},
 };
-use core_foundation::{
-    base::{CFRelease},
-    data::{CFDataGetBytePtr, CFDataRef},
-};
-//use core_foundation_sys::dictionary::CFMutableDictionaryRef;
 use io_kit_sys::{
     types::{io_service_t, IOOptionBits},
-    IOMasterPort, IOObjectRelease,
-    IORegistryEntryCreateCFProperty, IOServiceGetMatchingService, IOServiceMatching, CFSTR,
+    IOMasterPort, IOObjectRelease, IORegistryEntryCreateCFProperty, IOServiceGetMatchingService,
+    IOServiceMatching, CFSTR,
 };
 use mach::*;
-use std::{
-    convert::TryFrom,
-    ffi::{CString},
-    io::Error,
-    io::ErrorKind,
-};
+use std::{convert::TryFrom, ffi::CString, io::Error, io::ErrorKind};
 
 struct AppleSMBiosService {
     pub service_handle: io_service_t,
@@ -109,10 +99,7 @@ fn try_load_macos_table() -> Result<Vec<u8>, Error> {
         ) as CFDataRef;
 
         if data_ref.is_null() {
-            return Err(Error::new(
-                ErrorKind::NotFound,
-                "SMBIOS is unreachable",
-            ));
+            return Err(Error::new(ErrorKind::NotFound, "SMBIOS is unreachable"));
         }
 
         if !data_ref.is_null() {
@@ -143,23 +130,4 @@ pub fn table_load_from_device() -> Result<SMBiosData, Error> {
     let table = try_load_macos_table()?;
 
     Ok(SMBiosData::from_vec_and_version(table, Some(version)))
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn device_load_unit_test() {
-        match table_load_from_device() {
-            Ok(table) => {
-                println!("table_data: {:?}", table);
-
-                for smbios_structure in table.into_iter() {
-                    println!("{:#?}", smbios_structure.defined_struct());
-                }
-            }
-            Err(err) => panic!("failure: {:?}", err),
-        }
-    }
 }
