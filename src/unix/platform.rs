@@ -66,22 +66,3 @@ pub fn table_load_from_device() -> Result<SMBiosData, Error> {
 
     SMBiosData::try_load_from_file(SYS_TABLE_FILE, Some(version))
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn device_load_unit_test() {
-        match table_load_from_device() {
-            Ok(table) => {
-                println!("table_data: {:?}", table);
-
-                for smbios_structure in table.into_iter() {
-                    println!("{:#?}", smbios_structure.defined_struct());
-                }
-            }
-            Err(err) => panic!("failure: {:?}", err),
-        }
-    }
-}

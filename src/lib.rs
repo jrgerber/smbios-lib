@@ -9,6 +9,7 @@
 #![deny(rust_2018_idioms)]
 
 mod core;
+mod macos;
 mod read;
 mod structs;
 mod unix;
@@ -24,5 +25,8 @@ pub use windows::{load_windows_smbios_data, table_load_from_device};
 
 pub use windows::WinSMBiosData;
 
-#[cfg(target_family = "unix")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 pub use unix::*;
+
+#[cfg(any(target_os = "macos", target_os = "ios"))]
+pub use macos::*;

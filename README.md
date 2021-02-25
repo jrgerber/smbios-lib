@@ -3,6 +3,7 @@ An SMBIOS Library created in Rust that reads and parses raw BIOS data
 
 ![Windows](https://github.com/jrgerber/smbios-lib/actions/workflows/windows.yml/badge.svg)
 ![Linux](https://github.com/jrgerber/smbios-lib/actions/workflows/linux.yml/badge.svg)
+![MacOS](https://github.com/jrgerber/smbios-lib/actions/workflows/macos.yml/badge.svg)
 
 ## Table of contents
 * [General info](#general-info)
@@ -16,13 +17,11 @@ This project reads raw [SMBIOS](https://en.wikipedia.org/wiki/BIOS) data from ei
 ### Supports
 * [DMTF System Management BIOS (SMBIOS) Reference
 Specification 3.4.0](https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.4.0.pdf)
-* Unix family
+* Linux
+* MacOS
 * Windows family
 
 > SMBIOS 3.4.0 contains 46 defined structure types, all of which are covered by this library (types 0-43, 126, and 127).  Support via extensibility exists for types 128-255 (reserved for OEMs).  Extensibility also applies in the case when this library has not been updated for the latest specification version or a pre-released specification and a new type is introduced.
-
-### Planned Support
-* MacOS
 
 ### Project Status
 In early development.

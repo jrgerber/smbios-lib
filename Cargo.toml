@@ -27,3 +27,10 @@ path = "src/main.rs"
 
 [target.'cfg(windows)'.dependencies]
 libc = "0.2"
+
+[target.'cfg(any(target_os = "macos", target_os = "ios"))'.dependencies]
+libc = "^0.2"
+mach = "^0.3"
+core-foundation = "~0.6"
+core-foundation-sys = "~0.6"
+io-kit-sys = "0.1.0"
