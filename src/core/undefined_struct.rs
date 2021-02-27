@@ -47,16 +47,20 @@ impl<'a> UndefinedStruct {
     /// Creates a structure instance of the given byte array slice
     pub fn new(raw: &Vec<u8>) -> Self {
         let header_length = UndefinedStruct::header_length(raw);
-        UndefinedStruct {
-            header: Header::new(raw[..Header::SIZE].try_into().expect("4 bytes")),
-            fields: raw.get(..header_length).unwrap_or(&[]).to_vec(),
-            strings: {
-                Strings::new(
-                    raw.get(header_length..raw.len() - 2)
-                        .unwrap_or(&[])
-                        .to_vec(),
-                )
-            },
+        match header_length {
+            0 => UndefinedStruct{..Default::default()},
+            _ =>
+                UndefinedStruct {
+                    header: Header::new(raw[..Header::SIZE].try_into().expect("4 bytes")),
+                    fields: raw.get(..header_length).unwrap_or(&[]).to_vec(),
+                    strings: {
+                        Strings::new(
+                            raw.get(header_length..raw.len() - 2)
+                                .unwrap_or(&[])
+                                .to_vec(),
+                        )
+                    },
+                }
         }
     }
 
@@ -161,6 +165,19 @@ impl fmt::Debug for UndefinedStruct {
             .field("fields", &fields)
             .field("strings", &self.strings)
             .finish()
+    }
+}
+
+impl Default for UndefinedStruct {
+    fn default() -> Self {
+        let v : [u8; 4] = [0; 4];
+        UndefinedStruct {
+            header: Header::new(v),
+            fields: (&[]).to_vec(),
+            strings: {
+                Strings::new((&[]).to_vec())
+            }
+        }
     }
 }
 
