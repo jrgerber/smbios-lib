@@ -218,65 +218,120 @@ impl<'a> UndefinedStructTable {
     }
 }
 
+// impl From<Vec<u8>> for UndefinedStructTable {
+//     fn from(data: Vec<u8>) -> Self {
+//         let mut result = Self::new();
+//         let mut current_index = 0usize;
+//         let len = data.len();
+
+//         loop {
+//             let mut next_index = current_index;
+
+//             // We are done iterating if current_index points beyond the end of "data".
+//             if next_index >= len {
+//                 return result;
+//             }
+
+//             // A valid structure has:
+//             // - At least 6 bytes.  A header of 4 bytes plus the terminating two bytes (\0\0) in the string area.
+//             // - The second byte indicates the structure length (header plus structure data).
+//             //   The length does not include the string area (which at a minimum the last two bytes of zero)
+//             // - The last two bytes are 0 (the end of the string area)
+//             if len < Header::SIZE + 2 // struct is too short
+//             || (data[next_index + Header::LENGTH_OFFSET] as usize) > len - 2 // struct header specifies a length too long
+//             || data[len - 2] != 0 // 2nd to last byte should be zero and it is not
+//             || data[len - 1] != 0
+//             // Last byte should be zero and it is not
+//             {
+//                 return result;
+//             }
+
+//             // next_index is pointing at the start of the structure header.
+//             // Read the struct header length at offset 1 of the header (next_index + 1) and advance to the
+//             // string area which follows the stucture.
+//             next_index += data[current_index + Header::LENGTH_OFFSET] as usize;
+
+//             // next_index is pointing at the start of the string area.
+//             // The string area is terminated with \0\0.  If no strings exist then its contents is \0\0.
+//             // Search for \0\0 and point at the byte immediately after it.  That point is either the start of the
+//             // next structure header or one byte beyond the end of "data".
+//             let mut a: bool;
+//             let mut b = true;
+//             loop {
+//                 if next_index >= len {
+//                     break;
+//                 }
+//                 a = data[next_index] != 0;
+//                 next_index = next_index + 1;
+//                 if a || b {
+//                     b = data[next_index] != 0;
+//                     next_index = next_index + 1;
+//                 }
+//                 if !(a || b) {
+//                     break;
+//                 }
+//             }
+
+//             let previous_index = current_index;
+//             current_index = next_index;
+
+//             match data.get(previous_index..current_index) {
+//                 Some(val) => result.add(UndefinedStruct::new(&val.to_vec())),
+//                 None => break,
+//             }
+//         }
+
+//         result
+//     }
+// }
+
 impl From<Vec<u8>> for UndefinedStructTable {
     fn from(data: Vec<u8>) -> Self {
+        const MIN_STRUCT_SIZE: usize = Header::SIZE + 2;
+        const DOUBLE_ZERO_SIZE: usize = 2usize;
         let mut result = Self::new();
         let mut current_index = 0usize;
-        let len = data.len();
 
         loop {
-            let mut next_index = current_index;
+            // Is the next structure long enough?
+            match data.get(current_index..current_index + MIN_STRUCT_SIZE) {
+                Some(min_struct) => {
+                    // Read the structure's self-reported length in its header
+                    let struct_len = min_struct[Header::LENGTH_OFFSET] as usize;
 
-            // We are done iterating if current_index points beyond the end of "data".
-            if next_index >= len {
-                return result;
-            }
+                    // Bad reported length
+                    if struct_len < Header::SIZE {
+                        break;
+                    }
 
-            // A valid structure has:
-            // - At least 6 bytes.  A header of 4 bytes plus the terminating two bytes (\0\0) in the string area.
-            // - The second byte indicates the structure length (header plus structure data).
-            //   The length does not include the string area (which at a minimum the last two bytes of zero)
-            // - The last two bytes are 0 (the end of the string area)
-            if len < Header::SIZE + 2 // struct is too short
-            || (data[next_index + Header::LENGTH_OFFSET] as usize) > len - 2 // struct header specifies a length too long
-            || data[len - 2] != 0 // 2nd to last byte should be zero and it is not
-            || data[len - 1] != 0
-            // Last byte should be zero and it is not
-            {
-                return result;
-            }
+                    // Beyond the structure length are the structure's strings
+                    // Find the /0/0 which marks the end of this structure and the
+                    // beginning of the next.
+                    match data.get(current_index + struct_len..) {
+                        Some(strings_etc) => {
+                            match strings_etc
+                                .windows(DOUBLE_ZERO_SIZE)
+                                .position(|x| x[0] == x[1] && x[1] == 0)
+                            {
+                                Some(double_zero_position) => {
+                                    // The next structure will start at this index
+                                    let next_index = current_index
+                                        + struct_len
+                                        + double_zero_position
+                                        + DOUBLE_ZERO_SIZE;
 
-            // next_index is pointing at the start of the structure header.
-            // Read the struct header length at offset 1 of the header (next_index + 1) and advance to the
-            // string area which follows the stucture.
-            next_index += data[current_index + Header::LENGTH_OFFSET] as usize;
-
-            // next_index is pointing at the start of the string area.
-            // The string area is terminated with \0\0.  If no strings exist then its contents is \0\0.
-            // Search for \0\0 and point at the byte immediately after it.  That point is either the start of the
-            // next structure header or one byte beyond the end of "data".
-            let mut a: bool;
-            let mut b = true;
-            loop {
-                if next_index >= len {
-                    break;
+                                    // Copy the current structure to the collection
+                                    result.add(UndefinedStruct::new(
+                                        &data[current_index..next_index].to_vec(),
+                                    ));
+                                    current_index = next_index;
+                                }
+                                None => break,
+                            }
+                        }
+                        None => break,
+                    };
                 }
-                a = data[next_index] != 0;
-                next_index = next_index + 1;
-                if a || b {
-                    b = data[next_index] != 0;
-                    next_index = next_index + 1;
-                }
-                if !(a || b) {
-                    break;
-                }
-            }
-
-            let previous_index = current_index;
-            current_index = next_index;
-
-            match data.get(previous_index..current_index) {
-                Some(val) => result.add(UndefinedStruct::new(&val.to_vec())),
                 None => break,
             }
         }
