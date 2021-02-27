@@ -220,8 +220,8 @@ impl<'a> UndefinedStructTable {
 
 impl From<Vec<u8>> for UndefinedStructTable {
     fn from(data: Vec<u8>) -> Self {
-        const MIN_STRUCT_SIZE: usize = Header::SIZE + 2;
         const DOUBLE_ZERO_SIZE: usize = 2usize;
+        const MIN_STRUCT_SIZE: usize = Header::SIZE + DOUBLE_ZERO_SIZE;
         let mut result = Self::new();
         let mut current_index = 0usize;
 
