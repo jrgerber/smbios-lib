@@ -46,27 +46,21 @@ pub struct UndefinedStruct {
 impl<'a> UndefinedStruct {
     /// Creates a structure instance of the given byte array slice
     pub fn new(raw: &Vec<u8>) -> Self {
-        let header_length = UndefinedStruct::header_length(raw);
-        match header_length {
-            0 => UndefinedStruct{..Default::default()},
-            _ =>
+        match raw.get(Header::LENGTH_OFFSET) {
+            Some(&header_length) =>
                 UndefinedStruct {
                     header: Header::new(raw[..Header::SIZE].try_into().expect("4 bytes")),
-                    fields: raw.get(..header_length).unwrap_or(&[]).to_vec(),
+                    fields: raw.get(..(header_length as usize)).unwrap_or(&[]).to_vec(),
                     strings: {
                         Strings::new(
-                            raw.get(header_length..raw.len() - 2)
+                            raw.get((header_length as usize)..raw.len() - 2)
                                 .unwrap_or(&[])
                                 .to_vec(),
                         )
                     },
-                }
+                },
+            None => UndefinedStruct{..Default::default()},
         }
-    }
-
-    fn header_length(raw: &Vec<u8>) -> usize {
-        raw.get(Header::LENGTH_OFFSET..Header::LENGTH_OFFSET + 1)
-            .unwrap_or(&[0])[0] as usize
     }
 
     /// Retrieve a byte at the given offset from the structure's data section
