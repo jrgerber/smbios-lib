@@ -29,7 +29,14 @@ In early development.
 The current development stage is to finalize the API design.
 	
 ## Dependencies
-* libc version: 0.2 (On Windows family only)
+* Windows
+    * libc = "^0.2"
+* MacOS
+    * libc = "^0.2"
+    * mach = "^0.3"
+    * core-foundation = "~0.6"
+    * core-foundation-sys = "~0.6"
+    * io-kit-sys = "^0.1.0"
 	
 ## Security
 This library design follows a strict security mantra: *"Never trust the input"*.
