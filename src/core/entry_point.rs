@@ -1,4 +1,6 @@
-use std::{convert::TryFrom, convert::TryInto, fs::read, io::Error, io::ErrorKind, num::Wrapping};
+use std::{
+    convert::TryFrom, convert::TryInto, fmt, fs::read, io::Error, io::ErrorKind, num::Wrapping,
+};
 
 /// # SMBIOS 2.1 (32 bit) Entry Point structure
 ///
@@ -292,6 +294,32 @@ impl<'a> TryFrom<Vec<u8>> for SMBiosEntryPoint32 {
     }
 }
 
+impl fmt::Debug for SMBiosEntryPoint32 {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosEntryPoint32>())
+            .field(
+                "entry_point_structure_checksum",
+                &self.entry_point_structure_checksum(),
+            )
+            .field("entry_point_length", &self.entry_point_length())
+            .field("major_version", &self.major_version())
+            .field("minor_version", &self.minor_version())
+            .field("maximum_structure_size", &self.maximum_structure_size())
+            .field("entry_point_revision", &self.entry_point_revision())
+            .field("formatted_area", &self.formatted_area())
+            .field("intermediate_anchor", &self.intermediate_anchor())
+            .field("intermediate_checksum", &self.intermediate_checksum())
+            .field("structure_table_length", &self.structure_table_length())
+            .field("structure_table_address", &self.structure_table_address())
+            .field(
+                "number_of_smbios_structures",
+                &self.number_of_smbios_structures(),
+            )
+            .field("bcd_revision", &self.bcd_revision())
+            .finish()
+    }
+}
+
 /// # SMBIOS 3.0 (64 bit) Entry Point structure
 ///
 /// On non-UEFI systems, the 64-bit SMBIOS Entry Point structure can be located by application software by
@@ -430,6 +458,26 @@ impl<'a> SMBiosEntryPoint64 {
     /// Load this structure from a file
     pub fn try_load_from_file(filename: &str) -> Result<Self, Error> {
         read(filename)?.try_into()
+    }
+}
+
+impl fmt::Debug for SMBiosEntryPoint64 {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosEntryPoint64>())
+            .field(
+                "entry_point_structure_checksum",
+                &self.entry_point_structure_checksum(),
+            )
+            .field("entry_point_length", &self.entry_point_length())
+            .field("major_version", &self.major_version())
+            .field("minor_version", &self.minor_version())
+            .field("docrev", &self.docrev())
+            .field(
+                "structure_table_maximum_size",
+                &self.structure_table_maximum_size(),
+            )
+            .field("structure_table_address", &self.structure_table_address())
+            .finish()
     }
 }
 
