@@ -128,15 +128,15 @@ pub fn table_load_from_device() -> Result<SMBiosData, Error> {
     };
 
     let table = try_load_macos_table()?;
-    dump_table(&table);
+    // dump_table(&table);
     Ok(SMBiosData::from_vec_and_version(table, Some(version)))
 }
 
-fn dump_table(data: &Vec<u8>) {
+fn dump_table(data: &Vec<u8>, filename: &str) {
     use std::fs::File;
     use std::io::{BufWriter, Write};
 
-    let f = File::create("macos.dat").expect("Unable to create file");
+    let f = File::create(&filename).expect("Unable to create file");
     let mut f = BufWriter::new(f);
     f.write_all(&data).expect("Unable to write data");
 }
