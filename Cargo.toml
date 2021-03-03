@@ -24,6 +24,7 @@ name = "smbiosdump"
 path = "src/main.rs"
 
 [dependencies]
+getopts = "0.2.21"
 
 [target.'cfg(windows)'.dependencies]
 libc = "0.2"
@@ -34,4 +35,3 @@ mach = "^0.3"
 core-foundation = "~0.6"
 core-foundation-sys = "~0.6"
 io-kit-sys = "0.1.0"
-getopts = "0.2.21"
