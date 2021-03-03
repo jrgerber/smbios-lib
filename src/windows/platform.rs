@@ -23,8 +23,8 @@ mod ffi {
 /// Calls the Windows kernel32 function [GetSystemFirmwareTable](https://docs.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-getsystemfirmwaretable)
 pub fn load_windows_smbios_data() -> Result<WinSMBiosData, Error> {
     match raw_smbios_from_device() {
-        Some(raw) => Ok(WinSMBiosData::new(raw)),
-        Err(err) => Err(err)
+        Ok(raw) => Ok(WinSMBiosData::new(raw)),
+        Err(e) => Err(e)
     }
 }
 
