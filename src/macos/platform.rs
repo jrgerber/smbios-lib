@@ -131,3 +131,8 @@ pub fn table_load_from_device() -> Result<SMBiosData, Error> {
 
     Ok(SMBiosData::from_vec_and_version(table, Some(version)))
 }
+
+/// Returns smbios raw data
+pub fn raw_smbios_from_device() -> Result<Vec<u8>, Error> {
+    Ok(try_load_macos_table()?)
+}

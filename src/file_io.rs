@@ -5,8 +5,9 @@
 use windows::WinSMBiosData;
 
 use crate::*;
-use std::fs::{read, read_dir};
-use std::io::Error;
+use std::fs::{read, read_dir, File};
+use std::io::{Error, BufWriter, Write};
+
 
 /// Loads raw smbios data from a file and returns [SMBiosData] or [std::io::Error] on error.
 ///
@@ -48,6 +49,15 @@ pub fn load_raw_files(folder: &str) -> Vec<SMBiosData> {
 
     result
 }
+
+/// dumps raw data into a file
+pub fn dump_raw(data: Vec<u8>, filename: &str) -> Result<(), Error> {
+    let f = File::create(&filename)?;
+    let mut f = BufWriter::new(f);
+    f.write_all(&data)?;
+    Ok(())
+}
+
 
 #[cfg(test)]
 mod tests {

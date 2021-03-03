@@ -1,5 +1,9 @@
 use crate::*;
 use std::{io::Error, io::ErrorKind};
+use std::fs::read;
+
+const SYS_ENTRY_FILE: &'static str = "/sys/firmware/dmi/tables/smbios_entry_point";
+const SYS_TABLE_FILE: &'static str = "/sys/firmware/dmi/tables/DMI";
 
 // Example of Linux structure:
 /*
@@ -35,9 +39,6 @@ use std::{io::Error, io::ErrorKind};
 
 /// Loads SMBIOS table data ([SMBiosData]) from the device
 pub fn table_load_from_device() -> Result<SMBiosData, Error> {
-    const SYS_ENTRY_FILE: &'static str = "/sys/firmware/dmi/tables/smbios_entry_point";
-    const SYS_TABLE_FILE: &'static str = "/sys/firmware/dmi/tables/DMI";
-
     let version: SMBiosVersion;
     match SMBiosEntryPoint64::try_load_from_file(SYS_ENTRY_FILE) {
         Ok(entry_point) => {
@@ -65,4 +66,9 @@ pub fn table_load_from_device() -> Result<SMBiosData, Error> {
     }
 
     SMBiosData::try_load_from_file(SYS_TABLE_FILE, Some(version))
+}
+
+/// Returns smbios raw data
+pub fn raw_smbios_from_device() -> Result<Vec<u8>, Error> {
+    Ok(read(SYS_TABLE_FILE)?)
 }
