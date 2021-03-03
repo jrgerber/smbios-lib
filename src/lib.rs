@@ -21,7 +21,7 @@ pub use crate::core::*;
 pub use read::*;
 
 #[cfg(target_family = "windows")]
-pub use windows::{load_windows_smbios_data, table_load_from_device};
+pub use windows::{load_windows_smbios_data, table_load_from_device, raw_smbios_from_device};
 
 pub use windows::WinSMBiosData;
 
