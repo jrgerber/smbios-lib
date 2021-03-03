@@ -22,6 +22,16 @@ mod ffi {
 
 /// Calls the Windows kernel32 function [GetSystemFirmwareTable](https://docs.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-getsystemfirmwaretable)
 pub fn load_windows_smbios_data() -> Result<WinSMBiosData, Error> {
+    Ok(WinSMBiosData::new(raw_smbios_from_device())?)
+}
+
+/// Loads SMBIOS table data ([SMBiosData]) from the device
+pub fn table_load_from_device() -> Result<SMBiosData, Error> {
+    Ok(load_windows_smbios_data()?.smbios_data)
+}
+
+/// Returns smbios raw data
+pub fn raw_smbios_from_device() -> Result<Vec<u8>, Error> {
     use std::ptr;
 
     unsafe {
@@ -56,13 +66,6 @@ pub fn load_windows_smbios_data() -> Result<WinSMBiosData, Error> {
             Err(Error::new(ErrorKind::Other, MEMORY_ERROR_MESSAGE))
         } else {
             firmware_table_buffer.set_len(buffer_size as usize);
-
-            WinSMBiosData::new(firmware_table_buffer)
         }
     }
-}
-
-/// Loads SMBIOS table data ([SMBiosData]) from the device
-pub fn table_load_from_device() -> Result<SMBiosData, Error> {
-    Ok(load_windows_smbios_data()?.smbios_data)
 }
