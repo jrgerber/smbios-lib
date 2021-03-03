@@ -128,7 +128,7 @@ pub fn table_load_from_device() -> Result<SMBiosData, Error> {
     };
 
     let table = try_load_macos_table()?;
-    // dump_table(&table);
+
     Ok(SMBiosData::from_vec_and_version(table, Some(version)))
 }
 
