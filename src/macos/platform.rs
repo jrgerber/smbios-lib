@@ -106,12 +106,12 @@ fn try_load_macos_table() -> Result<Vec<u8>, Error> {
             CFRelease(data_ref.as_void_ptr());
         }
 
-        let len = CFDataGetLength(data_ref);
+        let data_ptr = CFDataGetBytePtr(data_ref);
+        let data_length = CFDataGetLength(data_ref);
+        let mut table: Vec<u8> = Vec::with_capacity(data_length as usize);
 
-        let mut table: Vec<u8> = Vec::with_capacity(len as usize);
-        let table_ptr = table.as_mut_ptr();
-        std::ptr::copy(table_ptr, table.as_mut_ptr(), len as usize);
-        table.set_len(len as usize);
+        std::ptr::copy(data_ptr, table.as_mut_ptr(), data_length as usize);
+        table.set_len(data_length as usize);
 
         Ok(table)
     }
