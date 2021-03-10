@@ -54,7 +54,7 @@ impl SMBiosData {
     pub fn find_defined_struct<'a, T, P>(&'a self, predicate: P) -> Option<T>
     where
         T: SMBiosStruct<'a>,
-        P: FnMut(&UndefinedStruct) -> bool,
+        P: FnMut(&T) -> bool,
     {
         self.table.find_defined_struct(predicate)
     }

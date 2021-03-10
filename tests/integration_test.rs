@@ -57,3 +57,20 @@ fn struct_struct_association() {
         Err(err) => println!("failure: {:?}", err),
     }
 }
+
+/// Test find_defined_struct() - finds the first populated CPU socket
+#[test]
+fn find_first_cpu() {
+    match table_load_from_device() {
+        Ok(data) => match data.find_defined_struct(|proc_info: &SMBiosProcessorInformation| match (proc_info.status(), proc_info.processor_type()) {
+            (Some(status), Some(proc_type)) => { status.socket_populated() && proc_type.value == ProcessorType::CentralProcessor }
+            _ => { false }
+        }) {
+            Some(first_cpu) => {
+                println!("First populated CPU socket: {:#?}", first_cpu);
+            }
+            None => println!("No Processor Information (Type 4) structure found that is a CPU with a populated socket"),
+        },
+        Err(err) => println!("Table load failure: {:?}", err),
+    }
+}

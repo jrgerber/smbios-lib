@@ -205,16 +205,20 @@ impl<'a> UndefinedStructTable {
     }
 
     /// Finds the first occurance of the structure that satisfies a predicate.
-    pub fn find_defined_struct<T, P>(&'a self, mut predicate: P) -> Option<T>
+    pub fn find_defined_struct<T, P>(&'a self, predicate: P) -> Option<T>
     where
         T: SMBiosStruct<'a>,
-        P: FnMut(&UndefinedStruct) -> bool,
+        P: FnMut(&T) -> bool,
     {
         self.iter()
-            .find(|smbios_struct| {
-                smbios_struct.header.struct_type() == T::STRUCT_TYPE && predicate(smbios_struct)
+            .filter_map(|smbios_struct| {
+                if smbios_struct.header.struct_type() == T::STRUCT_TYPE {
+                    Some(T::new(smbios_struct))
+                } else {
+                    None
+                }
             })
-            .and_then(|undefined_struct| Some(T::new(&undefined_struct)))
+            .find(predicate)
     }
 
     /// Finds the structure matching the given handle
