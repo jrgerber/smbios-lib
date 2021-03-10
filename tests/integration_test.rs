@@ -14,7 +14,7 @@ fn windows_dump() {
 #[test]
 fn retrieve_system_uuid() {
     match table_load_from_device() {
-        Ok(data) => match data.find_first::<SMBiosSystemInformation>() {
+        Ok(data) => match data.first_defined_struct::<SMBiosSystemInformation>() {
             Some(system_information) => println!(
                 "System Information UUID == {:?}",
                 system_information.uuid().unwrap()
@@ -29,7 +29,7 @@ fn retrieve_system_uuid() {
 fn print_all_memory_devices() {
     match table_load_from_device() {
         Ok(data) => {
-            for memory_device in data.find_all::<SMBiosMemoryDevice>() {
+            for memory_device in data.collect_defined_struct::<SMBiosMemoryDevice>() {
                 println!("{:#?}", memory_device);
             }
         }
@@ -41,10 +41,10 @@ fn print_all_memory_devices() {
 #[test]
 fn struct_struct_association() {
     match table_load_from_device() {
-        Ok(data) => match data.find_first::<SMBiosMemoryDevice>() {
+        Ok(data) => match data.first_defined_struct::<SMBiosMemoryDevice>() {
             Some(first_memory_device) => {
                 let handle = first_memory_device.physical_memory_array_handle().unwrap();
-                match data.find_by_handle(&handle) {
+                match data.find_handle(&handle) {
                     Some(undefined_struct) => {
                         let physical_memory_array = undefined_struct.defined_struct();
                         println!("{:#?}", physical_memory_array)

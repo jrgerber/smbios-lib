@@ -44,7 +44,7 @@ This library design follows a strict security mantra: *"Never trust the input"*.
 SMBIOS has been around for decades and has undergone many versions and revisions.  Many OEM vendors have interpreted and implemented the specifications over the years. Known cases of incorrect firmware implementations exist.  This presents a veritable labrynth of logic for both the known and the unknown. Rather than creating such a complex state machine, we take advantage of Rust's [Option<>](https://doc.rust-lang.org/std/option/) trait and assert that the act of retrieval for any and all information may fail.  The burden of proof thus shifts from the library to the library consumer who is required to implement the failing condition arm.
 
 ## Examples
-### Retrieve a Field of a Single Instance Structure - find_first()
+### Retrieve a Field of a Single Instance Structure - first_defined_struct()
 Some structures are required and a single instance. (e.g. [SMBiosSystemInformation](src/structs/types/system_information.rs))
 
 ```rust
@@ -52,7 +52,7 @@ Some structures are required and a single instance. (e.g. [SMBiosSystemInformati
 /// Retrieves the System UUID from a device
 fn retrieve_system_uuid() {
     match table_load_from_device() {
-        Ok(data) => match data.find_first::<SMBiosSystemInformation>() {
+        Ok(data) => match data.first_defined_struct::<SMBiosSystemInformation>() {
             Some(system_information) => println!(
                 "System Information UUID == {:?}",
                 system_information.uuid().unwrap()
@@ -71,7 +71,7 @@ System Information UUID == Uuid(4EE6523F-D56A-F3EA-8E2A-891CF96286EA)
 test retrieve_system_uuid ... ok
 ```
 
-### Retrieve Multiple Instances of a Structure - find_all()
+### Retrieve Multiple Instances of a Structure - collect_defined_struct()
 Some structures are allowed to have more than one instance. (e.g. [SMBiosMemoryDevice](src/structs/types/memory_device.rs))
 
 ```rust
@@ -80,7 +80,7 @@ Some structures are allowed to have more than one instance. (e.g. [SMBiosMemoryD
 fn print_all_memory_devices() {
     match table_load_from_device() {
         Ok(data) => {
-            for memory_device in data.find_all::<SMBiosMemoryDevice>() {
+            for memory_device in data.collect_defined_struct::<SMBiosMemoryDevice>() {
                 println!("{:#?}", memory_device);
             }
         }
@@ -108,7 +108,7 @@ smbioslib::structs::types::memory_device::SMBiosMemoryDevice {
 [...elided...]
 ```
 
-### Retrieve a Structure Given a Handle - find_by_handle()
+### Retrieve a Structure Given a Handle - find_handle()
 Some structures point to other structures via handles. (e.g. [SMBiosMemoryDevice](src/structs/types/memory_device.rs) points to [SMBiosPhysicalMemoryArray](src/structs/types/physical_memory_array.rs))
 
 ```rust
@@ -116,10 +116,10 @@ Some structures point to other structures via handles. (e.g. [SMBiosMemoryDevice
 #[test]
 fn struct_struct_association() {
     match table_load_from_device() {
-        Ok(data) => match data.find_first::<SMBiosMemoryDevice>() {
+        Ok(data) => match data.first_defined_struct::<SMBiosMemoryDevice>() {
             Some(first_memory_device) => {
                 let handle = first_memory_device.physical_memory_array_handle().unwrap();
-                match data.find_by_handle(&handle) {
+                match data.find_handle(&handle) {
                     Some(undefined_struct) => {
                         let physical_memory_array = undefined_struct.defined_struct();
                         println!("{:#?}", physical_memory_array)

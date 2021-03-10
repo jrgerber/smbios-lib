@@ -43,24 +43,33 @@ impl SMBiosData {
     }
 
     /// Finds the first occurance of the structure
-    pub fn find_first<'a, T>(&'a self) -> Option<T>
+    pub fn first_defined_struct<'a, T>(&'a self) -> Option<T>
     where
         T: SMBiosStruct<'a>,
     {
-        self.table.find_first()
+        self.table.first_defined_struct()
+    }
+
+    /// Finds the first occurance of the structure that satisfies a predicate.
+    pub fn find_defined_struct<'a, T, P>(&'a self, predicate: P) -> Option<T>
+    where
+        T: SMBiosStruct<'a>,
+        P: FnMut(&UndefinedStruct) -> bool,
+    {
+        self.table.find_defined_struct(predicate)
     }
 
     /// Finds the structure matching the given handle
-    pub fn find_by_handle<'a>(&'a self, handle: &Handle) -> Option<&UndefinedStruct> {
-        self.table.find_by_handle(handle)
+    pub fn find_handle<'a>(&'a self, handle: &Handle) -> Option<&UndefinedStruct> {
+        self.table.find_handle(handle)
     }
 
     /// Finds all occurances of the structure
-    pub fn find_all<'a, T>(&'a self) -> Vec<T>
+    pub fn collect_defined_struct<'a, T>(&'a self) -> Vec<T>
     where
         T: SMBiosStruct<'a>,
     {
-        self.table.find_all()
+        self.table.collect_defined_struct()
     }
 }
 

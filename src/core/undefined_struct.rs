@@ -47,19 +47,20 @@ impl<'a> UndefinedStruct {
     /// Creates a structure instance of the given byte array slice
     pub fn new(raw: &Vec<u8>) -> Self {
         match raw.get(Header::LENGTH_OFFSET) {
-            Some(&header_length) =>
-                UndefinedStruct {
-                    header: Header::new(raw[..Header::SIZE].try_into().expect("4 bytes")),
-                    fields: raw.get(..(header_length as usize)).unwrap_or(&[]).to_vec(),
-                    strings: {
-                        Strings::new(
-                            raw.get((header_length as usize)..raw.len() - 2)
-                                .unwrap_or(&[])
-                                .to_vec(),
-                        )
-                    },
+            Some(&header_length) => UndefinedStruct {
+                header: Header::new(raw[..Header::SIZE].try_into().expect("4 bytes")),
+                fields: raw.get(..(header_length as usize)).unwrap_or(&[]).to_vec(),
+                strings: {
+                    Strings::new(
+                        raw.get((header_length as usize)..raw.len() - 2)
+                            .unwrap_or(&[])
+                            .to_vec(),
+                    )
                 },
-            None => UndefinedStruct{..Default::default()},
+            },
+            None => UndefinedStruct {
+                ..Default::default()
+            },
         }
     }
 
@@ -164,13 +165,11 @@ impl fmt::Debug for UndefinedStruct {
 
 impl Default for UndefinedStruct {
     fn default() -> Self {
-        let v : [u8; 4] = [0; 4];
+        let v: [u8; 4] = [0; 4];
         UndefinedStruct {
             header: Header::new(v),
             fields: (&[]).to_vec(),
-            strings: {
-                Strings::new((&[]).to_vec())
-            }
+            strings: { Strings::new((&[]).to_vec()) },
         }
     }
 }
@@ -196,7 +195,7 @@ impl<'a> UndefinedStructTable {
     }
 
     /// Finds the first occurance of the structure
-    pub fn find_first<T>(&'a self) -> Option<T>
+    pub fn first_defined_struct<T>(&'a self) -> Option<T>
     where
         T: SMBiosStruct<'a>,
     {
@@ -205,15 +204,28 @@ impl<'a> UndefinedStructTable {
             .and_then(|undefined_struct| Some(T::new(&undefined_struct)))
     }
 
+    /// Finds the first occurance of the structure that satisfies a predicate.
+    pub fn find_defined_struct<T, P>(&'a self, mut predicate: P) -> Option<T>
+    where
+        T: SMBiosStruct<'a>,
+        P: FnMut(&UndefinedStruct) -> bool,
+    {
+        self.iter()
+            .find(|smbios_struct| {
+                smbios_struct.header.struct_type() == T::STRUCT_TYPE && predicate(smbios_struct)
+            })
+            .and_then(|undefined_struct| Some(T::new(&undefined_struct)))
+    }
+
     /// Finds the structure matching the given handle
-    pub fn find_by_handle(&'a self, handle: &Handle) -> Option<&'a UndefinedStruct> {
+    pub fn find_handle(&'a self, handle: &Handle) -> Option<&'a UndefinedStruct> {
         self.iter()
             .find(|smbios_struct| smbios_struct.header.handle() == *handle)
             .and_then(|undefined_struct| Some(undefined_struct))
     }
 
     /// Finds all occurances of the structure
-    pub fn find_all<T>(&'a self) -> Vec<T>
+    pub fn collect_defined_struct<T>(&'a self) -> Vec<T>
     where
         T: SMBiosStruct<'a>,
     {
