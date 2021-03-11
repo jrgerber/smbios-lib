@@ -1,7 +1,7 @@
 use crate::*;
-use std::fs::read;
 use std::io::Error;
 use std::{cmp::Ordering, slice::Iter};
+use std::{fs::read, iter::Filter};
 
 /// # SMBIOS Data
 ///
@@ -57,6 +57,18 @@ impl SMBiosData {
         P: FnMut(&T) -> bool,
     {
         self.table.find_defined_struct(predicate)
+    }
+
+    /// Finds the instances of the structure that satisfies a predicate.
+    pub fn filter_defined_struct<'a, T: 'a, P: 'a>(
+        &'a self,
+        predicate: P,
+    ) -> Filter<impl Iterator<Item = T> + 'a, P>
+    where
+        T: SMBiosStruct<'a>,
+        P: FnMut(&T) -> bool,
+    {
+        self.table.filter_defined_struct(predicate)
     }
 
     /// Finds the structure matching the given handle

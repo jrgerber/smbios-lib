@@ -74,3 +74,19 @@ fn find_first_cpu() {
         Err(err) => println!("Table load failure: {:?}", err),
     }
 }
+
+/// Test filter_defined_struct() - finds all populated memory sockets
+#[test]
+fn find_installed_memory() {
+    match table_load_from_device() {
+        Err(err) => println!("Table load failure: {:?}", err),
+        Ok(data) => data
+            .filter_defined_struct(|memory_device: &SMBiosMemoryDevice| {
+                match memory_device.size() {
+                    Some(size) => size != MemorySize::NotInstalled,
+                    _ => false,
+                }
+            })
+            .for_each(|installed_memory| println!("Installed memory: {:#X?}", installed_memory)),
+    }
+}

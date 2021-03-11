@@ -884,7 +884,7 @@ impl From<u16> for MemorySpeed {
 }
 
 /// # Size of Memory
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum MemorySize {
     /// No Memory Device Installed in the Socket
     NotInstalled,

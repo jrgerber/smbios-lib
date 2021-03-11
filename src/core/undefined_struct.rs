@@ -1,4 +1,4 @@
-use std::{convert::TryInto, slice::Iter};
+use std::{convert::TryInto, iter::Filter, slice::Iter};
 
 use crate::*;
 
@@ -219,6 +219,26 @@ impl<'a> UndefinedStructTable {
                 }
             })
             .find(predicate)
+    }
+
+    /// Finds the instances of the structure that satisfies a predicate.
+    pub fn filter_defined_struct<T, P>(
+        &'a self,
+        predicate: P,
+    ) -> Filter<impl Iterator<Item = T> + 'a, P>
+    where
+        T: SMBiosStruct<'a>,
+        P: FnMut(&T) -> bool,
+    {
+        self.iter()
+            .filter_map(|smbios_struct| {
+                if smbios_struct.header.struct_type() == T::STRUCT_TYPE {
+                    Some(T::new(smbios_struct))
+                } else {
+                    None
+                }
+            })
+            .filter(predicate)
     }
 
     /// Finds the structure matching the given handle
