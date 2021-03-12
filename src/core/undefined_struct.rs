@@ -1,4 +1,4 @@
-use std::{convert::TryInto, iter::Filter, slice::Iter};
+use std::{convert::TryInto, slice::Iter};
 
 use crate::*;
 
@@ -194,14 +194,26 @@ impl<'a> UndefinedStructTable {
         self.0.iter()
     }
 
+    /// An iterator over the defined type instances within the table.
+    pub fn defined_struct_iter<T>(&'a self) -> impl Iterator<Item = T> + 'a
+    where
+        T: SMBiosStruct<'a>,
+    {
+        self.iter().filter_map(|smbios_struct| {
+            if smbios_struct.header.struct_type() == T::STRUCT_TYPE {
+                Some(T::new(smbios_struct))
+            } else {
+                None
+            }
+        })
+    }
+
     /// Finds the first occurance of the structure
     pub fn first_defined_struct<T>(&'a self) -> Option<T>
     where
         T: SMBiosStruct<'a>,
     {
-        self.iter()
-            .find(|smbios_struct| smbios_struct.header.struct_type() == T::STRUCT_TYPE)
-            .and_then(|undefined_struct| Some(T::new(&undefined_struct)))
+        self.defined_struct_iter().next()
     }
 
     /// Finds the first occurance of the structure that satisfies a predicate.
@@ -210,38 +222,33 @@ impl<'a> UndefinedStructTable {
         T: SMBiosStruct<'a>,
         P: FnMut(&T) -> bool,
     {
-        self.iter()
-            .filter_map(|smbios_struct| {
-                if smbios_struct.header.struct_type() == T::STRUCT_TYPE {
-                    Some(T::new(smbios_struct))
-                } else {
-                    None
-                }
-            })
-            .find(predicate)
+        self.defined_struct_iter().find(predicate)
     }
 
-    /// Finds the instances of the structure that satisfies a predicate.
-    pub fn filter_defined_struct<T, P>(
+    /// Creates an iterator of the defined structure satisfying a predicate.
+    pub fn filter_defined_struct<T: 'a, P: 'a>(
         &'a self,
         predicate: P,
-    ) -> Filter<impl Iterator<Item = T> + 'a, P>
+    ) -> impl Iterator<Item = T> + 'a
     where
         T: SMBiosStruct<'a>,
         P: FnMut(&T) -> bool,
     {
-        self.iter()
-            .filter_map(|smbios_struct| {
-                if smbios_struct.header.struct_type() == T::STRUCT_TYPE {
-                    Some(T::new(smbios_struct))
-                } else {
-                    None
-                }
-            })
-            .filter(predicate)
+        self.defined_struct_iter().filter(predicate)
+    }
+
+    /// Maps the defined struct to another type given by the closure.
+    pub fn map_defined_struct<A: 'a, B, F: 'a>(&'a self, f: F) -> impl Iterator<Item = B> + 'a
+    where
+        A: SMBiosStruct<'a>,
+        F: FnMut(A) -> B,
+    {
+        self.defined_struct_iter().map(f)
     }
 
     /// Finds the structure matching the given handle
+    ///
+    /// To downcast to the defined struct, call .defined_struct() on the result.
     pub fn find_handle(&'a self, handle: &Handle) -> Option<&'a UndefinedStruct> {
         self.iter()
             .find(|smbios_struct| smbios_struct.header.handle() == *handle)
@@ -253,15 +260,7 @@ impl<'a> UndefinedStructTable {
     where
         T: SMBiosStruct<'a>,
     {
-        self.iter()
-            .filter_map(|smbios_struct| {
-                if smbios_struct.header.struct_type() == T::STRUCT_TYPE {
-                    Some(T::new(smbios_struct))
-                } else {
-                    None
-                }
-            })
-            .collect()
+        self.defined_struct_iter().collect()
     }
 }
 

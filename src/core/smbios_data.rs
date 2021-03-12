@@ -1,7 +1,7 @@
 use crate::*;
+use std::fs::read;
 use std::io::Error;
 use std::{cmp::Ordering, slice::Iter};
-use std::{fs::read, iter::Filter};
 
 /// # SMBIOS Data
 ///
@@ -42,6 +42,14 @@ impl SMBiosData {
         self.table.iter()
     }
 
+    /// An iterator over the defined type instances within the table.
+    pub fn defined_struct_iter<'a, T: 'a>(&'a self) -> impl Iterator<Item = T> + 'a
+    where
+        T: SMBiosStruct<'a>,
+    {
+        self.table.defined_struct_iter()
+    }
+
     /// Finds the first occurance of the structure
     pub fn first_defined_struct<'a, T>(&'a self) -> Option<T>
     where
@@ -59,16 +67,28 @@ impl SMBiosData {
         self.table.find_defined_struct(predicate)
     }
 
-    /// Finds the instances of the structure that satisfies a predicate.
+    /// Creates an iterator of the defined structure which satisfy a predicate.
     pub fn filter_defined_struct<'a, T: 'a, P: 'a>(
         &'a self,
         predicate: P,
-    ) -> Filter<impl Iterator<Item = T> + 'a, P>
+    ) -> impl Iterator<Item = T> + 'a
     where
         T: SMBiosStruct<'a>,
         P: FnMut(&T) -> bool,
     {
         self.table.filter_defined_struct(predicate)
+    }
+
+    /// Takes a closure and creates an iterator which calls that closure on each defined struct.
+    pub fn map_defined_struct<'a, A: 'a, B: 'a, F: 'a>(
+        &'a self,
+        f: F,
+    ) -> impl Iterator<Item = B> + 'a
+    where
+        A: SMBiosStruct<'a>,
+        F: FnMut(A) -> B,
+    {
+        self.table.map_defined_struct(f)
     }
 
     /// Finds the structure matching the given handle
