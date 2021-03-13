@@ -21,7 +21,7 @@ Specification 3.4.0](https://www.dmtf.org/sites/default/files/standards/document
 * MacOS
 * Windows family
 
-> SMBIOS 3.4.0 contains 46 defined structure types, all of which are covered by this library (types 0-43, 126, and 127).  Support via extensibility exists for types 128-255 (reserved for OEMs).  Extensibility also applies in the case when this library has not been updated for the latest specification version or a pre-released specification and a new type is introduced.
+> SMBIOS 3.4.0 contains 47 defined structure types, all of which are covered by this library (types 0-44, 126, and 127).  Support via extensibility exists for types 128-255 (reserved for OEMs).  Extensibility also applies in the case when this library has not been updated for the latest specification version or a pre-released specification and a new type is introduced.
 
 ### Project Status
 In early development.
