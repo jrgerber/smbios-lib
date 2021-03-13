@@ -14,7 +14,7 @@ fn windows_dump() {
 #[test]
 fn retrieve_system_uuid() {
     match table_load_from_device() {
-        Ok(data) => match data.find_first::<SMBiosSystemInformation>() {
+        Ok(data) => match data.first::<SMBiosSystemInformation>() {
             Some(system_information) => println!(
                 "System Information UUID == {:?}",
                 system_information.uuid().unwrap()
@@ -29,7 +29,7 @@ fn retrieve_system_uuid() {
 fn print_all_memory_devices() {
     match table_load_from_device() {
         Ok(data) => {
-            for memory_device in data.find_all::<SMBiosMemoryDevice>() {
+            for memory_device in data.collect::<SMBiosMemoryDevice>() {
                 println!("{:#?}", memory_device);
             }
         }
@@ -41,7 +41,7 @@ fn print_all_memory_devices() {
 #[test]
 fn struct_struct_association() {
     match table_load_from_device() {
-        Ok(data) => match data.find_first::<SMBiosMemoryDevice>() {
+        Ok(data) => match data.first::<SMBiosMemoryDevice>() {
             Some(first_memory_device) => {
                 let handle = first_memory_device.physical_memory_array_handle().unwrap();
                 match data.find_by_handle(&handle) {
@@ -55,5 +55,38 @@ fn struct_struct_association() {
             None => println!("No Memory Device (Type 17) structure found"),
         },
         Err(err) => println!("failure: {:?}", err),
+    }
+}
+
+/// Test find() - finds the first populated CPU socket
+#[test]
+fn find_first_cpu() {
+    match table_load_from_device() {
+        Ok(data) => match data.find(|proc_info: &SMBiosProcessorInformation| match (proc_info.status(), proc_info.processor_type()) {
+            (Some(status), Some(proc_type)) => { status.socket_populated() && proc_type.value == ProcessorType::CentralProcessor }
+            _ => { false }
+        }) {
+            Some(first_cpu) => {
+                println!("First populated CPU socket: {:#?}", first_cpu);
+            }
+            None => println!("No Processor Information (Type 4) structure found that is a CPU with a populated socket"),
+        },
+        Err(err) => println!("Table load failure: {:?}", err),
+    }
+}
+
+/// Test filter() - finds all populated memory sockets
+#[test]
+fn find_installed_memory() {
+    match table_load_from_device() {
+        Err(err) => println!("Table load failure: {:?}", err),
+        Ok(data) => data
+            .filter(
+                |memory_device: &SMBiosMemoryDevice| match memory_device.size() {
+                    Some(size) => size != MemorySize::NotInstalled,
+                    _ => false,
+                },
+            )
+            .for_each(|installed_memory| println!("Installed memory: {:#X?}", installed_memory)),
     }
 }

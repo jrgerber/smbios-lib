@@ -47,19 +47,20 @@ impl<'a> UndefinedStruct {
     /// Creates a structure instance of the given byte array slice
     pub fn new(raw: &Vec<u8>) -> Self {
         match raw.get(Header::LENGTH_OFFSET) {
-            Some(&header_length) =>
-                UndefinedStruct {
-                    header: Header::new(raw[..Header::SIZE].try_into().expect("4 bytes")),
-                    fields: raw.get(..(header_length as usize)).unwrap_or(&[]).to_vec(),
-                    strings: {
-                        Strings::new(
-                            raw.get((header_length as usize)..raw.len() - 2)
-                                .unwrap_or(&[])
-                                .to_vec(),
-                        )
-                    },
+            Some(&header_length) => UndefinedStruct {
+                header: Header::new(raw[..Header::SIZE].try_into().expect("4 bytes")),
+                fields: raw.get(..(header_length as usize)).unwrap_or(&[]).to_vec(),
+                strings: {
+                    Strings::new(
+                        raw.get((header_length as usize)..raw.len() - 2)
+                            .unwrap_or(&[])
+                            .to_vec(),
+                    )
                 },
-            None => UndefinedStruct{..Default::default()},
+            },
+            None => UndefinedStruct {
+                ..Default::default()
+            },
         }
     }
 
@@ -164,13 +165,11 @@ impl fmt::Debug for UndefinedStruct {
 
 impl Default for UndefinedStruct {
     fn default() -> Self {
-        let v : [u8; 4] = [0; 4];
+        let v: [u8; 4] = [0; 4];
         UndefinedStruct {
             header: Header::new(v),
             fields: (&[]).to_vec(),
-            strings: {
-                Strings::new((&[]).to_vec())
-            }
+            strings: { Strings::new((&[]).to_vec()) },
         }
     }
 }
@@ -195,37 +194,110 @@ impl<'a> UndefinedStructTable {
         self.0.iter()
     }
 
-    /// Finds the first occurance of the structure
-    pub fn find_first<T>(&'a self) -> Option<T>
+    /// An iterator over the defined type instances within the table.
+    pub fn defined_struct_iter<T>(&'a self) -> impl Iterator<Item = T> + 'a
     where
         T: SMBiosStruct<'a>,
     {
         self.iter()
-            .find(|smbios_struct| smbios_struct.header.struct_type() == T::STRUCT_TYPE)
-            .and_then(|undefined_struct| Some(T::new(&undefined_struct)))
+            .take_while(|undefined_struct| {
+                undefined_struct.header.struct_type() != SMBiosEndOfTable::STRUCT_TYPE
+            })
+            .filter_map(|undefined_struct| {
+                if undefined_struct.header.struct_type() == T::STRUCT_TYPE {
+                    Some(T::new(undefined_struct))
+                } else {
+                    None
+                }
+            })
+    }
+
+    /// Tests if every element of the defined struct iterator matches a predicate.
+    pub fn all<T, F>(&'a self, f: F) -> bool
+    where
+        T: SMBiosStruct<'a>,
+        F: FnMut(T) -> bool,
+    {
+        self.defined_struct_iter().all(f)
+    }
+
+    /// Tests if any element of the defined struct iterator matches a predicate.
+    pub fn any<T, F>(&'a self, f: F) -> bool
+    where
+        T: SMBiosStruct<'a>,
+        F: FnMut(T) -> bool,
+    {
+        self.defined_struct_iter().any(f)
+    }
+
+    /// Finds the first occurance of the structure
+    pub fn first<T>(&'a self) -> Option<T>
+    where
+        T: SMBiosStruct<'a>,
+    {
+        self.defined_struct_iter().next()
+    }
+
+    /// Finds the first occurance of the structure that satisfies a predicate.
+    pub fn find<T, P>(&'a self, predicate: P) -> Option<T>
+    where
+        T: SMBiosStruct<'a>,
+        P: FnMut(&T) -> bool,
+    {
+        self.defined_struct_iter().find(predicate)
+    }
+
+    /// Applies function to the defined struct elements and returns the first non-none result.
+    pub fn find_map<A, B, F>(&'a self, f: F) -> Option<B>
+    where
+        A: SMBiosStruct<'a>,
+        F: FnMut(A) -> Option<B>,
+    {
+        self.defined_struct_iter().find_map(f)
+    }
+
+    /// Creates an iterator of the defined structure which uses a closure to determine if an element should be yielded.
+    pub fn filter<T: 'a, P: 'a>(&'a self, predicate: P) -> impl Iterator<Item = T> + 'a
+    where
+        T: SMBiosStruct<'a>,
+        P: FnMut(&T) -> bool,
+    {
+        self.defined_struct_iter().filter(predicate)
+    }
+
+    /// Maps the defined struct to another type given by the closure.
+    pub fn map<A: 'a, B, F: 'a>(&'a self, f: F) -> impl Iterator<Item = B> + 'a
+    where
+        A: SMBiosStruct<'a>,
+        F: FnMut(A) -> B,
+    {
+        self.defined_struct_iter().map(f)
+    }
+
+    /// Creates an iterator that both filters and maps from the defined struct iterator.
+    pub fn filter_map<A: 'a, B, F: 'a>(&'a self, f: F) -> impl Iterator<Item = B> + 'a
+    where
+        A: SMBiosStruct<'a>,
+        F: FnMut(A) -> Option<B>,
+    {
+        self.defined_struct_iter().filter_map(f)
     }
 
     /// Finds the structure matching the given handle
+    ///
+    /// To downcast to the defined struct, call .defined_struct() on the result.
     pub fn find_by_handle(&'a self, handle: &Handle) -> Option<&'a UndefinedStruct> {
         self.iter()
             .find(|smbios_struct| smbios_struct.header.handle() == *handle)
             .and_then(|undefined_struct| Some(undefined_struct))
     }
 
-    /// Finds all occurances of the structure
-    pub fn find_all<T>(&'a self) -> Vec<T>
+    /// Returns all occurances of the structure
+    pub fn collect<T>(&'a self) -> Vec<T>
     where
         T: SMBiosStruct<'a>,
     {
-        self.iter()
-            .filter_map(|smbios_struct| {
-                if smbios_struct.header.struct_type() == T::STRUCT_TYPE {
-                    Some(T::new(smbios_struct))
-                } else {
-                    None
-                }
-            })
-            .collect()
+        self.defined_struct_iter().collect()
     }
 }
 

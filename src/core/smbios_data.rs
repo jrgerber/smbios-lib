@@ -12,7 +12,7 @@ pub struct SMBiosData {
     pub version: Option<SMBiosVersion>,
 }
 
-impl SMBiosData {
+impl<'a> SMBiosData {
     /// Creates an SMBIOS table parser which can be iterated
     ///
     /// `data` is a block of bytes representing the raw table data.
@@ -42,25 +42,96 @@ impl SMBiosData {
         self.table.iter()
     }
 
-    /// Finds the first occurance of the structure
-    pub fn find_first<'a, T>(&'a self) -> Option<T>
+    /// An iterator over the defined type instances within the table.
+    pub fn defined_struct_iter<T: 'a>(&'a self) -> impl Iterator<Item = T> + 'a
     where
         T: SMBiosStruct<'a>,
     {
-        self.table.find_first()
+        self.table.defined_struct_iter()
+    }
+
+    /// Tests if every element of the defined struct iterator matches a predicate.
+    pub fn all<T, F>(&'a self, f: F) -> bool
+    where
+        T: SMBiosStruct<'a>,
+        F: FnMut(T) -> bool,
+    {
+        self.table.all(f)
+    }
+
+    /// Tests if any element of the defined struct iterator matches a predicate.
+    pub fn any<T, F>(&'a self, f: F) -> bool
+    where
+        T: SMBiosStruct<'a>,
+        F: FnMut(T) -> bool,
+    {
+        self.table.any(f)
+    }
+
+    /// Finds the first occurance of the structure
+    pub fn first<T>(&'a self) -> Option<T>
+    where
+        T: SMBiosStruct<'a>,
+    {
+        self.table.first()
+    }
+
+    /// Finds the first occurance of the structure that satisfies a predicate.
+    pub fn find<T, P>(&'a self, predicate: P) -> Option<T>
+    where
+        T: SMBiosStruct<'a>,
+        P: FnMut(&T) -> bool,
+    {
+        self.table.find(predicate)
+    }
+
+    /// Applies function to the defined struct elements and returns the first non-none result.
+    pub fn find_map<A, B, F>(&'a self, f: F) -> Option<B>
+    where
+        A: SMBiosStruct<'a>,
+        F: FnMut(A) -> Option<B>,
+    {
+        self.table.find_map(f)
+    }
+
+    /// Creates an iterator of the defined structure which uses a closure to determine if an element should be yielded.
+    pub fn filter<T: 'a, P: 'a>(&'a self, predicate: P) -> impl Iterator<Item = T> + 'a
+    where
+        T: SMBiosStruct<'a>,
+        P: FnMut(&T) -> bool,
+    {
+        self.table.filter(predicate)
+    }
+
+    /// Takes a closure and creates an iterator which calls that closure on each defined struct.
+    pub fn map<A: 'a, B: 'a, F: 'a>(&'a self, f: F) -> impl Iterator<Item = B> + 'a
+    where
+        A: SMBiosStruct<'a>,
+        F: FnMut(A) -> B,
+    {
+        self.table.map(f)
+    }
+
+    /// Creates an iterator that both filters and maps from the defined struct iterator.
+    pub fn filter_map<A: 'a, B: 'a, F: 'a>(&'a self, f: F) -> impl Iterator<Item = B> + 'a
+    where
+        A: SMBiosStruct<'a>,
+        F: FnMut(A) -> Option<B>,
+    {
+        self.table.filter_map(f)
     }
 
     /// Finds the structure matching the given handle
-    pub fn find_by_handle<'a>(&'a self, handle: &Handle) -> Option<&UndefinedStruct> {
+    pub fn find_by_handle(&'a self, handle: &Handle) -> Option<&UndefinedStruct> {
         self.table.find_by_handle(handle)
     }
 
     /// Finds all occurances of the structure
-    pub fn find_all<'a, T>(&'a self) -> Vec<T>
+    pub fn collect<T>(&'a self) -> Vec<T>
     where
         T: SMBiosStruct<'a>,
     {
-        self.table.find_all()
+        self.table.collect()
     }
 }
 
