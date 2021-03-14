@@ -53,7 +53,7 @@ impl<'a> SMBiosSystemInformation<'a> {
     }
 
     /// System UUID
-    pub fn uuid(&self) -> Option<SystemUuidData<'_>> {
+    pub fn uuid(&self) -> Option<SystemUuidData> {
         self.parts
             .get_field_data(0x08, 0x18)
             .map(|raw| SystemUuidData::try_from(raw).expect("A GUID is 0x10 bytes"))
@@ -117,17 +117,17 @@ impl fmt::Debug for SMBiosSystemInformation<'_> {
 
 /// # System - UUID Data
 #[derive(Debug)]
-pub enum SystemUuidData<'a> {
+pub enum SystemUuidData {
     /// The ID is not currently present in the system, but it can be set
     IdNotPresentButSettable,
     /// The ID is not present in the system
     IdNotPresent,
     /// System UUID
-    Uuid(SystemUuid<'a>),
+    Uuid(SystemUuid),
 }
 
-impl<'a> SystemUuidData<'a> {
-    fn new(array: &'a [u8; 0x10]) -> SystemUuidData<'a> {
+impl SystemUuidData {
+    fn new<'a>(array: &'a [u8; 0x10]) -> SystemUuidData {
         if array.iter().all(|&x| x == 0) {
             SystemUuidData::IdNotPresentButSettable
         } else if array.iter().all(|&x| x == 0xFF) {
@@ -138,7 +138,7 @@ impl<'a> SystemUuidData<'a> {
     }
 }
 
-impl<'a> TryFrom<&'a [u8]> for SystemUuidData<'a> {
+impl<'a> TryFrom<&'a [u8]> for SystemUuidData {
     type Error = TryFromSliceError;
 
     fn try_from(raw: &'a [u8]) -> Result<Self, Self::Error> {
@@ -148,12 +148,12 @@ impl<'a> TryFrom<&'a [u8]> for SystemUuidData<'a> {
 
 /// # System - UUID
 #[derive(PartialEq, Eq)]
-pub struct SystemUuid<'a> {
+pub struct SystemUuid {
     /// Raw byte array for this UUID
-    pub raw: &'a [u8; 0x10],
+    pub raw: [u8; 0x10],
 }
 
-impl<'a> SystemUuid<'a> {
+impl SystemUuid {
     /// Low field of the timestamp
     pub fn time_low(&self) -> u32 {
         u32::from_le_bytes(self.raw[..0x4].try_into().expect("incorrect size"))
@@ -185,13 +185,13 @@ impl<'a> SystemUuid<'a> {
     }
 }
 
-impl<'a> From<&'a [u8; 0x10]> for SystemUuid<'a> {
+impl<'a> From<&'a [u8; 0x10]> for SystemUuid {
     fn from(raw: &'a [u8; 0x10]) -> Self {
-        SystemUuid { raw }
+        SystemUuid { raw: raw.clone() }
     }
 }
 
-impl<'a> fmt::Debug for SystemUuid<'a> {
+impl fmt::Debug for SystemUuid {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // Example output:
         // "00360FE7-D4D5-11E5-9C43-BC0000F00000"

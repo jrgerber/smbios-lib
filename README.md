@@ -44,20 +44,18 @@ This library design follows a strict security mantra: *"Never trust the input"*.
 SMBIOS has been around for decades and has undergone many versions and revisions.  Many OEM vendors have interpreted and implemented the specifications over the years. Known cases of incorrect firmware implementations exist.  This presents a veritable labrynth of logic for both the known and the unknown. Rather than creating such a complex state machine, we take advantage of Rust's [Option<>](https://doc.rust-lang.org/std/option/) trait and assert that the act of retrieval for any and all information may fail.  The burden of proof thus shifts from the library to the library consumer who is required to implement the failing condition arm.
 
 ## Examples
-### Retrieve a Field of a Single Instance Structure - first()
-Some structures are required and a single instance. (e.g. [SMBiosSystemInformation](src/structs/types/system_information.rs))
+### Retrieve a Field of a Single Instance Structure
+Some structures are required and are a single instance. (e.g. [SMBiosSystemInformation](src/structs/types/system_information.rs))
 
 ```rust
 #[test]
-/// Retrieves the System UUID from a device
+/// Retrieves the System UUID from a device.
+/// UUID is found in the System Information (type 1) structure
 fn retrieve_system_uuid() {
     match table_load_from_device() {
-        Ok(data) => match data.first::<SMBiosSystemInformation>() {
-            Some(system_information) => println!(
-                "System Information UUID == {:?}",
-                system_information.uuid().unwrap()
-            ),
-            None => println!("No System Information (Type 1) structure found"),
+        Ok(data) => match data.find_map(|sys_info: SMBiosSystemInformation| sys_info.uuid()) {
+            Some(uuid) => println!("System Information UUID == {:?}", uuid),
+            None => println!("No System Information (Type 1) structure found with a UUID field"),
         },
         Err(err) => println!("failure: {:?}", err),
     }

@@ -14,12 +14,9 @@ fn windows_dump() {
 #[test]
 fn retrieve_system_uuid() {
     match table_load_from_device() {
-        Ok(data) => match data.first::<SMBiosSystemInformation>() {
-            Some(system_information) => println!(
-                "System Information UUID == {:?}",
-                system_information.uuid().unwrap()
-            ),
-            None => println!("No System Information (Type 1) structure found"),
+        Ok(data) => match data.find_map(|sys_info: SMBiosSystemInformation| sys_info.uuid()) {
+            Some(uuid) => println!("System Information UUID == {:?}", uuid),
+            None => println!("No System Information (Type 1) structure found with a UUID field"),
         },
         Err(err) => println!("failure: {:?}", err),
     }
