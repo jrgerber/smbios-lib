@@ -1,7 +1,5 @@
 use smbioslib::*;
 
-use std::io::{Error, ErrorKind};
-
 #[derive(Debug)]
 enum BiosParseError {
     BiosVendorNotFound,
@@ -33,7 +31,7 @@ enum BiosParseError {
     InvalidKeywordOnCommandLine,
 }
 
-fn string_keyword(keyword: &str, data: &SMBiosData) -> Result<String, BiosParseError> {
+fn string_keyword(keyword: String, data: &SMBiosData) -> Result<String, BiosParseError> {
     match keyword.to_lowercase().as_str() {
         "bios-vendor" => data
             .find_map(|bios_info: SMBiosInformation| bios_info.vendor())
@@ -170,10 +168,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut opts = getopts::Options::new();
     opts.optopt(file_option, "", "read smbios table from file", "FILE");
     opts.optopt(output_option, "", "dump smbios table to a file", "FILE");
+    opts.optopt(
+        string_option,
+        "",
+        "Only display the value of the DMI string identified by KEYWORD.",
+        "KEYWORD",
+    );
 
     let matches = opts.parse(&args[1..])?;
 
-    if !matches.opt_present(file_option) && !matches.opt_present(output_option) {
+    if !matches.opt_present(file_option)
+        && !matches.opt_present(output_option)
+        && !matches.opt_present(string_option)
+    {
         println!("table_data: {:#?}", table_load_from_device()?);
         return Ok(());
     }
@@ -188,11 +195,25 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         None => (),
     }
+
     match matches.opt_str(output_option) {
         Some(filename) => {
             dump_raw(raw_smbios_from_device()?, &filename)?;
         }
         None => (),
     }
+
+    match matches.opt_str(string_option) {
+        Some(keyword) => {
+            let smbios_data = table_load_from_device()?;
+            match string_keyword(keyword, &smbios_data) {
+                Ok(output) => println!("{}", output),
+                // TODO: Make BiosParseError a returnable Result from main()
+                Err(error) => println!("{:?}", error),
+            }
+        }
+        None => (),
+    }
+
     Ok(())
 }
