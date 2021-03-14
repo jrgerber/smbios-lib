@@ -1,4 +1,5 @@
-use crate::*;
+use crate::{MemoryTypes, SMBiosStruct, UndefinedStruct};
+use std::fmt;
 
 /// # Memory Module Information (Type 6, Obsolete)
 ///
@@ -53,7 +54,7 @@ impl<'a> SMBiosMemoryModuleInformation<'a> {
     pub fn current_memory_type(&self) -> Option<MemoryTypes> {
         self.parts
             .get_field_word(0x07)
-            .and_then(|raw| Some(MemoryTypes::from(raw)))
+            .map(|raw| MemoryTypes::from(raw))
     }
 
     /// Installed size

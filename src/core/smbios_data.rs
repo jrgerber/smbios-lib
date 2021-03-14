@@ -1,7 +1,8 @@
-use crate::*;
-use std::fs::read;
+use super::undefined_struct::{UndefinedStruct, UndefinedStructTable};
+use crate::{DefinedStructTable, Handle, SMBiosStruct};
 use std::io::Error;
 use std::{cmp::Ordering, slice::Iter};
+use std::{fmt, fs::read};
 
 /// # SMBIOS Data
 ///

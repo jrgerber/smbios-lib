@@ -1,6 +1,5 @@
-use std::{array::TryFromSliceError, convert::TryFrom};
-
-use crate::*;
+use crate::{SMBiosStruct, UndefinedStruct};
+use std::{array::TryFromSliceError, convert::TryFrom, fmt, ops::Deref};
 
 /// # TPM Device (Type 43)
 pub struct SMBiosTpmDevice<'a> {
@@ -93,7 +92,7 @@ impl<'a> SMBiosTpmDevice<'a> {
     pub fn characteristics(&self) -> Option<TpmDeviceCharacteristics> {
         self.parts
             .get_field_qword(0x13)
-            .and_then(|raw| Some(TpmDeviceCharacteristics::from(raw)))
+            .map(|raw| TpmDeviceCharacteristics::from(raw))
     }
 
     /// OEM defined

@@ -1,4 +1,6 @@
-use crate::*;
+use crate::{SMBiosStruct, UndefinedStruct};
+use std::fmt;
+use std::ops::Deref;
 
 /// #  BIOS Information (Type 0)
 pub struct SMBiosInformation<'a> {
@@ -76,7 +78,7 @@ impl<'a> SMBiosInformation<'a> {
     pub fn characteristics(&self) -> Option<BiosCharacteristics> {
         self.parts
             .get_field_dword(0xA)
-            .and_then(|raw| Some(BiosCharacteristics::from(raw)))
+            .map(|raw| BiosCharacteristics::from(raw))
     }
 
     /// BIOS vendor reserved characteristics
@@ -93,14 +95,14 @@ impl<'a> SMBiosInformation<'a> {
     pub fn characteristics_extension0(&self) -> Option<BiosCharacteristicsExtension0> {
         self.parts
             .get_field_byte(0x12)
-            .and_then(|raw| Some(BiosCharacteristicsExtension0::from(raw)))
+            .map(|raw| BiosCharacteristicsExtension0::from(raw))
     }
 
     /// Characteristics extension byte 1
     pub fn characteristics_extension1(&self) -> Option<BiosCharacteristicsExtension1> {
         self.parts
             .get_field_byte(0x13)
-            .and_then(|raw| Some(BiosCharacteristicsExtension1::from(raw)))
+            .map(|raw| BiosCharacteristicsExtension1::from(raw))
     }
 
     /// System BIOS major release
@@ -182,7 +184,7 @@ impl<'a> SMBiosInformation<'a> {
     pub fn extended_rom_size(&self) -> Option<ExtendedRomSize> {
         self.parts
             .get_field_word(0x18)
-            .and_then(|raw| Some(ExtendedRomSize::from(raw)))
+            .map(|raw| ExtendedRomSize::from(raw))
     }
 }
 

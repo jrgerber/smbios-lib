@@ -2,12 +2,10 @@
 //!
 //! When testing this library it is useful to read stored
 //! raw data and then load it into the structures.
-use windows::WinSMBiosData;
-
-use crate::*;
+use crate::core::SMBiosData;
+use crate::windows::WinSMBiosData;
 use std::fs::{read, read_dir, File};
-use std::io::{Error, BufWriter, Write};
-
+use std::io::{BufWriter, Error, Write};
 
 /// Loads raw smbios data from a file and returns [SMBiosData] or [std::io::Error] on error.
 ///
@@ -57,7 +55,6 @@ pub fn dump_raw(data: Vec<u8>, filename: &str) -> Result<(), Error> {
     f.write_all(&data)?;
     Ok(())
 }
-
 
 #[cfg(test)]
 mod tests {

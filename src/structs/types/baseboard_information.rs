@@ -1,4 +1,6 @@
-use crate::*;
+use crate::{Handle, SMBiosStruct, UndefinedStruct};
+use std::fmt;
+use std::ops::Deref;
 
 /// # Baseboard (or Module) Information (Type 2)
 ///
@@ -51,7 +53,7 @@ impl<'a> SMBiosBaseboardInformation<'a> {
     pub fn feature_flags(&self) -> Option<BaseboardFeatures> {
         self.parts
             .get_field_byte(0x09)
-            .and_then(|raw| Some(BaseboardFeatures::from(raw)))
+            .map(|raw| BaseboardFeatures::from(raw))
     }
 
     /// This baseboard's location within the chassis (chassis is referenced by ChassisHandle).
@@ -68,7 +70,7 @@ impl<'a> SMBiosBaseboardInformation<'a> {
     pub fn board_type(&self) -> Option<BoardTypeData> {
         self.parts
             .get_field_byte(0x0D)
-            .and_then(|raw| Some(BoardTypeData::from(raw)))
+            .map(|raw| BoardTypeData::from(raw))
     }
 
     /// The count of ObjectHandles.

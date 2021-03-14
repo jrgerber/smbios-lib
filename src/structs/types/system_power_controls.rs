@@ -1,4 +1,5 @@
-use crate::*;
+use crate::{SMBiosStruct, UndefinedStruct};
+use std::fmt;
 
 /// # System Power Controls (Type 25)
 ///

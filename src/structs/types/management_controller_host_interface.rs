@@ -1,4 +1,6 @@
-use crate::*;
+use crate::{SMBiosStruct, UndefinedStruct};
+use std::fmt;
+use std::ops::Deref;
 
 /// # Management Controller Host Interface (Type 42)
 ///
@@ -42,7 +44,7 @@ impl<'a> SMBiosManagementControllerHostInterface<'a> {
     pub fn interface_type(&self) -> Option<HostInterfaceTypeData> {
         self.parts
             .get_field_byte(Self::INTERFACE_TYPE_OFFSET)
-            .and_then(|raw| Some(HostInterfaceTypeData::from(raw)))
+            .map(|raw| HostInterfaceTypeData::from(raw))
     }
 
     /// Interface Type Specific Data Length
@@ -301,7 +303,7 @@ impl<'a> ProtocolRecord<'a> {
         self.host_interface
             .parts()
             .get_field_byte(self.entry_offset + Self::PROTOCOL_TYPE_OFFSET)
-            .and_then(|raw| Some(HostProtocolTypeData::from(raw)))
+            .map(|raw| HostProtocolTypeData::from(raw))
     }
 
     /// Protocol Type Specific Data Length

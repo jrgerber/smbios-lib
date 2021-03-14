@@ -1,4 +1,5 @@
-use crate::*;
+use crate::{Handle, SMBiosStruct, UndefinedStruct};
+use std::fmt;
 
 /// # Additional Information Entry contained within [SMBiosAdditionalInformation]
 pub struct AdditionalInformationEntry<'a> {

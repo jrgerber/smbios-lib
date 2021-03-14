@@ -1,4 +1,6 @@
-use crate::*;
+use crate::{Handle, SMBiosStruct, UndefinedStruct};
+use std::fmt;
+use std::ops::Deref;
 
 /// # Memory Controller Information (Type 5, Obsolete)
 ///
@@ -29,28 +31,28 @@ impl<'a> SMBiosMemoryControllerInformation<'a> {
     pub fn error_detecting_method(&self) -> Option<ErrorDetectingMethodData> {
         self.parts
             .get_field_byte(0x04)
-            .and_then(|raw| Some(ErrorDetectingMethodData::from(raw)))
+            .map(|raw| ErrorDetectingMethodData::from(raw))
     }
 
     /// Error correcting capability
     pub fn error_correcting_capability(&self) -> Option<ErrorCorrectingCapabilities> {
         self.parts
             .get_field_byte(0x05)
-            .and_then(|raw| Some(ErrorCorrectingCapabilities::from(raw)))
+            .map(|raw| ErrorCorrectingCapabilities::from(raw))
     }
 
     /// Supported interleave
     pub fn supported_interleave(&self) -> Option<InterleaveSupportData> {
         self.parts
             .get_field_byte(0x06)
-            .and_then(|raw| Some(InterleaveSupportData::from(raw)))
+            .map(|raw| InterleaveSupportData::from(raw))
     }
 
     /// Current interleave
     pub fn current_interleave(&self) -> Option<InterleaveSupportData> {
         self.parts
             .get_field_byte(0x07)
-            .and_then(|raw| Some(InterleaveSupportData::from(raw)))
+            .map(|raw| InterleaveSupportData::from(raw))
     }
 
     /// Maximum Memory Module Size
@@ -69,21 +71,21 @@ impl<'a> SMBiosMemoryControllerInformation<'a> {
     pub fn supported_speeds(&self) -> Option<MemorySpeeds> {
         self.parts
             .get_field_word(0x09)
-            .and_then(|raw| Some(MemorySpeeds::from(raw)))
+            .map(|raw| MemorySpeeds::from(raw))
     }
 
     /// Supported Memory Types
     pub fn supported_memory_types(&self) -> Option<MemoryTypes> {
         self.parts
             .get_field_word(0x0B)
-            .and_then(|raw| Some(MemoryTypes::from(raw)))
+            .map(|raw| MemoryTypes::from(raw))
     }
 
     /// Memory Module Voltage
     pub fn memory_module_voltage(&self) -> Option<ModuleVoltage> {
         self.parts
             .get_field_byte(0x0D)
-            .and_then(|raw| Some(ModuleVoltage::from(raw)))
+            .map(|raw| ModuleVoltage::from(raw))
     }
 
     /// Number of Associated Memory Slots

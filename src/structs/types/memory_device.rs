@@ -1,4 +1,6 @@
-use crate::*;
+use crate::{Handle, SMBiosStruct, UndefinedStruct};
+use std::fmt;
+use std::ops::Deref;
 
 /// # Memory Device (Type 17)
 ///
@@ -64,14 +66,14 @@ impl<'a> SMBiosMemoryDevice<'a> {
     pub fn size(&self) -> Option<MemorySize> {
         self.parts
             .get_field_word(0x0C)
-            .and_then(|raw| Some(MemorySize::from(raw)))
+            .map(|raw| MemorySize::from(raw))
     }
 
     /// Implementation form factor for this memory device
     pub fn form_factor(&self) -> Option<MemoryFormFactorData> {
         self.parts
             .get_field_byte(0x0E)
-            .and_then(|raw| Some(MemoryFormFactorData::from(raw)))
+            .map(|raw| MemoryFormFactorData::from(raw))
     }
 
     /// Identifies when the Memory Device is one of a set
@@ -105,14 +107,14 @@ impl<'a> SMBiosMemoryDevice<'a> {
     pub fn memory_type(&self) -> Option<MemoryDeviceTypeData> {
         self.parts
             .get_field_byte(0x12)
-            .and_then(|raw| Some(MemoryDeviceTypeData::from(raw)))
+            .map(|raw| MemoryDeviceTypeData::from(raw))
     }
 
     /// Additional detail on the memory device type
     pub fn type_detail(&self) -> Option<MemoryTypeDetails> {
         self.parts
             .get_field_word(0x13)
-            .and_then(|raw| Some(MemoryTypeDetails::from(raw)))
+            .map(|raw| MemoryTypeDetails::from(raw))
     }
 
     /// The maximum capable speed of the
@@ -120,7 +122,7 @@ impl<'a> SMBiosMemoryDevice<'a> {
     pub fn speed(&self) -> Option<MemorySpeed> {
         self.parts
             .get_field_word(0x15)
-            .and_then(|raw| Some(MemorySpeed::from(raw)))
+            .map(|raw| MemorySpeed::from(raw))
     }
 
     /// The manufacturer of this memory device
@@ -170,7 +172,7 @@ impl<'a> SMBiosMemoryDevice<'a> {
     pub fn configured_memory_speed(&self) -> Option<MemorySpeed> {
         self.parts
             .get_field_word(0x20)
-            .and_then(|raw| Some(MemorySpeed::from(raw)))
+            .map(|raw| MemorySpeed::from(raw))
     }
 
     /// Minimum operating voltage for this device, in
@@ -197,14 +199,14 @@ impl<'a> SMBiosMemoryDevice<'a> {
     pub fn memory_technology(&self) -> Option<MemoryDeviceTechnologyData> {
         self.parts
             .get_field_byte(0x28)
-            .and_then(|raw| Some(MemoryDeviceTechnologyData::from(raw)))
+            .map(|raw| MemoryDeviceTechnologyData::from(raw))
     }
 
     /// The operating modes supported by this memory device.
     pub fn memory_operating_mode_capability(&self) -> Option<MemoryOperatingModeCapabilities> {
         self.parts
             .get_field_word(0x29)
-            .and_then(|raw| Some(MemoryOperatingModeCapabilities::from(raw)))
+            .map(|raw| MemoryOperatingModeCapabilities::from(raw))
     }
 
     /// The firmware version of this memory device.
@@ -240,7 +242,7 @@ impl<'a> SMBiosMemoryDevice<'a> {
     pub fn non_volatile_size(&self) -> Option<MemoryIndicatedSize> {
         self.parts
             .get_field_qword(0x34)
-            .and_then(|raw| Some(MemoryIndicatedSize::from(raw)))
+            .map(|raw| MemoryIndicatedSize::from(raw))
     }
 
     /// Size of the Volatile portion of the memory device in
@@ -251,7 +253,7 @@ impl<'a> SMBiosMemoryDevice<'a> {
     pub fn volatile_size(&self) -> Option<MemoryIndicatedSize> {
         self.parts
             .get_field_qword(0x3C)
-            .and_then(|raw| Some(MemoryIndicatedSize::from(raw)))
+            .map(|raw| MemoryIndicatedSize::from(raw))
     }
 
     /// Size of the Cache portion of the memory device in
@@ -262,14 +264,14 @@ impl<'a> SMBiosMemoryDevice<'a> {
     pub fn cache_size(&self) -> Option<MemoryIndicatedSize> {
         self.parts
             .get_field_qword(0x44)
-            .and_then(|raw| Some(MemoryIndicatedSize::from(raw)))
+            .map(|raw| MemoryIndicatedSize::from(raw))
     }
 
     /// Size of the Logical memory device in Bytes.
     pub fn logical_size(&self) -> Option<MemoryIndicatedSize> {
         self.parts
             .get_field_qword(0x4C)
-            .and_then(|raw| Some(MemoryIndicatedSize::from(raw)))
+            .map(|raw| MemoryIndicatedSize::from(raw))
     }
 
     /// Extended speed of the memory device

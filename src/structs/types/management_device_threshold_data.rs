@@ -1,4 +1,5 @@
-use crate::*;
+use crate::{SMBiosStruct, UndefinedStruct};
+use std::fmt;
 
 /// # Management Device Threshold Data (Type 36)
 ///

@@ -1,4 +1,5 @@
-use crate::*;
+use crate::{Handle, SMBiosStruct, UndefinedStruct};
+use std::fmt;
 
 /// # Memory Device Mapped Address (Type 20)
 ///

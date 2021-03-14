@@ -1,7 +1,9 @@
-use crate::*;
+use crate::{SMBiosStruct, UndefinedStruct};
 use std::{
     array::TryFromSliceError,
     convert::{TryFrom, TryInto},
+    fmt,
+    ops::Deref,
 };
 
 /// # System Information (Type 1)
@@ -54,7 +56,7 @@ impl<'a> SMBiosSystemInformation<'a> {
     pub fn uuid(&self) -> Option<SystemUuidData<'_>> {
         self.parts
             .get_field_data(0x08, 0x18)
-            .and_then(|raw| Some(SystemUuidData::try_from(raw).expect("A GUID is 0x10 bytes")))
+            .map(|raw| SystemUuidData::try_from(raw).expect("A GUID is 0x10 bytes"))
     }
 
     /// Wake-up type
@@ -63,7 +65,7 @@ impl<'a> SMBiosSystemInformation<'a> {
     pub fn wakeup_type(&self) -> Option<SystemWakeUpTypeData> {
         self.parts
             .get_field_byte(0x18)
-            .and_then(|raw| Some(SystemWakeUpTypeData::from(raw)))
+            .map(|raw| SystemWakeUpTypeData::from(raw))
     }
 
     /// SKU Number

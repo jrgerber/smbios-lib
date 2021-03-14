@@ -1,4 +1,6 @@
-use crate::*;
+use crate::{BoardTypeData, SMBiosStruct, SMBiosType, UndefinedStruct};
+use std::fmt;
+use std::ops::Deref;
 
 /// # System Enclosure or Chassis (Type 3)
 ///
@@ -44,7 +46,7 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
     pub fn chassis_type(&self) -> Option<ChassisTypeData> {
         self.parts
             .get_field_byte(0x05)
-            .and_then(|raw| Some(ChassisTypeData::from(raw)))
+            .map(|raw| ChassisTypeData::from(raw))
     }
 
     /// Version
@@ -68,7 +70,7 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
     pub fn bootup_state(&self) -> Option<ChassisStateData> {
         self.parts
             .get_field_byte(0x09)
-            .and_then(|raw| Some(ChassisStateData::from(raw)))
+            .map(|raw| ChassisStateData::from(raw))
     }
 
     /// Power supply state
@@ -78,7 +80,7 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
     pub fn power_supply_state(&self) -> Option<ChassisStateData> {
         self.parts
             .get_field_byte(0x0A)
-            .and_then(|raw| Some(ChassisStateData::from(raw)))
+            .map(|raw| ChassisStateData::from(raw))
     }
 
     /// Thermal state
@@ -88,7 +90,7 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
     pub fn thermal_state(&self) -> Option<ChassisStateData> {
         self.parts
             .get_field_byte(0x0B)
-            .and_then(|raw| Some(ChassisStateData::from(raw)))
+            .map(|raw| ChassisStateData::from(raw))
     }
 
     /// Security status
@@ -98,7 +100,7 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
     pub fn security_status(&self) -> Option<ChassisSecurityStatusData> {
         self.parts
             .get_field_byte(0x0C)
-            .and_then(|raw| Some(ChassisSecurityStatusData::from(raw)))
+            .map(|raw| ChassisSecurityStatusData::from(raw))
     }
 
     /// OEM-defined
@@ -118,7 +120,7 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
     pub fn height(&self) -> Option<ChassisHeight> {
         self.parts
             .get_field_byte(0x11)
-            .and_then(|raw| Some(ChassisHeight::from(raw)))
+            .map(|raw| ChassisHeight::from(raw))
     }
 
     /// Number of power cords
@@ -128,7 +130,7 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
     pub fn number_of_power_cords(&self) -> Option<PowerCords> {
         self.parts
             .get_field_byte(0x12)
-            .and_then(|raw| Some(PowerCords::from(raw)))
+            .map(|raw| PowerCords::from(raw))
     }
 
     /// Contained element count (n)
@@ -748,6 +750,10 @@ impl<'a> fmt::Debug for ContainedElementsIterator<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::structs::types::{
+        BoardType, ChassisHeight, ChassisSecurityStatus, ChassisState, ChassisType, ElementType,
+        PowerCords, SMBiosSystemChassisInformation,
+    };
 
     #[test]
     fn unit_test() {

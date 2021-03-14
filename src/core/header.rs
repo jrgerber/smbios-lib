@@ -1,6 +1,6 @@
-use std::convert::TryInto;
+use std::{convert::TryInto, fmt};
 
-use crate::*;
+use crate::Handle;
 
 /// # SMBIOS Header
 ///

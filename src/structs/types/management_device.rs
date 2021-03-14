@@ -1,4 +1,6 @@
-use crate::*;
+use crate::{SMBiosStruct, UndefinedStruct};
+use std::fmt;
+use std::ops::Deref;
 
 /// # Management Device (Type 34)
 ///
@@ -33,7 +35,7 @@ impl<'a> SMBiosManagementDevice<'a> {
     pub fn device_type(&self) -> Option<ManagementDeviceTypeData> {
         self.parts
             .get_field_byte(0x05)
-            .and_then(|raw| Some(ManagementDeviceTypeData::from(raw)))
+            .map(|raw| ManagementDeviceTypeData::from(raw))
     }
 
     /// Device's address
@@ -45,7 +47,7 @@ impl<'a> SMBiosManagementDevice<'a> {
     pub fn address_type(&self) -> Option<ManagementDeviceAddressTypeData> {
         self.parts
             .get_field_byte(0x0A)
-            .and_then(|raw| Some(ManagementDeviceAddressTypeData::from(raw)))
+            .map(|raw| ManagementDeviceAddressTypeData::from(raw))
     }
 }
 

@@ -1,4 +1,6 @@
-use crate::*;
+use crate::{SMBiosStruct, UndefinedStruct};
+use std::fmt;
+use std::ops::Deref;
 
 /// # System Event Log (Type 15)
 ///
@@ -65,14 +67,14 @@ impl<'a> SMBiosSystemEventLog<'a> {
     pub fn access_method(&self) -> Option<AccessMethodData> {
         self.parts
             .get_field_byte(0x0A)
-            .and_then(|raw| Some(AccessMethodData::from(raw)))
+            .map(|raw| AccessMethodData::from(raw))
     }
 
     /// Current status of the system event-log
     pub fn log_status(&self) -> Option<LogStatus> {
         self.parts
             .get_field_byte(0x0B)
-            .and_then(|raw| Some(LogStatus::from(raw)))
+            .map(|raw| LogStatus::from(raw))
     }
 
     /// Unique token that is reassigned every time
@@ -97,7 +99,7 @@ impl<'a> SMBiosSystemEventLog<'a> {
     pub fn log_header_format(&self) -> Option<HeaderFormatData> {
         self.parts
             .get_field_byte(0x14)
-            .and_then(|raw| Some(HeaderFormatData::from(raw)))
+            .map(|raw| HeaderFormatData::from(raw))
     }
 
     /// Number of supported event log type

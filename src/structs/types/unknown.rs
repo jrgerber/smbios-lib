@@ -1,4 +1,5 @@
-use crate::*;
+use crate::{Header, UndefinedStruct};
+use std::fmt;
 
 /// # OEM or Unknown Structure
 ///

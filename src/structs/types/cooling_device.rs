@@ -1,4 +1,5 @@
-use crate::*;
+use crate::{Handle, SMBiosStruct, UndefinedStruct};
+use std::fmt;
 
 /// # Cooling Device (Type 27)
 ///
@@ -36,7 +37,7 @@ impl<'a> SMBiosCoolingDevice<'a> {
     pub fn device_type_and_status(&self) -> Option<CoolingDeviceTypeAndStatus> {
         self.parts
             .get_field_byte(0x06)
-            .and_then(|raw| Some(CoolingDeviceTypeAndStatus::from(raw)))
+            .map(|raw| CoolingDeviceTypeAndStatus::from(raw))
     }
 
     /// Cooling unit group to which this cooling device is associated

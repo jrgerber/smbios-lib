@@ -1,9 +1,10 @@
 use std::{
     convert::TryInto,
+    fmt,
     io::{Error, ErrorKind},
 };
 
-use crate::*;
+use crate::core::{SMBiosData, SMBiosVersion};
 
 /// # Raw SMBIOS Data
 ///

@@ -3,9 +3,6 @@
 //! Contains implementations for all standard structures found in
 //! the DMTF SMBIOS specification.
 
-pub use std::fmt;
-pub use std::ops::Deref;
-
 mod unknown;
 pub use unknown::*;
 

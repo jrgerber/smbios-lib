@@ -1,4 +1,5 @@
-use crate::*;
+use crate::{SMBiosStruct, Strings, UndefinedStruct};
+use std::fmt;
 
 /// # System Configuration Options (Type 12)
 ///

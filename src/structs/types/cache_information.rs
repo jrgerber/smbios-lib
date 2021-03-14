@@ -1,4 +1,6 @@
-use crate::*;
+use crate::{SMBiosStruct, UndefinedStruct};
+use std::fmt;
+use std::ops::Deref;
 
 /// # Cache Information (Type 7)
 ///
@@ -36,7 +38,7 @@ impl<'a> SMBiosCacheInformation<'a> {
     pub fn cache_configuration(&self) -> Option<CacheConfiguaration> {
         self.parts
             .get_field_word(0x05)
-            .and_then(|raw| Some(CacheConfiguaration::from(raw)))
+            .map(|raw| CacheConfiguaration::from(raw))
     }
 
     /// Maximum size that can be installed
@@ -53,14 +55,14 @@ impl<'a> SMBiosCacheInformation<'a> {
     pub fn supported_sram_type(&self) -> Option<SramTypes> {
         self.parts
             .get_field_word(0x0B)
-            .and_then(|raw| Some(SramTypes::from(raw)))
+            .map(|raw| SramTypes::from(raw))
     }
 
     /// Current SRAM type
     pub fn current_sram_type(&self) -> Option<SramTypes> {
         self.parts
             .get_field_word(0x0D)
-            .and_then(|raw| Some(SramTypes::from(raw)))
+            .map(|raw| SramTypes::from(raw))
     }
 
     /// Cache module speed, in nanoseconds.
@@ -73,21 +75,21 @@ impl<'a> SMBiosCacheInformation<'a> {
     pub fn error_correction_type(&self) -> Option<ErrorCorrectionTypeData> {
         self.parts
             .get_field_byte(0x10)
-            .and_then(|raw| Some(ErrorCorrectionTypeData::from(raw)))
+            .map(|raw| ErrorCorrectionTypeData::from(raw))
     }
 
     /// Logical type of cache
     pub fn system_cache_type(&self) -> Option<SystemCacheTypeData> {
         self.parts
             .get_field_byte(0x11)
-            .and_then(|raw| Some(SystemCacheTypeData::from(raw)))
+            .map(|raw| SystemCacheTypeData::from(raw))
     }
 
     /// Associativity of the cache
     pub fn associativity(&self) -> Option<CacheAssociativityData> {
         self.parts
             .get_field_byte(0x12)
-            .and_then(|raw| Some(CacheAssociativityData::from(raw)))
+            .map(|raw| CacheAssociativityData::from(raw))
     }
 
     /// Maximum cache size

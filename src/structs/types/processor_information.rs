@@ -1,6 +1,7 @@
+use crate::{Handle, SMBiosStruct, UndefinedStruct};
 use std::convert::TryInto;
-
-use crate::*;
+use std::fmt;
+use std::ops::Deref;
 
 /// # Processor Information (Type 4)
 ///
@@ -45,14 +46,14 @@ impl<'a> SMBiosProcessorInformation<'a> {
     pub fn processor_type(&self) -> Option<ProcessorTypeData> {
         self.parts
             .get_field_byte(0x05)
-            .and_then(|raw| Some(ProcessorTypeData::from(raw)))
+            .map(|raw| ProcessorTypeData::from(raw))
     }
 
     /// Processor family
     pub fn processor_family(&self) -> Option<ProcessorFamilyData> {
         self.parts
             .get_field_byte(0x06)
-            .and_then(|raw| Some(ProcessorFamilyData::from(raw)))
+            .map(|raw| ProcessorFamilyData::from(raw))
     }
 
     /// Processor manufacturer
@@ -69,7 +70,7 @@ impl<'a> SMBiosProcessorInformation<'a> {
         //    accomodated in specific representative structures.
         self.parts
             .get_field_data(0x08, 0x10)
-            .and_then(|raw| Some(raw.try_into().expect("incorrect length")))
+            .map(|raw| raw.try_into().expect("incorrect length"))
     }
 
     /// Processor version
@@ -81,7 +82,7 @@ impl<'a> SMBiosProcessorInformation<'a> {
     pub fn voltage(&self) -> Option<ProcessorVoltage> {
         self.parts
             .get_field_byte(0x11)
-            .and_then(|raw| Some(ProcessorVoltage::from(raw)))
+            .map(|raw| ProcessorVoltage::from(raw))
     }
 
     /// External clock frequency, in MHz
@@ -90,7 +91,7 @@ impl<'a> SMBiosProcessorInformation<'a> {
     pub fn external_clock(&self) -> Option<ProcessorExternalClock> {
         self.parts
             .get_field_word(0x12)
-            .and_then(|raw| Some(ProcessorExternalClock::from(raw)))
+            .map(|raw| ProcessorExternalClock::from(raw))
     }
 
     /// Maximum processor speed (in MHz) supported
@@ -103,7 +104,7 @@ impl<'a> SMBiosProcessorInformation<'a> {
     pub fn max_speed(&self) -> Option<ProcessorSpeed> {
         self.parts
             .get_field_word(0x14)
-            .and_then(|raw| Some(ProcessorSpeed::from(raw)))
+            .map(|raw| ProcessorSpeed::from(raw))
     }
 
     /// Current speed
@@ -116,21 +117,21 @@ impl<'a> SMBiosProcessorInformation<'a> {
     pub fn current_speed(&self) -> Option<ProcessorSpeed> {
         self.parts
             .get_field_word(0x16)
-            .and_then(|raw| Some(ProcessorSpeed::from(raw)))
+            .map(|raw| ProcessorSpeed::from(raw))
     }
 
     /// Status bit field
     pub fn status(&self) -> Option<ProcessorStatus> {
         self.parts
             .get_field_byte(0x18)
-            .and_then(|raw| Some(ProcessorStatus::from(raw)))
+            .map(|raw| ProcessorStatus::from(raw))
     }
 
     /// Processor upgrade
     pub fn processor_upgrade(&self) -> Option<ProcessorUpgradeData> {
         self.parts
             .get_field_byte(0x19)
-            .and_then(|raw| Some(ProcessorUpgradeData::from(raw)))
+            .map(|raw| ProcessorUpgradeData::from(raw))
     }
 
     /// Handle of a [SMBiosCacheInformation] structure that
@@ -200,7 +201,7 @@ impl<'a> SMBiosProcessorInformation<'a> {
     pub fn core_count(&self) -> Option<CoreCount> {
         self.parts
             .get_field_byte(0x23)
-            .and_then(|raw| Some(CoreCount::from(raw)))
+            .map(|raw| CoreCount::from(raw))
     }
 
     /// Number of enabled cores per processor socket
@@ -211,7 +212,7 @@ impl<'a> SMBiosProcessorInformation<'a> {
     pub fn cores_enabled(&self) -> Option<CoresEnabled> {
         self.parts
             .get_field_byte(0x24)
-            .and_then(|raw| Some(CoresEnabled::from(raw)))
+            .map(|raw| CoresEnabled::from(raw))
     }
 
     /// Number of threads per processor socket
@@ -222,21 +223,21 @@ impl<'a> SMBiosProcessorInformation<'a> {
     pub fn thread_count(&self) -> Option<ThreadCount> {
         self.parts
             .get_field_byte(0x25)
-            .and_then(|raw| Some(ThreadCount::from(raw)))
+            .map(|raw| ThreadCount::from(raw))
     }
 
     /// Defines which functions the processor supports
     pub fn processor_characteristics(&self) -> Option<ProcessorCharacteristics> {
         self.parts
             .get_field_word(0x26)
-            .and_then(|raw| Some(ProcessorCharacteristics::from(raw)))
+            .map(|raw| ProcessorCharacteristics::from(raw))
     }
 
     /// Processor family 2
     pub fn processor_family_2(&self) -> Option<ProcessorFamilyData2> {
         self.parts
             .get_field_word(0x28)
-            .and_then(|raw| Some(ProcessorFamilyData2::from(raw)))
+            .map(|raw| ProcessorFamilyData2::from(raw))
     }
 
     /// Number of Cores per processor socket.
@@ -250,7 +251,7 @@ impl<'a> SMBiosProcessorInformation<'a> {
     pub fn core_count_2(&self) -> Option<CoreCount2> {
         self.parts
             .get_field_word(0x2A)
-            .and_then(|raw| Some(CoreCount2::from(raw)))
+            .map(|raw| CoreCount2::from(raw))
     }
 
     /// Number of enabled cores per processor socket.
@@ -265,7 +266,7 @@ impl<'a> SMBiosProcessorInformation<'a> {
     pub fn cores_enabled_2(&self) -> Option<CoresEnabled2> {
         self.parts
             .get_field_word(0x2C)
-            .and_then(|raw| Some(CoresEnabled2::from(raw)))
+            .map(|raw| CoresEnabled2::from(raw))
     }
 
     /// Number of threads per processor socket.
@@ -280,7 +281,7 @@ impl<'a> SMBiosProcessorInformation<'a> {
     pub fn thread_count_2(&self) -> Option<ThreadCount2> {
         self.parts
             .get_field_word(0x2E)
-            .and_then(|raw| Some(ThreadCount2::from(raw)))
+            .map(|raw| ThreadCount2::from(raw))
     }
 }
 

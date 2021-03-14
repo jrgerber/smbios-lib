@@ -1,4 +1,5 @@
-use crate::*;
+use crate::{Handle, SMBiosStruct, UndefinedStruct};
+use std::fmt;
 
 /// # System Power Supply (Type 39)
 ///
@@ -106,14 +107,14 @@ impl<'a> SMBiosSystemPowerSupply<'a> {
     pub fn max_power_capacity(&self) -> Option<MaxPowerCapacity> {
         self.parts
             .get_field_word(0x0C)
-            .and_then(|raw| Some(MaxPowerCapacity::from(raw)))
+            .map(|raw| MaxPowerCapacity::from(raw))
     }
 
     /// Power supply characteristics
     pub fn power_supply_characteristics(&self) -> Option<PowerSupplyCharacteristics> {
         self.parts
             .get_field_word(0x0E)
-            .and_then(|raw| Some(PowerSupplyCharacteristics::from(raw)))
+            .map(|raw| PowerSupplyCharacteristics::from(raw))
     }
 
     /// Input voltage probe handle

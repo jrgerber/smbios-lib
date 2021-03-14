@@ -1,4 +1,5 @@
-use crate::*;
+use crate::{SMBiosStruct, Strings, UndefinedStruct};
+use std::fmt;
 
 /// # OEM Strings (Type 11)
 ///

@@ -1,4 +1,5 @@
-use crate::*;
+use crate::{SMBiosStruct, UndefinedStruct};
+use std::{fmt, ops::Deref};
 
 /// # Out-of-Band Remote Access (Type 30)
 ///
@@ -37,7 +38,7 @@ impl<'a> SMBiosOutOfBandRemoteAccess<'a> {
     pub fn connections(&self) -> Option<Connections> {
         self.parts
             .get_field_byte(0x05)
-            .and_then(|raw| Some(Connections::from(raw)))
+            .map(|raw| Connections::from(raw))
     }
 }
 

@@ -1,6 +1,8 @@
+use super::header::Header;
+use super::strings::Strings;
+use crate::structs::{DefinedStruct, Handle, SMBiosEndOfTable, SMBiosStruct};
+use std::fmt;
 use std::{convert::TryInto, slice::Iter};
-
-use crate::*;
 
 /// # Embodies the three basic parts of an SMBIOS structure
 ///

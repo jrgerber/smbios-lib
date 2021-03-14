@@ -1,4 +1,6 @@
-use crate::*;
+use crate::{Handle, SMBiosStruct, UndefinedStruct};
+use std::fmt;
+use std::ops::Deref;
 
 /// # Memory Channel (Type 37)
 ///
@@ -32,7 +34,7 @@ impl<'a> SMBiosMemoryChannel<'a> {
     pub fn channel_type(&self) -> Option<MemoryChannelTypeData> {
         self.parts
             .get_field_byte(0x04)
-            .and_then(|raw| Some(MemoryChannelTypeData::from(raw)))
+            .map(|raw| MemoryChannelTypeData::from(raw))
     }
 
     /// Maximum load supported by the channel; the sum of all

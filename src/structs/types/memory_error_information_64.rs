@@ -1,4 +1,8 @@
-use crate::*;
+use crate::{
+    MemoryErrorGranularityData, MemoryErrorOperationData, MemoryErrorTypeData, SMBiosStruct,
+    UndefinedStruct,
+};
+use std::fmt;
 
 /// # 64-Bit Memory Error Information (Type 33)
 ///
@@ -29,7 +33,7 @@ impl<'a> SMBiosMemoryErrorInformation64<'a> {
     pub fn error_type(&self) -> Option<MemoryErrorTypeData> {
         self.parts
             .get_field_byte(0x04)
-            .and_then(|raw| Some(MemoryErrorTypeData::from(raw)))
+            .map(|raw| MemoryErrorTypeData::from(raw))
     }
 
     /// Granularity (for example, device versus Partition)
@@ -37,14 +41,14 @@ impl<'a> SMBiosMemoryErrorInformation64<'a> {
     pub fn error_granularity(&self) -> Option<MemoryErrorGranularityData> {
         self.parts
             .get_field_byte(0x05)
-            .and_then(|raw| Some(MemoryErrorGranularityData::from(raw)))
+            .map(|raw| MemoryErrorGranularityData::from(raw))
     }
 
     /// Memory access operation that caused the error
     pub fn error_operation(&self) -> Option<MemoryErrorOperationData> {
         self.parts
             .get_field_byte(0x06)
-            .and_then(|raw| Some(MemoryErrorOperationData::from(raw)))
+            .map(|raw| MemoryErrorOperationData::from(raw))
     }
 
     /// Vendor-specific ECC syndrome or CRC data
@@ -105,6 +109,10 @@ impl fmt::Debug for SMBiosMemoryErrorInformation64<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::{
+        MemoryErrorGranularity, MemoryErrorOperation, MemoryErrorType, SMBiosStruct,
+        UndefinedStruct,
+    };
 
     #[test]
     fn unit_test() {

@@ -1,4 +1,6 @@
-use crate::*;
+use crate::{Handle, SMBiosStruct, UndefinedStruct};
+use std::fmt;
+use std::ops::Deref;
 
 /// # Processor Additional Information (Type 44)
 ///
@@ -91,7 +93,7 @@ impl<'a> ProcessorSpecificBlock<'a> {
                             + SMBiosProcessorAdditionalInformation::PROCESSOR_SPECIFIC_BLOCK_OFFSET
                             + Self::PROCESSOR_SPECIFIC_DATA_OFFSET,
                     )
-                    .and_then(|raw| Some(Self { raw }))
+                    .map(|raw| Self { raw })
             })
     }
 

@@ -1,4 +1,5 @@
-use crate::*;
+use crate::{SMBiosStruct, UndefinedStruct};
+use std::fmt;
 
 /// # Electrical Current Probe (Type 29)
 ///
@@ -33,7 +34,7 @@ impl<'a> SMBiosElectricalCurrentProbe<'a> {
     pub fn location_and_status(&self) -> Option<CurrentProbeLocationAndStatus> {
         self.parts
             .get_field_byte(0x05)
-            .and_then(|raw| Some(CurrentProbeLocationAndStatus::from(raw)))
+            .map(|raw| CurrentProbeLocationAndStatus::from(raw))
     }
 
     /// Maximum current level readable by this probe, in milliamps

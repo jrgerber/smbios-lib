@@ -1,4 +1,5 @@
-use crate::*;
+use crate::{SMBiosStruct, UndefinedStruct};
+use std::fmt;
 
 /// # Hardware Security (Type 24)
 ///
@@ -28,7 +29,7 @@ impl<'a> SMBiosHardwareSecurity<'a> {
     pub fn hardware_security_settings(&self) -> Option<HardwareSecuritySettings> {
         self.parts
             .get_field_byte(0x4)
-            .and_then(|raw| Some(HardwareSecuritySettings::from(raw)))
+            .map(|raw| HardwareSecuritySettings::from(raw))
     }
 }
 

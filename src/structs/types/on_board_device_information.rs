@@ -1,4 +1,5 @@
-use crate::*;
+use crate::{Header, SMBiosStruct, UndefinedStruct};
+use std::fmt;
 
 /// # On Board Devices Information (Type 10, Obsolete)
 ///
@@ -83,7 +84,7 @@ impl<'a> OnBoardDevice<'a> {
         self.onboard_device_information
             .parts()
             .get_field_byte(self.entry_offset)
-            .and_then(|raw| Some(OnBoardDeviceType::from(raw)))
+            .map(|raw| OnBoardDeviceType::from(raw))
     }
 
     /// Device description

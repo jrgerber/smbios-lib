@@ -1,4 +1,5 @@
-use crate::*;
+use crate::{SMBiosStruct, UndefinedStruct};
+use std::fmt;
 
 /// # System Reset (Type 23)
 ///
@@ -36,7 +37,7 @@ impl<'a> SMBiosSystemReset<'a> {
     pub fn capabilities(&self) -> Option<SystemResetCapabilities> {
         self.parts
             .get_field_byte(0x04)
-            .and_then(|raw| Some(SystemResetCapabilities::from(raw)))
+            .map(|raw| SystemResetCapabilities::from(raw))
     }
 
     /// Reset count
@@ -46,7 +47,7 @@ impl<'a> SMBiosSystemReset<'a> {
     pub fn reset_count(&self) -> Option<ResetCount> {
         self.parts
             .get_field_word(0x05)
-            .and_then(|raw| Some(ResetCount::from(raw)))
+            .map(|raw| ResetCount::from(raw))
     }
 
     /// Reset limit
@@ -55,7 +56,7 @@ impl<'a> SMBiosSystemReset<'a> {
     pub fn reset_limit(&self) -> Option<ResetLimit> {
         self.parts
             .get_field_word(0x07)
-            .and_then(|raw| Some(ResetLimit::from(raw)))
+            .map(|raw| ResetLimit::from(raw))
     }
 
     /// Timer interval
@@ -67,7 +68,7 @@ impl<'a> SMBiosSystemReset<'a> {
     pub fn timer_interval(&self) -> Option<TimerInterval> {
         self.parts
             .get_field_word(0x09)
-            .and_then(|raw| Some(TimerInterval::from(raw)))
+            .map(|raw| TimerInterval::from(raw))
     }
 
     /// Timeout
@@ -79,7 +80,7 @@ impl<'a> SMBiosSystemReset<'a> {
     pub fn timeout(&self) -> Option<Timeout> {
         self.parts
             .get_field_word(0x0B)
-            .and_then(|raw| Some(Timeout::from(raw)))
+            .map(|raw| Timeout::from(raw))
     }
 }
 

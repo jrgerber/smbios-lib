@@ -1,4 +1,6 @@
-use crate::*;
+use crate::{SMBiosStruct, Strings, UndefinedStruct};
+use std::fmt;
+use std::ops::Deref;
 
 /// # BIOS Language Information (Type 13)
 ///
@@ -36,7 +38,7 @@ impl<'a> SMBiosBiosLanguageInformation<'a> {
     pub fn flags(&self) -> Option<BiosLanguageFlags> {
         self.parts
             .get_field_byte(0x5)
-            .and_then(|raw| Some(BiosLanguageFlags::from(raw)))
+            .map(|raw| BiosLanguageFlags::from(raw))
     }
 
     /// The currently installed language.

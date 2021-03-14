@@ -1,4 +1,6 @@
-use crate::*;
+use crate::{SMBiosStruct, UndefinedStruct};
+use std::fmt;
+use std::ops::Deref;
 
 /// # IPMI Device Information (Type 38)
 ///
@@ -29,7 +31,7 @@ impl<'a> SMBiosIpmiDeviceInformation<'a> {
     pub fn interface_type(&self) -> Option<IpmiInterfaceTypeData> {
         self.parts
             .get_field_byte(0x04)
-            .and_then(|raw| Some(IpmiInterfaceTypeData::from(raw)))
+            .map(|raw| IpmiInterfaceTypeData::from(raw))
     }
 
     /// IPMI specification revision, in BCD format, to which the BMC was designed
@@ -62,7 +64,7 @@ impl<'a> SMBiosIpmiDeviceInformation<'a> {
     pub fn base_address_modifier(&self) -> Option<BaseAddressModifier> {
         self.parts
             .get_field_byte(0x10)
-            .and_then(|raw| Some(BaseAddressModifier::from(raw)))
+            .map(|raw| BaseAddressModifier::from(raw))
     }
 
     /// Interrupt number for IPMI System Interface

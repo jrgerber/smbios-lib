@@ -1,4 +1,5 @@
-use crate::*;
+use crate::{SMBiosStruct, UndefinedStruct};
+use std::fmt;
 
 /// # Temperature Probe (Type 28)
 ///
@@ -37,7 +38,7 @@ impl<'a> SMBiosTemperatureProbe<'a> {
     pub fn location_and_status(&self) -> Option<TemperatureProbeLocationAndStatus> {
         self.parts
             .get_field_byte(0x05)
-            .and_then(|raw| Some(TemperatureProbeLocationAndStatus::from(raw)))
+            .map(|raw| TemperatureProbeLocationAndStatus::from(raw))
     }
 
     /// Maximum value
@@ -48,7 +49,7 @@ impl<'a> SMBiosTemperatureProbe<'a> {
     pub fn maximum_value(&self) -> Option<ProbeTemperature> {
         self.parts
             .get_field_word(0x06)
-            .and_then(|raw| Some(ProbeTemperature::from(raw)))
+            .map(|raw| ProbeTemperature::from(raw))
     }
 
     /// Minimum value
@@ -59,7 +60,7 @@ impl<'a> SMBiosTemperatureProbe<'a> {
     pub fn minimum_value(&self) -> Option<ProbeTemperature> {
         self.parts
             .get_field_word(0x08)
-            .and_then(|raw| Some(ProbeTemperature::from(raw)))
+            .map(|raw| ProbeTemperature::from(raw))
     }
 
     /// Resolution
@@ -70,7 +71,7 @@ impl<'a> SMBiosTemperatureProbe<'a> {
     pub fn resolution(&self) -> Option<TemperatureProbeResolution> {
         self.parts
             .get_field_word(0x0A)
-            .and_then(|raw| Some(TemperatureProbeResolution::from(raw)))
+            .map(|raw| TemperatureProbeResolution::from(raw))
     }
 
     /// Tolerance
@@ -81,7 +82,7 @@ impl<'a> SMBiosTemperatureProbe<'a> {
     pub fn tolerance(&self) -> Option<ProbeTemperature> {
         self.parts
             .get_field_word(0x0C)
-            .and_then(|raw| Some(ProbeTemperature::from(raw)))
+            .map(|raw| ProbeTemperature::from(raw))
     }
 
     /// Accuracy
@@ -92,7 +93,7 @@ impl<'a> SMBiosTemperatureProbe<'a> {
     pub fn accuracy(&self) -> Option<TemperatureProbeAccuracy> {
         self.parts
             .get_field_word(0x0E)
-            .and_then(|raw| Some(TemperatureProbeAccuracy::from(raw)))
+            .map(|raw| TemperatureProbeAccuracy::from(raw))
     }
 
     /// OEM defined
@@ -110,7 +111,7 @@ impl<'a> SMBiosTemperatureProbe<'a> {
     pub fn nominal_value(&self) -> Option<ProbeTemperature> {
         self.parts
             .get_field_word(0x14)
-            .and_then(|raw| Some(ProbeTemperature::from(raw)))
+            .map(|raw| ProbeTemperature::from(raw))
     }
 }
 

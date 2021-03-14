@@ -1,4 +1,5 @@
-use crate::*;
+use crate::{OnBoardDeviceType, SMBiosStruct, UndefinedStruct};
+use std::fmt;
 
 /// # Onboard Devices Extended Information (Type 41)
 ///
@@ -41,7 +42,7 @@ impl<'a> SMBiosOnboardDevicesExtendedInformation<'a> {
     pub fn device_type(&self) -> Option<OnBoardDeviceType> {
         self.parts
             .get_field_byte(0x5)
-            .and_then(|raw| Some(OnBoardDeviceType::from(raw)))
+            .map(|raw| OnBoardDeviceType::from(raw))
     }
 
     /// Device type instance
@@ -53,21 +54,21 @@ impl<'a> SMBiosOnboardDevicesExtendedInformation<'a> {
     pub fn segment_group_number(&self) -> Option<SegmentGroupNumber> {
         self.parts
             .get_field_word(0x7)
-            .and_then(|raw| Some(SegmentGroupNumber::from(raw)))
+            .map(|raw| SegmentGroupNumber::from(raw))
     }
 
     /// Bus number
     pub fn bus_number(&self) -> Option<BusNumber> {
         self.parts
             .get_field_byte(0x9)
-            .and_then(|raw| Some(BusNumber::from(raw)))
+            .map(|raw| BusNumber::from(raw))
     }
 
     /// Device/Function number
     pub fn device_function_number(&self) -> Option<DeviceFunctionNumber> {
         self.parts
             .get_field_byte(0xA)
-            .and_then(|raw| Some(DeviceFunctionNumber::from(raw)))
+            .map(|raw| DeviceFunctionNumber::from(raw))
     }
 }
 
@@ -158,6 +159,7 @@ impl From<u8> for DeviceFunctionNumber {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::{DeviceStatus, SMBiosStruct, TypeOfDevice, UndefinedStruct};
 
     #[test]
     fn unit_test() {

@@ -1,4 +1,6 @@
-use crate::*;
+use crate::{SMBiosStruct, UndefinedStruct};
+use std::fmt;
+use std::ops::Deref;
 
 /// # 32-Bit Memory Error Information (Type 18)
 ///
@@ -29,7 +31,7 @@ impl<'a> SMBiosMemoryErrorInformation32<'a> {
     pub fn error_type(&self) -> Option<MemoryErrorTypeData> {
         self.parts
             .get_field_byte(0x04)
-            .and_then(|raw| Some(MemoryErrorTypeData::from(raw)))
+            .map(|raw| MemoryErrorTypeData::from(raw))
     }
 
     /// Granularity (for example, device versus Partition)
@@ -37,14 +39,14 @@ impl<'a> SMBiosMemoryErrorInformation32<'a> {
     pub fn error_granularity(&self) -> Option<MemoryErrorGranularityData> {
         self.parts
             .get_field_byte(0x05)
-            .and_then(|raw| Some(MemoryErrorGranularityData::from(raw)))
+            .map(|raw| MemoryErrorGranularityData::from(raw))
     }
 
     /// Memory access operation that caused the error
     pub fn error_operation(&self) -> Option<MemoryErrorOperationData> {
         self.parts
             .get_field_byte(0x06)
-            .and_then(|raw| Some(MemoryErrorOperationData::from(raw)))
+            .map(|raw| MemoryErrorOperationData::from(raw))
     }
 
     /// Vendor-specific ECC syndrome or CRC data

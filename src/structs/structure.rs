@@ -1,4 +1,5 @@
-use crate::*;
+use crate::core::UndefinedStruct;
+use std::{fmt, ops::Deref};
 
 /// # SMBIOS Structure
 ///

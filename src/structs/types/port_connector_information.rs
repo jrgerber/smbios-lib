@@ -1,4 +1,5 @@
-use crate::*;
+use crate::{SMBiosStruct, UndefinedStruct};
+use std::{fmt, ops::Deref};
 
 /// # Port Connector Information (Type 8)
 ///
@@ -38,7 +39,7 @@ impl<'a> SMBiosPortConnectorInformation<'a> {
     pub fn internal_connector_type(&self) -> Option<PortInformationConnectorTypeData> {
         self.parts
             .get_field_byte(0x05)
-            .and_then(|raw| Some(PortInformationConnectorTypeData::from(raw)))
+            .map(|raw| PortInformationConnectorTypeData::from(raw))
     }
 
     /// External reference designation,
@@ -53,14 +54,14 @@ impl<'a> SMBiosPortConnectorInformation<'a> {
     pub fn external_connector_type(&self) -> Option<PortInformationConnectorTypeData> {
         self.parts
             .get_field_byte(0x07)
-            .and_then(|raw| Some(PortInformationConnectorTypeData::from(raw)))
+            .map(|raw| PortInformationConnectorTypeData::from(raw))
     }
 
     /// Describes the function of the port
     pub fn port_type(&self) -> Option<PortInformationPortTypeData> {
         self.parts
             .get_field_byte(0x08)
-            .and_then(|raw| Some(PortInformationPortTypeData::from(raw)))
+            .map(|raw| PortInformationPortTypeData::from(raw))
     }
 }
 

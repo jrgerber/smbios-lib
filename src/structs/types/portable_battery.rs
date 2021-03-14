@@ -1,4 +1,6 @@
-use crate::*;
+use crate::{SMBiosStruct, UndefinedStruct};
+use std::fmt;
+use std::ops::Deref;
 
 /// # Portable Battery (Type 22)
 ///
@@ -71,7 +73,7 @@ impl<'a> SMBiosPortableBattery<'a> {
     pub fn device_chemistry(&self) -> Option<PortableBatteryDeviceChemistryData> {
         self.parts
             .get_field_byte(0x09)
-            .and_then(|raw| Some(PortableBatteryDeviceChemistryData::from(raw)))
+            .map(|raw| PortableBatteryDeviceChemistryData::from(raw))
     }
 
     /// Design capacity of the battery in mWatt-hours
@@ -84,7 +86,7 @@ impl<'a> SMBiosPortableBattery<'a> {
     pub fn design_capacity(&self) -> Option<PortableBatteryDesignCapacity> {
         self.parts
             .get_field_word(0x0A)
-            .and_then(|raw| Some(PortableBatteryDesignCapacity::from(raw)))
+            .map(|raw| PortableBatteryDesignCapacity::from(raw))
     }
 
     /// Design voltage of the battery in mVolts
@@ -93,7 +95,7 @@ impl<'a> SMBiosPortableBattery<'a> {
     pub fn design_voltage(&self) -> Option<PortableBatteryDesignVoltage> {
         self.parts
             .get_field_word(0x0C)
-            .and_then(|raw| Some(PortableBatteryDesignVoltage::from(raw)))
+            .map(|raw| PortableBatteryDesignVoltage::from(raw))
     }
 
     /// Contains the Smart Battery Data Specification version number

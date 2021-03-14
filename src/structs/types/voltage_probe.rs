@@ -1,4 +1,5 @@
-use crate::*;
+use crate::{SMBiosStruct, UndefinedStruct};
+use std::fmt;
 
 /// #  Voltage Probe (Type 26)
 ///
@@ -37,7 +38,7 @@ impl<'a> SMBiosVoltageProbe<'a> {
     pub fn location_and_status(&self) -> Option<VoltageProbeLocationAndStatus> {
         self.parts
             .get_field_byte(0x05)
-            .and_then(|raw| Some(VoltageProbeLocationAndStatus::from(raw)))
+            .map(|raw| VoltageProbeLocationAndStatus::from(raw))
     }
 
     /// Maximum value
@@ -47,7 +48,7 @@ impl<'a> SMBiosVoltageProbe<'a> {
     pub fn maximum_value(&self) -> Option<ProbeVoltage> {
         self.parts
             .get_field_word(0x06)
-            .and_then(|raw| Some(ProbeVoltage::from(raw)))
+            .map(|raw| ProbeVoltage::from(raw))
     }
 
     /// Minimum value
@@ -56,7 +57,7 @@ impl<'a> SMBiosVoltageProbe<'a> {
     pub fn minimum_value(&self) -> Option<ProbeVoltage> {
         self.parts
             .get_field_word(0x08)
-            .and_then(|raw| Some(ProbeVoltage::from(raw)))
+            .map(|raw| ProbeVoltage::from(raw))
     }
 
     /// Resolution
@@ -65,7 +66,7 @@ impl<'a> SMBiosVoltageProbe<'a> {
     pub fn resolution(&self) -> Option<VoltageProbeResolution> {
         self.parts
             .get_field_word(0x0A)
-            .and_then(|raw| Some(VoltageProbeResolution::from(raw)))
+            .map(|raw| VoltageProbeResolution::from(raw))
     }
 
     /// Tolerance
@@ -75,7 +76,7 @@ impl<'a> SMBiosVoltageProbe<'a> {
     pub fn tolerance(&self) -> Option<ProbeVoltage> {
         self.parts
             .get_field_word(0x0C)
-            .and_then(|raw| Some(ProbeVoltage::from(raw)))
+            .map(|raw| ProbeVoltage::from(raw))
     }
 
     /// Accuracy
@@ -85,7 +86,7 @@ impl<'a> SMBiosVoltageProbe<'a> {
     pub fn accuracy(&self) -> Option<VoltageProbeAccuracy> {
         self.parts
             .get_field_word(0x0E)
-            .and_then(|raw| Some(VoltageProbeAccuracy::from(raw)))
+            .map(|raw| VoltageProbeAccuracy::from(raw))
     }
 
     /// OEM defined
@@ -103,7 +104,7 @@ impl<'a> SMBiosVoltageProbe<'a> {
     pub fn nominal_value(&self) -> Option<ProbeVoltage> {
         self.parts
             .get_field_word(0x14)
-            .and_then(|raw| Some(ProbeVoltage::from(raw)))
+            .map(|raw| ProbeVoltage::from(raw))
     }
 }
 

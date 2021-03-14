@@ -1,5 +1,5 @@
-use crate::*;
-
+use crate::{SMBiosStruct, UndefinedStruct};
+use std::{fmt, ops::Deref};
 /// # Physical Memory Array (Type 16)
 ///
 /// This structure describes a collection of memory devices that operate together to form a memory address space.
@@ -29,14 +29,14 @@ impl<'a> SMBiosPhysicalMemoryArray<'a> {
     pub fn location(&self) -> Option<MemoryArrayLocationData> {
         self.parts
             .get_field_byte(0x04)
-            .and_then(|raw| Some(MemoryArrayLocationData::from(raw)))
+            .map(|raw| MemoryArrayLocationData::from(raw))
     }
 
     /// Function for which the array is used
     pub fn usage(&self) -> Option<MemoryArrayUseData> {
         self.parts
             .get_field_byte(0x05)
-            .and_then(|raw| Some(MemoryArrayUseData::from(raw)))
+            .map(|raw| MemoryArrayUseData::from(raw))
     }
 
     /// Primary hardware error correction or detection
@@ -44,7 +44,7 @@ impl<'a> SMBiosPhysicalMemoryArray<'a> {
     pub fn memory_error_correction(&self) -> Option<MemoryArrayErrorCorrectionData> {
         self.parts
             .get_field_byte(0x06)
-            .and_then(|raw| Some(MemoryArrayErrorCorrectionData::from(raw)))
+            .map(|raw| MemoryArrayErrorCorrectionData::from(raw))
     }
 
     /// Maximum memory capacity, in kilobytes, for this array
@@ -57,7 +57,7 @@ impl<'a> SMBiosPhysicalMemoryArray<'a> {
     pub fn maximum_capacity(&self) -> Option<MaximumMemoryCapacity> {
         self.parts
             .get_field_dword(0x07)
-            .and_then(|raw| Some(MaximumMemoryCapacity::from(raw)))
+            .map(|raw| MaximumMemoryCapacity::from(raw))
     }
 
     /// Handle, or instance number, associated with any

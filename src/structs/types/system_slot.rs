@@ -1,4 +1,5 @@
-use crate::*;
+use crate::{SMBiosStruct, UndefinedStruct};
+use std::{fmt, ops::Deref};
 
 /// # System Slots (Type 9)
 ///
@@ -30,28 +31,28 @@ impl<'a> SMBiosSystemSlot<'a> {
     pub fn system_slot_type(&self) -> Option<SystemSlotTypeData> {
         self.parts
             .get_field_byte(0x05)
-            .and_then(|raw| Some(SystemSlotTypeData::from(raw)))
+            .map(|raw| SystemSlotTypeData::from(raw))
     }
 
     /// Slot Data Bus Width
     pub fn slot_data_bus_width(&self) -> Option<SlotWidthData> {
         self.parts
             .get_field_byte(0x06)
-            .and_then(|raw| Some(SlotWidthData::from(raw)))
+            .map(|raw| SlotWidthData::from(raw))
     }
 
     /// Current Usage
     pub fn current_usage(&self) -> Option<SlotCurrentUsageData> {
         self.parts
             .get_field_byte(0x07)
-            .and_then(|raw| Some(SlotCurrentUsageData::from(raw)))
+            .map(|raw| SlotCurrentUsageData::from(raw))
     }
 
     /// Slot Length
     pub fn slot_length(&self) -> Option<SlotLengthData> {
         self.parts
             .get_field_byte(0x08)
-            .and_then(|raw| Some(SlotLengthData::from(raw)))
+            .map(|raw| SlotLengthData::from(raw))
     }
 
     /// Slot Id
@@ -63,14 +64,14 @@ impl<'a> SMBiosSystemSlot<'a> {
     pub fn slot_characteristics_1(&self) -> Option<SystemSlotCharacteristics1> {
         self.parts
             .get_field_byte(0x0B)
-            .and_then(|raw| Some(SystemSlotCharacteristics1::from(raw)))
+            .map(|raw| SystemSlotCharacteristics1::from(raw))
     }
 
     /// Slot Characteristics 2
     pub fn slot_characteristics_2(&self) -> Option<SystemSlotCharacteristics2> {
         self.parts
             .get_field_byte(0x0C)
-            .and_then(|raw| Some(SystemSlotCharacteristics2::from(raw)))
+            .map(|raw| SystemSlotCharacteristics2::from(raw))
     }
 
     /// Segment Group Number (Base)
@@ -127,7 +128,7 @@ impl<'a> SMBiosSystemSlot<'a> {
         self.peer_group_size().and_then(|size| {
             self.parts
                 .get_field_byte(size + 0x14)
-                .and_then(|raw| Some(SlotWidthData::from(raw)))
+                .map(|raw| SlotWidthData::from(raw))
         })
     }
 

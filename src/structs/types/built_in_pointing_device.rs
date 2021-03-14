@@ -1,4 +1,6 @@
-use crate::*;
+use crate::{SMBiosStruct, UndefinedStruct};
+use std::fmt;
+use std::ops::Deref;
 
 /// # Built-in Pointing Device (Type 21)
 ///
@@ -31,14 +33,14 @@ impl<'a> SMBiosBuiltInPointingDevice<'a> {
     pub fn device_type(&self) -> Option<PointingDeviceTypeData> {
         self.parts
             .get_field_byte(0x04)
-            .and_then(|raw| Some(PointingDeviceTypeData::from(raw)))
+            .map(|raw| PointingDeviceTypeData::from(raw))
     }
 
     /// Interface type for the pointing device.
     pub fn interface(&self) -> Option<PointingDeviceInterfaceData> {
         self.parts
             .get_field_byte(0x05)
-            .and_then(|raw| Some(PointingDeviceInterfaceData::from(raw)))
+            .map(|raw| PointingDeviceInterfaceData::from(raw))
     }
 
     /// Number of buttons on the pointing device.

@@ -1,4 +1,5 @@
-use crate::*;
+use crate::{SMBiosStruct, UndefinedStruct};
+use std::fmt;
 
 /// # System Boot Information (Type 32)
 ///
@@ -52,7 +53,7 @@ impl<'a> SMBiosSystemBootInformation<'a> {
 
         self.parts
             .get_field_data(Self::BOOT_STATUS_OFFSET, end_index)
-            .and_then(|raw| Some(SystemBootStatusData { raw }))
+            .map(|raw| SystemBootStatusData { raw })
     }
 }
 

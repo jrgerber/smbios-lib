@@ -3,7 +3,9 @@
 
 use std::iter::FromIterator;
 
-use crate::*;
+use crate::core::UndefinedStruct;
+
+use super::*;
 
 /// # SMBIOS Standard Defined Structure
 ///
