@@ -1,3 +1,5 @@
+use std::{error::Error, fmt::Display};
+
 use smbioslib::*;
 
 #[derive(Debug)]
@@ -29,6 +31,20 @@ enum BiosParseError {
     ProcessorVersionNotFound,
     ProcessorFrequencyNotFound,
     InvalidKeywordOnCommandLine,
+}
+
+impl Error for BiosParseError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        None
+    }
+}
+
+impl Display for BiosParseError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        // Here we can match and turn each arm into a human readable statement.
+        // We have other variants to add so we will wait before doing so.
+        write!(f, "{:?}", &self)
+    }
 }
 
 fn string_keyword(keyword: String, data: &SMBiosData) -> Result<String, BiosParseError> {
@@ -206,11 +222,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     match matches.opt_str(string_option) {
         Some(keyword) => {
             let smbios_data = table_load_from_device()?;
-            match string_keyword(keyword, &smbios_data) {
-                Ok(output) => println!("{}", output),
-                // TODO: Make BiosParseError a returnable Result from main()
-                Err(error) => println!("{:?}", error),
-            }
+            let output = string_keyword(keyword, &smbios_data)?;
+            println!("{}", output);
         }
         None => (),
     }
