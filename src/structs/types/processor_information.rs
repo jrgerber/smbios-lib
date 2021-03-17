@@ -410,6 +410,16 @@ impl fmt::Debug for ProcessorFamilyData {
     }
 }
 
+impl fmt::Display for ProcessorFamilyData {
+    /// Displays ProcessorFamily either by name or as a hex value if the name for the value is unknown.
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.value {
+            ProcessorFamily::None => write!(f, "{:#X}", &self.raw),
+            _ => write!(f, "{:?}", &self.value),
+        }
+    }
+}
+
 impl Deref for ProcessorFamilyData {
     type Target = ProcessorFamily;
 
@@ -446,6 +456,16 @@ impl fmt::Debug for ProcessorFamilyData2 {
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()
+    }
+}
+
+impl fmt::Display for ProcessorFamilyData2 {
+    /// Displays ProcessorFamily either by name or as a hex value if the name for the value is unknown.
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.value {
+            ProcessorFamily::None => write!(f, "{:#X}", &self.raw),
+            _ => write!(f, "{:?}", &self.value),
+        }
     }
 }
 
