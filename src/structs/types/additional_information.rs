@@ -1,4 +1,5 @@
-use crate::{Handle, SMBiosStruct, UndefinedStruct};
+use crate::core::{Handle, UndefinedStruct};
+use crate::structs::SMBiosStruct;
 use std::fmt;
 
 /// # Additional Information Entry contained within [SMBiosAdditionalInformation]

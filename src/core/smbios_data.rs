@@ -1,5 +1,6 @@
+use super::header::Handle;
 use super::undefined_struct::{UndefinedStruct, UndefinedStructTable};
-use crate::{DefinedStructTable, Handle, SMBiosStruct};
+use crate::structs::{DefinedStructTable, SMBiosStruct};
 use std::io::Error;
 use std::{cmp::Ordering, slice::Iter};
 use std::{fmt, fs::read};
