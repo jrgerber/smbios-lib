@@ -1,6 +1,6 @@
-use super::header::Header;
+use super::header::{Handle, Header};
 use super::strings::Strings;
-use crate::structs::{DefinedStruct, Handle, SMBiosEndOfTable, SMBiosStruct};
+use crate::structs::{DefinedStruct, SMBiosEndOfTable, SMBiosStruct};
 use std::fmt;
 use std::{convert::TryInto, slice::Iter};
 

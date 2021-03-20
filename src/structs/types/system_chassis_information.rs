@@ -1,4 +1,5 @@
-use crate::{BoardTypeData, SMBiosStruct, SMBiosType, UndefinedStruct};
+use crate::core::UndefinedStruct;
+use crate::{BoardTypeData, SMBiosStruct, SMBiosType};
 use std::fmt;
 use std::ops::Deref;
 

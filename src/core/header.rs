@@ -1,6 +1,57 @@
-use std::{convert::TryInto, fmt};
+use std::{convert::TryInto, fmt, ops::Deref, str::FromStr};
 
-use crate::Handle;
+/// # Structure Handle
+///
+/// Each SMBIOS structure has a handle or instance value associated with it.
+/// Some structures will reference other structures by using this value.
+///
+/// Dereference a handle (*handle) to access its u16 value.
+#[derive(Debug, PartialEq, Eq)]
+pub struct Handle(pub u16);
+
+impl Handle {
+    /// Handle Size (2 bytes)
+    pub const SIZE: usize = 2usize;
+}
+
+impl Deref for Handle {
+    type Target = u16;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl FromStr for Handle {
+    type Err = std::num::ParseIntError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Handle(u16::from_str(s)?))
+    }
+}
+
+/// # SMBIOS Structure Type
+///
+/// Each SMBIOS structure has a type number associated with it.
+///
+/// Dereference a structure type (*struct_type) to access its u8 value.
+pub struct SMBiosType(pub u8);
+
+impl Deref for SMBiosType {
+    type Target = u8;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl fmt::Debug for SMBiosType {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SMBiosType>())
+            .field("type", &self.0)
+            .finish()
+    }
+}
 
 /// # SMBIOS Header
 ///

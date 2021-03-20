@@ -1,4 +1,5 @@
-use crate::{Handle, SMBiosStruct, UndefinedStruct};
+use crate::core::{Handle, UndefinedStruct};
+use crate::SMBiosStruct;
 use std::fmt;
 
 /// # Management Device Component (Type 35)
