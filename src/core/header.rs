@@ -26,7 +26,11 @@ impl FromStr for Handle {
     type Err = std::num::ParseIntError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Handle(u16::from_str(s)?))
+        Ok(Handle(if s.starts_with("0x") && s.len() > 2 {
+            u16::from_str_radix(&s[2..], 16)?
+        } else {
+            u16::from_str(s)?
+        }))
     }
 }
 
