@@ -72,7 +72,7 @@ impl fmt::Debug for Header {
     }
 }
 
-impl<'a> Header {
+impl Header {
     /// Total size of a Header (4)
     ///
     /// A header has a byte for the _struct_type_ at offset 0,
@@ -92,10 +92,6 @@ impl<'a> Header {
 
     /// Creates a new [Header] struct
     pub fn new(data: [u8; 4]) -> Self {
-        assert!(
-            data.len() == Self::SIZE,
-            "Header must be 4 bytes in length, 1 for struct_type, 1 for length, and 2 for handle."
-        );
         Header(data)
     }
 
@@ -118,10 +114,23 @@ impl<'a> Header {
                 .expect("u16 is 2 bytes"),
         ))
     }
+
+    /// Byte iterator of the header
+    pub fn iter(&self) -> std::slice::Iter<'_, u8> {
+        self.0.iter()
+    }
 }
 
 impl From<[u8; 4]> for Header {
     fn from(data: [u8; 4]) -> Self {
         Header(data)
+    }
+}
+
+impl Deref for Header {
+    type Target = [u8; 4];
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }

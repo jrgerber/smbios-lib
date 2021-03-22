@@ -59,6 +59,11 @@ impl Strings {
                 .collect(),
         )
     }
+
+    /// Iterates the raw bytes of the strings. The terminating 0 is not included in each string.
+    pub fn iter(&self) -> std::slice::Iter<'_, Vec<u8>> {
+        self.strings.iter()
+    }
 }
 
 impl Iterator for Strings {
@@ -70,7 +75,7 @@ impl Iterator for Strings {
             return None;
         }
 
-        // TODO: "*x as char" is not ISO-8859-1.  This should be made ISO-8859-1.
+        // "*x as char" is ISO-8859-1.
         let result: String = self.strings[self.current_string_index]
             .iter()
             .map(|x| *x as char)
