@@ -1,5 +1,5 @@
 [package]
-name = "smbios"
+name = "smbios-lib"
 version = "0.7.0"
 authors = ["Jeffrey R. Gerber <jeffreygerber@gmail.com>", "Ante Čulo <dante2711@gmail.com>", "Juan Zuluaga <juzuluag@hotmail.com>"]
 license-file = "LICENSE"
