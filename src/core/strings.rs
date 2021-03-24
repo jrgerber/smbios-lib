@@ -32,6 +32,8 @@ impl Strings {
     }
 
     /// Returns a [String] at the given `index`
+    ///
+    /// BIOS strings are 1 based indexing
     pub fn get_string(&self, index: u8) -> Option<String> {
         let index_usize = index as usize;
 
