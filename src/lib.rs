@@ -25,7 +25,7 @@ pub use windows::{load_windows_smbios_data, table_load_from_device, raw_smbios_f
 
 pub use windows::WinSMBiosData;
 
-#[cfg(any(target_os = "linux", target_os = "android"))]
+#[cfg(any(target_os = "linux", target_os = "android", target_os = "freebsd"))]
 pub use unix::*;
 
 #[cfg(any(target_os = "macos", target_os = "ios"))]

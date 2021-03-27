@@ -1,5 +1,5 @@
 use std::{
-    convert::TryFrom, convert::TryInto, fmt, fs::read, io::Error, io::ErrorKind, num::Wrapping,
+    convert::TryFrom, convert::TryInto, fmt, fs::{read, File}, io::{Error, ErrorKind, SeekFrom, prelude::*}, num::Wrapping, ops::RangeBounds, path::Path
 };
 
 /// # SMBIOS 2.1 (32 bit) Entry Point structure
@@ -225,8 +225,34 @@ impl<'a> SMBiosEntryPoint32 {
     }
 
     /// Load this structure from a file
-    pub fn try_load_from_file(filename: &str) -> Result<Self, Error> {
+    pub fn try_load_from_file(filename: &Path) -> Result<Self, Error> {
         read(filename)?.try_into()
+    }
+
+    /// Load this structure by scanning a file within the given offsets,
+    /// looking for the [SMBiosEntryPoint32::ANCHOR] string.
+    pub fn try_scan_from_file<T: Iterator<Item = u64>>(file: &mut File, range: T) -> Result<Self, Error> where T: RangeBounds<u64>, {
+        let mut anchor = [0; 4];
+        for offset in range.step_by(0x10) {
+            file.seek(SeekFrom::Start(offset))?;
+            file.read_exact(&mut anchor)?;
+            if anchor == Self::SM_ANCHOR {
+                println!("SMBiosEntryPoint32 offset: {:#X}", offset);
+                let mut length = [0; 2];
+                file.read_exact(&mut length)?;
+                let struct_length = length[1] as usize;
+                let mut entry_point_buffer = Vec::with_capacity(struct_length);
+                entry_point_buffer.resize(struct_length, 0);
+                file.seek(SeekFrom::Start(offset))?;
+                file.read_exact(&mut entry_point_buffer)?;
+                let entry_point: Self = entry_point_buffer.try_into()?;
+                return Ok(entry_point);
+            }
+        }
+        Err(Error::new(
+                ErrorKind::UnexpectedEof,
+                "Not found",
+            ))
     }
 }
 
@@ -456,7 +482,7 @@ impl<'a> SMBiosEntryPoint64 {
     }
 
     /// Load this structure from a file
-    pub fn try_load_from_file(filename: &str) -> Result<Self, Error> {
+    pub fn try_load_from_file(filename: &Path) -> Result<Self, Error> {
         read(filename)?.try_into()
     }
 }

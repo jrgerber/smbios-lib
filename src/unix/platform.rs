@@ -1,9 +1,10 @@
 use crate::*;
-use std::{io::Error, io::ErrorKind};
+use std::{io::Error, io::ErrorKind, path::Path};
 use std::fs::read;
 
 const SYS_ENTRY_FILE: &'static str = "/sys/firmware/dmi/tables/smbios_entry_point";
 const SYS_TABLE_FILE: &'static str = "/sys/firmware/dmi/tables/DMI";
+const DEV_MEM_FILE: &'static str = "/dev/mem";
 
 // Example of Linux structure:
 /*
@@ -40,7 +41,7 @@ const SYS_TABLE_FILE: &'static str = "/sys/firmware/dmi/tables/DMI";
 /// Loads SMBIOS table data ([SMBiosData]) from the device
 pub fn table_load_from_device() -> Result<SMBiosData, Error> {
     let version: SMBiosVersion;
-    match SMBiosEntryPoint64::try_load_from_file(SYS_ENTRY_FILE) {
+    match SMBiosEntryPoint64::try_load_from_file(Path::new(SYS_ENTRY_FILE)) {
         Ok(entry_point) => {
             version = SMBiosVersion {
                 major: entry_point.major_version(),
@@ -50,7 +51,7 @@ pub fn table_load_from_device() -> Result<SMBiosData, Error> {
         }
         Err(err) => match err.kind() {
             ErrorKind::InvalidData => {
-                match SMBiosEntryPoint32::try_load_from_file(SYS_ENTRY_FILE) {
+                match SMBiosEntryPoint32::try_load_from_file(Path::new(SYS_ENTRY_FILE)) {
                     Ok(entry_point) => {
                         version = SMBiosVersion {
                             major: entry_point.major_version(),
@@ -71,4 +72,24 @@ pub fn table_load_from_device() -> Result<SMBiosData, Error> {
 /// Returns smbios raw data
 pub fn raw_smbios_from_device() -> Result<Vec<u8>, Error> {
     Ok(read(SYS_TABLE_FILE)?)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::io;
+    use std::fs::File;
+
+    #[test]
+    fn test_dev_mem_scan() -> io::Result<()> {
+        let mut dev_mem = File::open(DEV_MEM_FILE)?;
+        let entry_point = SMBiosEntryPoint32::try_scan_from_file(&mut dev_mem, 0x000F0000..0x000FFFFF)?;
+        println!("SMBIOS {}.{} present.", entry_point.major_version(), entry_point.minor_version());
+        println!("{} structures occupying {} bytes.", entry_point.number_of_smbios_structures(), entry_point.structure_table_length());
+        println!("Table at: {:#010X}.", entry_point.structure_table_address());
+
+        println!("hooray!");
+
+        Ok(())
+    }
 }
