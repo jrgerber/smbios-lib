@@ -4,15 +4,15 @@
 //! raw data and then load it into the structures.
 use crate::core::SMBiosData;
 use crate::windows::WinSMBiosData;
-use std::fs::{read, read_dir, File};
+use std::{fs::{read, read_dir, File}, path::Path};
 use std::io::{BufWriter, Error, Write};
 
 /// Loads raw smbios data from a file and returns [SMBiosData] or [std::io::Error] on error.
 ///
 /// Currently supports reading raw files containing only SMBIOS table data or
 /// Windows raw files containing the windows header and SMBIOS table data.
-pub fn load_smbios_data_from_file(filename: &str) -> Result<SMBiosData, Error> {
-    let data = read(filename)?;
+pub fn load_smbios_data_from_file(file_path: &Path) -> Result<SMBiosData, Error> {
+    let data = read(file_path)?;
     if WinSMBiosData::is_valid_win_smbios_data(&data) {
         let win_smbios = WinSMBiosData::new(data)
             .expect("Structure shouldn't be invalid it was already checked.");
@@ -23,7 +23,8 @@ pub fn load_smbios_data_from_file(filename: &str) -> Result<SMBiosData, Error> {
 }
 
 /// Loads raw smbios data files from a given _folder_ and returns [Vec<SMBiosStructTable>]
-pub fn load_raw_files(folder: &str) -> Vec<SMBiosData> {
+pub fn load_raw_files(folder: &Path) -> Vec<SMBiosData> {
+    assert!(folder.is_dir());
     let mut result = Vec::new();
 
     let entries = read_dir(folder)
@@ -33,12 +34,7 @@ pub fn load_raw_files(folder: &str) -> Vec<SMBiosData> {
         .expect("msg");
 
     for elem in entries {
-        let file_name = elem.to_str().expect("valid filename characters");
-
-        // Temporary output to see what files we found
-        // println!("{}", file_name);
-
-        let smbios_table_data = load_smbios_data_from_file(file_name);
+        let smbios_table_data = load_smbios_data_from_file(&elem);
         match smbios_table_data {
             Ok(data) => result.push(data),
             Err(_) => {}
@@ -69,9 +65,7 @@ mod tests {
         path.push("jeffgerlap_3_2_0");
         path.set_extension("dat");
 
-        let filename = path.display().to_string();
-
-        match load_smbios_data_from_file(&filename) {
+        match load_smbios_data_from_file(&path.as_path()) {
             Ok(table_data) => {
                 for parts in table_data.into_iter() {
                     println!("{:?}", parts.defined_struct());
