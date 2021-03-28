@@ -83,11 +83,23 @@ mod tests {
     #[test]
     fn test_dev_mem_scan() -> io::Result<()> {
         let mut dev_mem = File::open(DEV_MEM_FILE)?;
-        let entry_point = SMBiosEntryPoint32::try_scan_from_file(&mut dev_mem, 0x000F0000..0x000FFFFF)?;
-        println!("SMBIOS {}.{} present.", entry_point.major_version(), entry_point.minor_version());
-        println!("{} structures occupying {} bytes.", entry_point.number_of_smbios_structures(), entry_point.structure_table_length());
-        println!("Table at: {:#010X}.", entry_point.structure_table_address());
+        match SMBiosEntryPoint32::try_scan_from_file(&mut dev_mem, 0x000F0000..0x000FFFFF) {
+            Ok(entry_point) => {
+                println!("SMBIOS {}.{} present.", entry_point.major_version(), entry_point.minor_version());
+                println!("{} structures occupying {} bytes.", entry_point.number_of_smbios_structures(), entry_point.structure_table_length());
+                println!("Table at: {:#010X}.", entry_point.structure_table_address());
+            }
+            Err(error) => {
+                if error.kind() != ErrorKind::UnexpectedEof {
+                    return Err(error);
+                }
 
+                let entry_point = SMBiosEntryPoint64::try_scan_from_file(&mut dev_mem, 0x000F0000..0x000FFFFF)?;
+                println!("SMBIOS {}.{}.{} present.", entry_point.major_version(), entry_point.minor_version(), entry_point.docrev());
+                println!("Occupying {} bytes maximum.", entry_point.structure_table_maximum_size());
+                println!("Table at: {:#010X}.", entry_point.structure_table_address());
+            }
+        }
         println!("hooray!");
 
         Ok(())

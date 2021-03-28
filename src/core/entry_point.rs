@@ -72,7 +72,7 @@ impl<'a> SMBiosEntryPoint32 {
     pub const NUMBER_OF_SMBIOS_STRUCTURES_OFFSET: usize = 0x1C;
 
     /// SMBIOS BCD Revision Offset
-    pub const BCD_REVISION: usize = 0x1E;
+    pub const BCD_REVISION_OFFSET: usize = 0x1E;
 
     /// Entry Point Structure Checksum
     ///
@@ -221,7 +221,7 @@ impl<'a> SMBiosEntryPoint32 {
     /// Minor Versions in offsets 6 and 7 of the Entry Point Structure
     /// provide the version information.
     pub fn bcd_revision(&self) -> u8 {
-        self.raw[Self::BCD_REVISION]
+        self.raw[Self::BCD_REVISION_OFFSET]
     }
 
     /// Load this structure from a file
@@ -237,7 +237,6 @@ impl<'a> SMBiosEntryPoint32 {
             file.seek(SeekFrom::Start(offset))?;
             file.read_exact(&mut anchor)?;
             if anchor == Self::SM_ANCHOR {
-                println!("SMBiosEntryPoint32 offset: {:#X}", offset);
                 let mut length = [0; 2];
                 file.read_exact(&mut length)?;
                 let struct_length = length[1] as usize;
@@ -484,6 +483,31 @@ impl<'a> SMBiosEntryPoint64 {
     /// Load this structure from a file
     pub fn try_load_from_file(filename: &Path) -> Result<Self, Error> {
         read(filename)?.try_into()
+    }
+
+    /// Load this structure by scanning a file within the given offsets,
+    /// looking for the [SMBiosEntryPoint64::ANCHOR] string.
+    pub fn try_scan_from_file<T: Iterator<Item = u64>>(file: &mut File, range: T) -> Result<Self, Error> where T: RangeBounds<u64>, {
+        let mut anchor = [0; 5];
+        for offset in range.step_by(0x10) {
+            file.seek(SeekFrom::Start(offset))?;
+            file.read_exact(&mut anchor)?;
+            if anchor == Self::SM3_ANCHOR {
+                let mut length = [0; 2];
+                file.read_exact(&mut length)?;
+                let struct_length = length[1] as usize;
+                let mut entry_point_buffer = Vec::with_capacity(struct_length);
+                entry_point_buffer.resize(struct_length, 0);
+                file.seek(SeekFrom::Start(offset))?;
+                file.read_exact(&mut entry_point_buffer)?;
+                let entry_point: Self = entry_point_buffer.try_into()?;
+                return Ok(entry_point);
+            }
+        }
+        Err(Error::new(
+                ErrorKind::UnexpectedEof,
+                "Not found",
+            ))
     }
 }
 
