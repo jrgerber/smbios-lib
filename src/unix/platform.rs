@@ -82,9 +82,16 @@ mod tests {
 
     #[test]
     fn test_dev_mem_scan() -> io::Result<()> {
+        const RANGE_START:u64 = 0x000F0000u64;
+        const RANGE_END:u64 = 0x000FFFFFu64;
         let mut dev_mem = File::open(DEV_MEM_FILE)?;
-        match SMBiosEntryPoint32::try_scan_from_file(&mut dev_mem, 0x000F0000..0x000FFFFF) {
+        let mut structure_table_address: u64 = 0;
+        let mut structure_table_length: u32 = 0;
+
+        match SMBiosEntryPoint32::try_scan_from_file(&mut dev_mem, RANGE_START..=RANGE_END) {
             Ok(entry_point) => {
+                structure_table_address = entry_point.structure_table_address() as u64;
+                structure_table_length = entry_point.structure_table_length() as u32;
                 println!(
                     "SMBIOS {}.{} present.",
                     entry_point.major_version(),
@@ -103,7 +110,11 @@ mod tests {
                 }
 
                 let entry_point =
-                    SMBiosEntryPoint64::try_scan_from_file(&mut dev_mem, 0x000F0000..0x000FFFFF)?;
+                    SMBiosEntryPoint64::try_scan_from_file(&mut dev_mem, RANGE_START..=RANGE_END)?;
+
+                structure_table_address = entry_point.structure_table_address();
+                structure_table_length = entry_point.structure_table_maximum_size();
+
                 println!(
                     "SMBIOS {}.{}.{} present.",
                     entry_point.major_version(),
@@ -117,7 +128,17 @@ mod tests {
                 println!("Table at: {:#010X}.", entry_point.structure_table_address());
             }
         }
-        println!("hooray!");
+
+        if structure_table_address < RANGE_START || structure_table_address > RANGE_END {
+            return Err(Error::new(ErrorKind::InvalidData, format!("The entry point has given an out of range start address for the table: {}", structure_table_address)));
+        }
+
+        if structure_table_address + structure_table_length as u64 > RANGE_END {
+            return Err(Error::new(ErrorKind::InvalidData, format!("The entry point has given a length which exceeds the range: {}", structure_table_length)));
+        }
+
+        let table = UndefinedStructTable::try_load_range_from_file(&mut dev_mem, structure_table_address, structure_table_length as usize)?;
+        println!("{:#X?}", table);
 
         Ok(())
     }

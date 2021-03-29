@@ -2,7 +2,7 @@ use super::header::{Handle, Header};
 use super::strings::Strings;
 use crate::structs::{DefinedStruct, SMBiosEndOfTable, SMBiosStruct};
 use std::fmt;
-use std::{convert::TryInto, slice::Iter};
+use std::{convert::TryInto, slice::Iter, fs::File, io::{prelude::*, Error, ErrorKind, SeekFrom}};
 
 /// # Embodies the three basic parts of an SMBIOS structure
 ///
@@ -300,6 +300,19 @@ impl<'a> UndefinedStructTable {
         T: SMBiosStruct<'a>,
     {
         self.defined_struct_iter().collect()
+    }
+
+    /// Load this structure by seeking and reading the file offsets.
+    pub fn try_load_range_from_file(file: &mut File, table_address: u64, table_len: usize) -> Result<Self, Error> {
+        if table_len < Header::SIZE + 2 {
+            return Err(Error::new(ErrorKind::InvalidData, format!("The table has an invalid size: {}", table_len)))
+        }
+
+        file.seek(SeekFrom::Start(table_address))?;
+        let mut table = Vec::with_capacity(table_len);
+        table.resize(table_len, 0);
+        file.read_exact(&mut table)?;
+        Ok(table.into())
     }
 }
 
