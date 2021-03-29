@@ -1,5 +1,12 @@
 use std::{
-    convert::TryFrom, convert::TryInto, fmt, fs::{read, File}, io::{Error, ErrorKind, SeekFrom, prelude::*}, num::Wrapping, ops::RangeBounds, path::Path
+    convert::TryFrom,
+    convert::TryInto,
+    fmt,
+    fs::{read, File},
+    io::{prelude::*, Error, ErrorKind, SeekFrom},
+    num::Wrapping,
+    ops::RangeBounds,
+    path::Path,
 };
 
 /// # SMBIOS 2.1 (32 bit) Entry Point structure
@@ -231,7 +238,13 @@ impl<'a> SMBiosEntryPoint32 {
 
     /// Load this structure by scanning a file within the given offsets,
     /// looking for the [SMBiosEntryPoint32::ANCHOR] string.
-    pub fn try_scan_from_file<T: Iterator<Item = u64>>(file: &mut File, range: T) -> Result<Self, Error> where T: RangeBounds<u64>, {
+    pub fn try_scan_from_file<T: Iterator<Item = u64>>(
+        file: &mut File,
+        range: T,
+    ) -> Result<Self, Error>
+    where
+        T: RangeBounds<u64>,
+    {
         let mut anchor = [0; 4];
         for offset in range.step_by(0x10) {
             file.seek(SeekFrom::Start(offset))?;
@@ -248,10 +261,7 @@ impl<'a> SMBiosEntryPoint32 {
                 return Ok(entry_point);
             }
         }
-        Err(Error::new(
-                ErrorKind::UnexpectedEof,
-                "Not found",
-            ))
+        Err(Error::new(ErrorKind::UnexpectedEof, "Not found"))
     }
 }
 
@@ -487,7 +497,13 @@ impl<'a> SMBiosEntryPoint64 {
 
     /// Load this structure by scanning a file within the given offsets,
     /// looking for the [SMBiosEntryPoint64::ANCHOR] string.
-    pub fn try_scan_from_file<T: Iterator<Item = u64>>(file: &mut File, range: T) -> Result<Self, Error> where T: RangeBounds<u64>, {
+    pub fn try_scan_from_file<T: Iterator<Item = u64>>(
+        file: &mut File,
+        range: T,
+    ) -> Result<Self, Error>
+    where
+        T: RangeBounds<u64>,
+    {
         let mut anchor = [0; 5];
         for offset in range.step_by(0x10) {
             file.seek(SeekFrom::Start(offset))?;
@@ -504,10 +520,7 @@ impl<'a> SMBiosEntryPoint64 {
                 return Ok(entry_point);
             }
         }
-        Err(Error::new(
-                ErrorKind::UnexpectedEof,
-                "Not found",
-            ))
+        Err(Error::new(ErrorKind::UnexpectedEof, "Not found"))
     }
 }
 

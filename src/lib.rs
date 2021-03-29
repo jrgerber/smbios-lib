@@ -9,8 +9,8 @@
 #![deny(rust_2018_idioms)]
 
 mod core;
-mod macos;
 mod file_io;
+mod macos;
 mod structs;
 mod unix;
 mod windows;
@@ -21,7 +21,7 @@ pub use crate::core::*;
 pub use file_io::*;
 
 #[cfg(target_family = "windows")]
-pub use windows::{load_windows_smbios_data, table_load_from_device, raw_smbios_from_device};
+pub use windows::{load_windows_smbios_data, raw_smbios_from_device, table_load_from_device};
 
 pub use windows::WinSMBiosData;
 

@@ -1,6 +1,6 @@
 use crate::*;
-use std::{io::Error, io::ErrorKind, path::Path};
 use std::fs::read;
+use std::{io::Error, io::ErrorKind, path::Path};
 
 const SYS_ENTRY_FILE: &'static str = "/sys/firmware/dmi/tables/smbios_entry_point";
 const SYS_TABLE_FILE: &'static str = "/sys/firmware/dmi/tables/DMI";
@@ -77,16 +77,24 @@ pub fn raw_smbios_from_device() -> Result<Vec<u8>, Error> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::io;
     use std::fs::File;
+    use std::io;
 
     #[test]
     fn test_dev_mem_scan() -> io::Result<()> {
         let mut dev_mem = File::open(DEV_MEM_FILE)?;
         match SMBiosEntryPoint32::try_scan_from_file(&mut dev_mem, 0x000F0000..0x000FFFFF) {
             Ok(entry_point) => {
-                println!("SMBIOS {}.{} present.", entry_point.major_version(), entry_point.minor_version());
-                println!("{} structures occupying {} bytes.", entry_point.number_of_smbios_structures(), entry_point.structure_table_length());
+                println!(
+                    "SMBIOS {}.{} present.",
+                    entry_point.major_version(),
+                    entry_point.minor_version()
+                );
+                println!(
+                    "{} structures occupying {} bytes.",
+                    entry_point.number_of_smbios_structures(),
+                    entry_point.structure_table_length()
+                );
                 println!("Table at: {:#010X}.", entry_point.structure_table_address());
             }
             Err(error) => {
@@ -94,9 +102,18 @@ mod tests {
                     return Err(error);
                 }
 
-                let entry_point = SMBiosEntryPoint64::try_scan_from_file(&mut dev_mem, 0x000F0000..0x000FFFFF)?;
-                println!("SMBIOS {}.{}.{} present.", entry_point.major_version(), entry_point.minor_version(), entry_point.docrev());
-                println!("Occupying {} bytes maximum.", entry_point.structure_table_maximum_size());
+                let entry_point =
+                    SMBiosEntryPoint64::try_scan_from_file(&mut dev_mem, 0x000F0000..0x000FFFFF)?;
+                println!(
+                    "SMBIOS {}.{}.{} present.",
+                    entry_point.major_version(),
+                    entry_point.minor_version(),
+                    entry_point.docrev()
+                );
+                println!(
+                    "Occupying {} bytes maximum.",
+                    entry_point.structure_table_maximum_size()
+                );
                 println!("Table at: {:#010X}.", entry_point.structure_table_address());
             }
         }
