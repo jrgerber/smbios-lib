@@ -85,8 +85,8 @@ mod tests {
         const RANGE_START: u64 = 0x000F0000u64;
         const RANGE_END: u64 = 0x000FFFFFu64;
         let mut dev_mem = File::open(DEV_MEM_FILE)?;
-        let mut structure_table_address: u64 = 0;
-        let mut structure_table_length: u32 = 0;
+        let structure_table_address: u64;
+        let structure_table_length: u32;
 
         match SMBiosEntryPoint32::try_scan_from_file(&mut dev_mem, RANGE_START..=RANGE_END) {
             Ok(entry_point) => {
