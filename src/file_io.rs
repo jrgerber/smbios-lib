@@ -45,8 +45,8 @@ pub fn load_raw_files(folder: &Path) -> Vec<SMBiosData> {
 }
 
 /// dumps raw data into a file
-pub fn dump_raw(data: Vec<u8>, filename: &str) -> Result<(), Error> {
-    let f = File::create(&filename)?;
+pub fn dump_raw(data: Vec<u8>, out_path: &Path) -> Result<(), Error> {
+    let f = File::create(&out_path)?;
     let mut f = BufWriter::new(f);
     f.write_all(&data)?;
     Ok(())

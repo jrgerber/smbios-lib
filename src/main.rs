@@ -205,13 +205,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Some(filename) => {
             let file_path = Path::new(&filename);
             println!("{:#?}", load_smbios_data_from_file(&file_path)?);
-        },
+        }
         None => (),
     }
 
     match matches.opt_str(output_option) {
         Some(filename) => {
-            dump_raw(raw_smbios_from_device()?, &filename)?;
+            let out_path = Path::new(&filename);
+            dump_raw(raw_smbios_from_device()?, &out_path)?;
         }
         None => (),
     }
