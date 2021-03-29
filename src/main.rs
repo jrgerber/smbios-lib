@@ -1,4 +1,4 @@
-use std::{error::Error, fmt::Display};
+use std::{error::Error, fmt::Display, path::Path};
 
 use smbioslib::*;
 
@@ -203,18 +203,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     match matches.opt_str(file_option) {
         Some(filename) => {
-            println!(
-                "Load table from file: {} \n{:#?}",
-                &filename,
-                load_smbios_data_from_file(&filename)?
-            );
+            let file_path = Path::new(&filename);
+            println!("{:#?}", load_smbios_data_from_file(&file_path)?);
         }
         None => (),
     }
 
     match matches.opt_str(output_option) {
         Some(filename) => {
-            dump_raw(raw_smbios_from_device()?, &filename)?;
+            let out_path = Path::new(&filename);
+            dump_raw(raw_smbios_from_device()?, &out_path)?;
         }
         None => (),
     }
