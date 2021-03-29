@@ -82,8 +82,8 @@ mod tests {
 
     #[test]
     fn test_dev_mem_scan() -> io::Result<()> {
-        const RANGE_START:u64 = 0x000F0000u64;
-        const RANGE_END:u64 = 0x000FFFFFu64;
+        const RANGE_START: u64 = 0x000F0000u64;
+        const RANGE_END: u64 = 0x000FFFFFu64;
         let mut dev_mem = File::open(DEV_MEM_FILE)?;
         let mut structure_table_address: u64 = 0;
         let mut structure_table_length: u32 = 0;
@@ -130,14 +130,30 @@ mod tests {
         }
 
         if structure_table_address < RANGE_START || structure_table_address > RANGE_END {
-            return Err(Error::new(ErrorKind::InvalidData, format!("The entry point has given an out of range start address for the table: {}", structure_table_address)));
+            return Err(Error::new(
+                ErrorKind::InvalidData,
+                format!(
+                    "The entry point has given an out of range start address for the table: {}",
+                    structure_table_address
+                ),
+            ));
         }
 
         if structure_table_address + structure_table_length as u64 > RANGE_END {
-            return Err(Error::new(ErrorKind::InvalidData, format!("The entry point has given a length which exceeds the range: {}", structure_table_length)));
+            return Err(Error::new(
+                ErrorKind::InvalidData,
+                format!(
+                    "The entry point has given a length which exceeds the range: {}",
+                    structure_table_length
+                ),
+            ));
         }
 
-        let table = UndefinedStructTable::try_load_range_from_file(&mut dev_mem, structure_table_address, structure_table_length as usize)?;
+        let table = UndefinedStructTable::try_load_range_from_file(
+            &mut dev_mem,
+            structure_table_address,
+            structure_table_length as usize,
+        )?;
         println!("{:#X?}", table);
 
         Ok(())
