@@ -17,6 +17,17 @@ pub struct SMBiosData {
 impl<'a> SMBiosData {
     /// Creates an SMBIOS table parser which can be iterated
     ///
+    /// `table` is iterable table data.
+    /// `version` is optional and represents the DMTF SMBIOS Standard version of the bytes in `data`.
+    pub fn new(table: UndefinedStructTable, version: Option<SMBiosVersion>) -> Self {
+        Self {
+            table,
+            version,
+        }
+    }
+
+    /// Creates an SMBIOS table parser which can be iterated
+    ///
     /// `data` is a block of bytes representing the raw table data.
     /// `version` is optional and represents the DMTF SMBIOS Standard version of the bytes in `data`.
     pub fn from_vec_and_version(data: Vec<u8>, version: Option<SMBiosVersion>) -> Self {
