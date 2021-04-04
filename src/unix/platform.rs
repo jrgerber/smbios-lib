@@ -38,7 +38,8 @@ const DEV_MEM_FILE: &'static str = "/dev/mem";
 // These are useful for cross checking against the results this library produces when reading
 // /sys/firmware/dmi/tables/DMI
 
-/// Loads SMBIOS table data ([SMBiosData]) from the device
+#[cfg(any(target_os = "linux"))]
+/// Loads [SMBiosData] from the device via /sys/firmware/dmi/tables (on Linux)
 pub fn table_load_from_device() -> Result<SMBiosData, Error> {
     let version: SMBiosVersion;
     match SMBiosEntryPoint64::try_load_from_file(Path::new(SYS_ENTRY_FILE)) {
@@ -67,6 +68,69 @@ pub fn table_load_from_device() -> Result<SMBiosData, Error> {
     }
 
     SMBiosData::try_load_from_file(SYS_TABLE_FILE, Some(version))
+}
+
+#[cfg(any(target_os = "freebsd"))]
+/// Loads [SMBiosData] from the device via /dev/mem (on FreeBSD)
+pub fn table_load_from_device() -> Result<SMBiosData, Error> {
+    const RANGE_START: u64 = 0x000F0000u64;
+    const RANGE_END: u64 = 0x000FFFFFu64;
+    let mut dev_mem = File::open(DEV_MEM_FILE)?;
+    let structure_table_address: u64;
+    let structure_table_length: u32;
+    let version: SMBiosVersion;
+
+    match SMBiosEntryPoint32::try_scan_from_file(&mut dev_mem, RANGE_START..=RANGE_END) {
+        Ok(entry_point) => {
+           version = SMBiosVersion {
+                major: entry_point.major_version(),
+                minor: entry_point.minor_version(),
+                revision: 0,
+            }
+        }
+        Err(error) => {
+            if error.kind() != ErrorKind::UnexpectedEof {
+                return Err(error);
+            }
+
+            let entry_point =
+                SMBiosEntryPoint64::try_scan_from_file(&mut dev_mem, RANGE_START..=RANGE_END)?;
+
+           version = SMBiosVersion {
+                major: entry_point.major_version(),
+                minor: entry_point.minor_version(),
+                revision: entry_point.docrev(),
+            }
+        }
+    }
+
+    if structure_table_address < RANGE_START || structure_table_address > RANGE_END {
+        return Err(Error::new(
+            ErrorKind::InvalidData,
+            format!(
+                "The entry point has given an out of range start address for the table: {}",
+                structure_table_address
+            ),
+        ));
+    }
+
+    if structure_table_address + structure_table_length as u64 > RANGE_END {
+        return Err(Error::new(
+            ErrorKind::InvalidData,
+            format!(
+                "The entry point has given a length which exceeds the range: {}",
+                structure_table_length
+            ),
+        ));
+    }
+
+    let table = UndefinedStructTable::try_load_from_file_offset(
+        &mut dev_mem,
+        structure_table_address,
+        structure_table_length as usize,
+    )?;
+    
+    Ok(SMBiosData::from_vec_and_version(table.into_iter().collect(), version))
 }
 
 /// Returns smbios raw data
@@ -149,7 +213,7 @@ mod tests {
             ));
         }
 
-        let table = UndefinedStructTable::try_load_range_from_file(
+        let table = UndefinedStructTable::try_load_from_file_offset(
             &mut dev_mem,
             structure_table_address,
             structure_table_length as usize,

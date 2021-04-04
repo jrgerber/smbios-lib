@@ -237,7 +237,7 @@ impl<'a> SMBiosEntryPoint32 {
     }
 
     /// Load this structure by scanning a file within the given offsets,
-    /// looking for the [SMBiosEntryPoint32::ANCHOR] string.
+    /// looking for the [SMBiosEntryPoint32::SM_ANCHOR] string.
     pub fn try_scan_from_file<T: Iterator<Item = u64>>(
         file: &mut File,
         range: T,
@@ -496,7 +496,7 @@ impl<'a> SMBiosEntryPoint64 {
     }
 
     /// Load this structure by scanning a file within the given offsets,
-    /// looking for the [SMBiosEntryPoint64::ANCHOR] string.
+    /// looking for the [SMBiosEntryPoint64::SM3_ANCHOR] string.
     pub fn try_scan_from_file<T: Iterator<Item = u64>>(
         file: &mut File,
         range: T,

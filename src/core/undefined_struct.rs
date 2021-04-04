@@ -307,10 +307,10 @@ impl<'a> UndefinedStructTable {
         self.defined_struct_iter().collect()
     }
 
-    /// Load this structure by seeking and reading the file offsets.
-    pub fn try_load_range_from_file(
+    /// Load an [UndefinedStructTable] by seeking and reading the file offsets.
+    pub fn try_load_from_file_offset(
         file: &mut File,
-        table_address: u64,
+        table_offset: u64,
         table_len: usize,
     ) -> Result<Self, Error> {
         if table_len < Header::SIZE + 2 {
@@ -320,7 +320,7 @@ impl<'a> UndefinedStructTable {
             ));
         }
 
-        file.seek(SeekFrom::Start(table_address))?;
+        file.seek(SeekFrom::Start(table_offset))?;
         let mut table = Vec::with_capacity(table_len);
         table.resize(table_len, 0);
         file.read_exact(&mut table)?;
