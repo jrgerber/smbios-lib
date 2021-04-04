@@ -1,6 +1,5 @@
 use crate::*;
-use std::fs::read;
-use std::{io::Error, io::ErrorKind, path::Path};
+use std::{io::Error, io::ErrorKind};
 
     #[cfg(any(target_os = "linux"))]
     /// Full path to smbios_entry_point file on Linux (contains entry point data)
@@ -49,8 +48,9 @@ use std::{io::Error, io::ErrorKind, path::Path};
 /// Loads [SMBiosData] from the device via /sys/firmware/dmi/tables (on Linux)
 pub fn table_load_from_device() -> Result<SMBiosData, Error> {
     let version: SMBiosVersion;
+    let entry_path = std::path::Path::new(SYS_ENTRY_FILE);
 
-    match SMBiosEntryPoint64::try_load_from_file(Path::new(SYS_ENTRY_FILE)) {
+    match SMBiosEntryPoint64::try_load_from_file(entry_path) {
         Ok(entry_point) => {
             version = SMBiosVersion {
                 major: entry_point.major_version(),
@@ -60,7 +60,7 @@ pub fn table_load_from_device() -> Result<SMBiosData, Error> {
         }
         Err(err) => match err.kind() {
             ErrorKind::InvalidData => {
-                match SMBiosEntryPoint32::try_load_from_file(Path::new(SYS_ENTRY_FILE)) {
+                match SMBiosEntryPoint32::try_load_from_file(entry_path) {
                     Ok(entry_point) => {
                         version = SMBiosVersion {
                             major: entry_point.major_version(),
@@ -151,7 +151,7 @@ pub fn table_load_from_device() -> Result<SMBiosData, Error> {
 #[cfg(any(target_os = "linux"))]
 /// Returns smbios raw data via /sys/firmware/dmi/tables (on Linux)
 pub fn raw_smbios_from_device() -> Result<Vec<u8>, Error> {
-    Ok(read(SYS_TABLE_FILE)?)
+    Ok(std::fs::read(SYS_TABLE_FILE)?)
 }
 
 #[cfg(any(target_os = "freebsd"))]
