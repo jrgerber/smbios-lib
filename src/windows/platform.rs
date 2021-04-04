@@ -24,7 +24,7 @@ mod ffi {
 pub fn load_windows_smbios_data() -> Result<WinSMBiosData, Error> {
     match raw_smbios_from_device() {
         Ok(raw) => WinSMBiosData::new(raw),
-        Err(e) => Err(e)
+        Err(e) => Err(e),
     }
 }
 
