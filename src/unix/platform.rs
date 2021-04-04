@@ -155,7 +155,7 @@ pub fn raw_smbios_from_device() -> Result<Vec<u8>, Error> {
 }
 
 #[cfg(any(target_os = "freebsd"))]
-/// Returns smbios raw data via /sys/firmware/dmi/tables (on Linux)
+/// Returns smbios raw data via /dev/mem (on FreeBSD)
 pub fn raw_smbios_from_device() -> Result<Vec<u8>, Error> {
     use std::io::{prelude::*, SeekFrom};
     const RANGE_START: u64 = 0x000F0000u64;
