@@ -4,6 +4,7 @@ An SMBIOS Library created in Rust that reads and parses raw BIOS data
 ![Windows](https://github.com/jrgerber/smbios-lib/actions/workflows/windows.yml/badge.svg)
 ![Linux](https://github.com/jrgerber/smbios-lib/actions/workflows/linux.yml/badge.svg)
 ![MacOS](https://github.com/jrgerber/smbios-lib/actions/workflows/macos.yml/badge.svg)
+![LOC](https://tokei.rs/b1/github/jrgerber/smbios-lib?category=code)
 
 ## Table of contents
 * [General info](#general-info)
@@ -13,6 +14,8 @@ An SMBIOS Library created in Rust that reads and parses raw BIOS data
 
 ## General info
 This project reads raw [SMBIOS](https://en.wikipedia.org/wiki/BIOS) data from either a device or file and provides the data as an API.
+
+For an example project using this library take a look at [dmidecode-rs](https://github.com/jrgerber/dmidecode-rs).
 
 ### Supports
 * [DMTF System Management BIOS (SMBIOS) Reference
