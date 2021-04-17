@@ -271,6 +271,12 @@ impl fmt::Debug for ChassisTypeData {
     }
 }
 
+impl fmt::Display for ChassisTypeData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "raw: {}, value: {:?}", &self.raw, &self.value)
+    }
+}
+
 impl Deref for ChassisTypeData {
     type Target = ChassisType;
 
