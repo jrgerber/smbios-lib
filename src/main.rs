@@ -95,7 +95,7 @@ fn string_keyword(keyword: String, data: &SMBiosData) -> Result<String, BiosPars
         "system-uuid" => {
             match data.find_map(|system_info: SMBiosSystemInformation| system_info.uuid()) {
                 // SystemUuidData is an enum that can be broken down further if desired
-                Some(uuid) => Ok(format!("{:?}", uuid)),
+                Some(uuid) => Ok(format!("{}", uuid)),
                 None => Err(BiosParseError::SystemUuidNotFound),
             }
         }
@@ -126,7 +126,7 @@ fn string_keyword(keyword: String, data: &SMBiosData) -> Result<String, BiosPars
         "chassis-type" => match data
             .find_map(|chassis_info: SMBiosSystemChassisInformation| chassis_info.chassis_type())
         {
-            Some(chassis_type) => Ok(format!("{:?}", chassis_type)),
+            Some(chassis_type) => Ok(format!("{}", chassis_type)),
             None => Err(BiosParseError::ChassisTypeNotFound),
         },
         "chassis-version" => data

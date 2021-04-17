@@ -146,6 +146,17 @@ impl<'a> TryFrom<&'a [u8]> for SystemUuidData {
     }
 }
 
+impl fmt::Display for SystemUuidData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &*self {
+            SystemUuidData::IdNotPresent => write!(f, "IdNotPresent"),
+            SystemUuidData::IdNotPresentButSettable => write!(f, "IdNotPresentButSettable"),
+            SystemUuidData::Uuid(_system_uuid) => write!(f, "{}", &_system_uuid)
+        }
+    }
+}
+
+
 /// # System - UUID
 #[derive(PartialEq, Eq)]
 pub struct SystemUuid {
@@ -191,7 +202,7 @@ impl<'a> From<&'a [u8; 0x10]> for SystemUuid {
     }
 }
 
-impl fmt::Debug for SystemUuid {
+impl fmt::Display for SystemUuid {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // Example output:
         // "00360FE7-D4D5-11E5-9C43-BC0000F00000"
@@ -211,6 +222,13 @@ impl fmt::Debug for SystemUuid {
         })
     }
 }
+
+impl fmt::Debug for SystemUuid {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", &self)
+    }
+}
+
 
 /// # System - Wake-up Type Data
 pub struct SystemWakeUpTypeData {
