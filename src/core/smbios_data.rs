@@ -4,10 +4,12 @@ use crate::structs::{DefinedStructTable, SMBiosStruct};
 use std::io::Error;
 use std::{cmp::Ordering, slice::Iter};
 use std::{fmt, fs::read};
+use serde::Serialize;
 
 /// # SMBIOS Data
 ///
 /// Contains an optional SMBIOS version and a collection of SMBIOS structures.
+#[derive(Serialize)]
 pub struct SMBiosData {
     table: UndefinedStructTable,
     /// Version of the contained SMBIOS structures.
@@ -170,7 +172,7 @@ impl fmt::Debug for SMBiosData {
 }
 
 /// # Version of SMBIOS Structure
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Serialize)]
 pub struct SMBiosVersion {
     /// SMBIOS major version
     pub major: u8,

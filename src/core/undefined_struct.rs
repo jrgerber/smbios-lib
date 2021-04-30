@@ -8,7 +8,7 @@ use std::{
     io::{prelude::*, Error, ErrorKind, SeekFrom},
     slice::Iter,
 };
-
+use serde::{Serialize, Serializer};
 /// # Embodies the three basic parts of an SMBIOS structure
 ///
 /// Every SMBIOS structure contains three distinct sections:
@@ -23,8 +23,10 @@ use std::{
 /// necessary.  Therefore, [UndefinedStruct] is public for the case of OEM,
 /// as well as when working with structures that are defined in an SMBIOS
 /// standard newer than the one this library currently supports.
+#[derive(Serialize)]
 pub struct UndefinedStruct {
     /// The [Header] of the structure
+    #[serde(serialize_with = "ser_header")]
     pub header: Header,
 
     /// The raw data for the header and fields
@@ -47,8 +49,25 @@ pub struct UndefinedStruct {
     pub fields: Vec<u8>,
 
     /// The strings of the structure
+    #[serde(serialize_with = "ser_strings")]
     pub strings: Strings,
 }
+
+fn ser_header<S>(data: &Header, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+{
+    serializer.serialize_str(format!("{:?}", data).as_str())
+}
+
+
+fn ser_strings<S>(data: &Strings, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+{
+    serializer.serialize_str(format!("{:?}", data).as_str())
+}
+
 
 impl<'a> UndefinedStruct {
     /// Creates a structure instance of the given byte array slice
@@ -184,7 +203,7 @@ impl Default for UndefinedStruct {
 /// # Undefined Struct Table
 ///
 /// A collection of [UndefinedStruct] items.
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct UndefinedStructTable(Vec<UndefinedStruct>);
 
 impl<'a> UndefinedStructTable {

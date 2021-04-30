@@ -220,8 +220,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     match matches.opt_str(string_option) {
         Some(keyword) => {
             let smbios_data = table_load_from_device()?;
-            let output = string_keyword(keyword, &smbios_data)?;
-            println!("{}", output);
+            // let raw_data = raw_smbios_from_device()?;
+            let outjson = serde_json::to_string(&smbios_data);
+            // let output = string_keyword(keyword, &smbios_data)?;
+            // println!("{}", output);
+            println!("{}", outjson?);
         }
         None => (),
     }
