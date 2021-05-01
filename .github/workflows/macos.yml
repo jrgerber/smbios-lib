@@ -1,11 +1,14 @@
 name: MacOS
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   pull_request:
-    branches: [main]
+    branches: [ main ]
+    types: [ labeled ]
+
 jobs:
   build:
+    if: ${{ github.event.label.name == 'Ready for Review' }} || github.event_name == 'push'
     runs-on: macos-latest
 
     steps:
