@@ -1,3 +1,4 @@
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::{convert::TryInto, fmt, ops::Deref, str::FromStr};
 
 /// # Structure Handle
@@ -6,12 +7,24 @@ use std::{convert::TryInto, fmt, ops::Deref, str::FromStr};
 /// Some structures will reference other structures by using this value.
 ///
 /// Dereference a handle (*handle) to access its u16 value.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, PartialEq, Eq)]
 pub struct Handle(pub u16);
 
 impl Handle {
     /// Handle Size (2 bytes)
     pub const SIZE: usize = 2usize;
+}
+
+impl fmt::Debug for Handle {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", &self.0)
+    }
+}
+
+impl fmt::Display for Handle {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", &self.0)
+    }
 }
 
 impl Deref for Handle {
@@ -69,6 +82,19 @@ impl fmt::Debug for Header {
             .field("length", &self.length())
             .field("handle", &self.handle())
             .finish()
+    }
+}
+
+impl Serialize for Header {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Header", 3)?;
+        state.serialize_field("struct_type", &self.struct_type())?;
+        state.serialize_field("length", &self.length())?;
+        state.serialize_field("handle", &self.handle())?;
+        state.end()
     }
 }
 

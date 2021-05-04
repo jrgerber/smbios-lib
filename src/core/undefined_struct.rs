@@ -1,6 +1,7 @@
 use super::header::{Handle, Header};
 use super::strings::Strings;
 use crate::structs::{DefinedStruct, SMBiosEndOfTable, SMBiosStruct};
+use serde::{Serialize, Serializer};
 use std::fmt;
 use std::{
     convert::TryInto,
@@ -8,7 +9,6 @@ use std::{
     io::{prelude::*, Error, ErrorKind, SeekFrom},
     slice::Iter,
 };
-use serde::{Serialize, Serializer};
 /// # Embodies the three basic parts of an SMBIOS structure
 ///
 /// Every SMBIOS structure contains three distinct sections:
@@ -26,7 +26,6 @@ use serde::{Serialize, Serializer};
 #[derive(Serialize)]
 pub struct UndefinedStruct {
     /// The [Header] of the structure
-    #[serde(serialize_with = "ser_header")]
     pub header: Header,
 
     /// The raw data for the header and fields
@@ -53,21 +52,12 @@ pub struct UndefinedStruct {
     pub strings: Strings,
 }
 
-fn ser_header<S>(data: &Header, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-{
-    serializer.serialize_str(format!("{:?}", data).as_str())
-}
-
-
 fn ser_strings<S>(data: &Strings, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
+where
+    S: Serializer,
 {
     serializer.serialize_str(format!("{:?}", data).as_str())
 }
-
 
 impl<'a> UndefinedStruct {
     /// Creates a structure instance of the given byte array slice
