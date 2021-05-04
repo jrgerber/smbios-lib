@@ -257,9 +257,9 @@ pub struct ChassisTypeData {
     /// This is most likely to occur when the standard was updated but
     /// this library code has not been updated to match the current
     /// standard.
-    raw: u8,
+    pub raw: u8,
     /// The contained [ChassisType] value
-    value: ChassisType,
+    pub value: ChassisType,
 }
 
 impl fmt::Debug for ChassisTypeData {
