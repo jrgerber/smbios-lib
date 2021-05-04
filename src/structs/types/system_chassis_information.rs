@@ -273,7 +273,10 @@ impl fmt::Debug for ChassisTypeData {
 
 impl fmt::Display for ChassisTypeData {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "raw: {}, value: {:?}", &self.raw, &self.value)
+        match &self.value {
+            ChassisType::None => write!(f, "{}", &self.raw),
+            _ => write!(f, "{:?}", &self.value),
+        }
     }
 }
 

@@ -345,6 +345,15 @@ impl fmt::Debug for ProcessorTypeData {
     }
 }
 
+impl fmt::Display for ProcessorTypeData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.value {
+            ProcessorType::None => write!(f, "{}", &self.raw),
+            _ => write!(f, "{:?}", &self.value),
+        }
+    }
+}
+
 impl Deref for ProcessorTypeData {
     type Target = ProcessorType;
 

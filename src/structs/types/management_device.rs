@@ -85,6 +85,15 @@ impl fmt::Debug for ManagementDeviceTypeData {
     }
 }
 
+impl fmt::Display for ManagementDeviceTypeData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.value {
+            ManagementDeviceType::None => write!(f, "{}", &self.raw),
+            _ => write!(f, "{:?}", &self.value),
+        }
+    }
+}
+
 impl Deref for ManagementDeviceTypeData {
     type Target = ManagementDeviceType;
 
@@ -169,6 +178,15 @@ impl fmt::Debug for ManagementDeviceAddressTypeData {
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()
+    }
+}
+
+impl fmt::Display for ManagementDeviceAddressTypeData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.value {
+            ManagementDeviceAddressType::None => write!(f, "{}", &self.raw),
+            _ => write!(f, "{:?}", &self.value),
+        }
     }
 }
 

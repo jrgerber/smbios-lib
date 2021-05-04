@@ -251,6 +251,15 @@ impl fmt::Debug for IpmiInterfaceTypeData {
     }
 }
 
+impl fmt::Display for IpmiInterfaceTypeData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.value {
+            IpmiInterfaceType::None => write!(f, "{}", &self.raw),
+            _ => write!(f, "{:?}", &self.value),
+        }
+    }
+}
+
 impl Deref for IpmiInterfaceTypeData {
     type Target = IpmiInterfaceType;
 

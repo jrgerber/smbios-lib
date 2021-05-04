@@ -132,6 +132,15 @@ impl fmt::Debug for BoardTypeData {
     }
 }
 
+impl fmt::Display for BoardTypeData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.value {
+            BoardType::None => write!(f, "{}", &self.raw),
+            _ => write!(f, "{:?}", &self.value),
+        }
+    }
+}
+
 impl Deref for BoardTypeData {
     type Target = BoardType;
 

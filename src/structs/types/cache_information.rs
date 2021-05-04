@@ -235,6 +235,15 @@ impl fmt::Debug for SystemCacheTypeData {
     }
 }
 
+impl fmt::Display for SystemCacheTypeData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.value {
+            SystemCacheType::None => write!(f, "{}", &self.raw),
+            _ => write!(f, "{:?}", &self.value),
+        }
+    }
+}
+
 impl Deref for SystemCacheTypeData {
     type Target = SystemCacheType;
 
@@ -295,6 +304,15 @@ impl fmt::Debug for ErrorCorrectionTypeData {
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()
+    }
+}
+
+impl fmt::Display for ErrorCorrectionTypeData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.value {
+            ErrorCorrectionType::None => write!(f, "{}", &self.raw),
+            _ => write!(f, "{:?}", &self.value),
+        }
     }
 }
 

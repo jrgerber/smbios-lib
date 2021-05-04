@@ -83,6 +83,15 @@ impl fmt::Debug for PointingDeviceTypeData {
     }
 }
 
+impl fmt::Display for PointingDeviceTypeData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.value {
+            PointingDeviceType::None => write!(f, "{}", &self.raw),
+            _ => write!(f, "{:?}", &self.value),
+        }
+    }
+}
+
 impl Deref for PointingDeviceTypeData {
     type Target = PointingDeviceType;
 

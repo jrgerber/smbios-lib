@@ -390,6 +390,15 @@ impl fmt::Debug for MemoryDeviceTypeData {
     }
 }
 
+impl fmt::Display for MemoryDeviceTypeData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.value {
+            MemoryDeviceType::None => write!(f, "{}", &self.raw),
+            _ => write!(f, "{:?}", &self.value),
+        }
+    }
+}
+
 impl Deref for MemoryDeviceTypeData {
     type Target = MemoryDeviceType;
 

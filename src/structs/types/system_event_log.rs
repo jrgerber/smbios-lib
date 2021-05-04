@@ -176,6 +176,15 @@ impl fmt::Debug for LogTypeData {
     }
 }
 
+impl fmt::Display for LogTypeData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.value {
+            LogType::None => write!(f, "{}", &self.raw),
+            _ => write!(f, "{:?}", &self.value),
+        }
+    }
+}
+
 impl Deref for LogTypeData {
     type Target = LogType;
 
@@ -290,6 +299,15 @@ impl fmt::Debug for VariableDataFormatTypeData {
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()
+    }
+}
+
+impl fmt::Display for VariableDataFormatTypeData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.value {
+            VariableDataFormatType::None => write!(f, "{}", &self.raw),
+            _ => write!(f, "{:?}", &self.value),
+        }
     }
 }
 

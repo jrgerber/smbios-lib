@@ -147,6 +147,15 @@ impl fmt::Debug for ProcessorArchitectureTypeData {
     }
 }
 
+impl fmt::Display for ProcessorArchitectureTypeData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.value {
+            ProcessorArchitectureType::None => write!(f, "{}", &self.raw),
+            _ => write!(f, "{:?}", &self.value),
+        }
+    }
+}
+
 impl Deref for ProcessorArchitectureTypeData {
     type Target = ProcessorArchitectureType;
 

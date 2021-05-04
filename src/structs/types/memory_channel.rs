@@ -97,6 +97,15 @@ impl fmt::Debug for MemoryChannelTypeData {
     }
 }
 
+impl fmt::Display for MemoryChannelTypeData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.value {
+            MemoryChannelType::None => write!(f, "{}", &self.raw),
+            _ => write!(f, "{:?}", &self.value),
+        }
+    }
+}
+
 impl Deref for MemoryChannelTypeData {
     type Target = MemoryChannelType;
 

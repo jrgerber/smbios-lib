@@ -123,6 +123,15 @@ impl fmt::Debug for MemoryErrorTypeData {
     }
 }
 
+impl fmt::Display for MemoryErrorTypeData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.value {
+            MemoryErrorType::None => write!(f, "{}", &self.raw),
+            _ => write!(f, "{:?}", &self.value),
+        }
+    }
+}
+
 impl Deref for MemoryErrorTypeData {
     type Target = MemoryErrorType;
 

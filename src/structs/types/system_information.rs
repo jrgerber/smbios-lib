@@ -151,11 +151,10 @@ impl fmt::Display for SystemUuidData {
         match &*self {
             SystemUuidData::IdNotPresent => write!(f, "IdNotPresent"),
             SystemUuidData::IdNotPresentButSettable => write!(f, "IdNotPresentButSettable"),
-            SystemUuidData::Uuid(_system_uuid) => write!(f, "{}", &_system_uuid)
+            SystemUuidData::Uuid(_system_uuid) => write!(f, "{}", &_system_uuid),
         }
     }
 }
-
 
 /// # System - UUID
 #[derive(PartialEq, Eq)]
@@ -229,7 +228,6 @@ impl fmt::Debug for SystemUuid {
     }
 }
 
-
 /// # System - Wake-up Type Data
 pub struct SystemWakeUpTypeData {
     /// Raw value
@@ -249,6 +247,15 @@ impl fmt::Debug for SystemWakeUpTypeData {
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()
+    }
+}
+
+impl fmt::Display for SystemWakeUpTypeData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.value {
+            SystemWakeUpType::None => write!(f, "{}", &self.raw),
+            _ => write!(f, "{:?}", &self.value),
+        }
     }
 }
 

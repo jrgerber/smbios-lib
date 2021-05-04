@@ -106,6 +106,15 @@ impl fmt::Debug for PortInformationConnectorTypeData {
     }
 }
 
+impl fmt::Display for PortInformationConnectorTypeData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.value {
+            PortInformationConnectorType::None => write!(f, "{}", &self.raw),
+            _ => write!(f, "{:?}", &self.value),
+        }
+    }
+}
+
 impl Deref for PortInformationConnectorTypeData {
     type Target = PortInformationConnectorType;
 
@@ -277,6 +286,15 @@ impl fmt::Debug for PortInformationPortTypeData {
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()
+    }
+}
+
+impl fmt::Display for PortInformationPortTypeData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.value {
+            PortInformationPortType::None => write!(f, "{}", &self.raw),
+            _ => write!(f, "{:?}", &self.value),
+        }
     }
 }
 

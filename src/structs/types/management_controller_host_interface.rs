@@ -172,6 +172,15 @@ impl fmt::Debug for HostInterfaceTypeData {
     }
 }
 
+impl fmt::Display for HostInterfaceTypeData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.value {
+            HostInterfaceType::None => write!(f, "{}", &self.raw),
+            _ => write!(f, "{:?}", &self.value),
+        }
+    }
+}
+
 impl Deref for HostInterfaceTypeData {
     type Target = HostInterfaceType;
 
@@ -267,6 +276,15 @@ impl fmt::Debug for HostProtocolTypeData {
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()
+    }
+}
+
+impl fmt::Display for HostProtocolTypeData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.value {
+            HostProtocolType::None => write!(f, "{}", &self.raw),
+            _ => write!(f, "{:?}", &self.value),
+        }
     }
 }
 

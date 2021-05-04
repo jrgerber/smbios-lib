@@ -294,6 +294,15 @@ impl fmt::Debug for SystemSlotTypeData {
     }
 }
 
+impl fmt::Display for SystemSlotTypeData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.value {
+            SystemSlotType::None => write!(f, "{}", &self.raw),
+            _ => write!(f, "{:?}", &self.value),
+        }
+    }
+}
+
 /// # System Slot Type
 #[derive(Debug, PartialEq, Eq)]
 pub enum SystemSlotType {
