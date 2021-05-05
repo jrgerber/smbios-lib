@@ -1,5 +1,6 @@
 use crate::core::{Handle, UndefinedStruct};
 use crate::SMBiosStruct;
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 
 /// # Group Associations (Type 14)
@@ -67,6 +68,20 @@ impl fmt::Debug for SMBiosGroupAssociations<'_> {
     }
 }
 
+impl Serialize for SMBiosGroupAssociations<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosGroupAssociations", 4)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("group_name", &self.group_name())?;
+        state.serialize_field("number_of_items", &self.number_of_items())?;
+        state.serialize_field("item_iterator", &self.item_iterator())?;
+        state.end()
+    }
+}
+
 /// # Group Association Item contained within [SMBiosGroupAssociations]
 pub struct GroupAssociationItem<'a> {
     group_associations: &'a SMBiosGroupAssociations<'a>,
@@ -109,6 +124,18 @@ impl fmt::Debug for GroupAssociationItem<'_> {
             .field("struct_type", &self.struct_type())
             .field("item_handle", &self.item_handle())
             .finish()
+    }
+}
+
+impl Serialize for GroupAssociationItem<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("GroupAssociationItem", 2)?;
+        state.serialize_field("struct_type", &self.struct_type())?;
+        state.serialize_field("item_handle", &self.item_handle())?;
+        state.end()
     }
 }
 

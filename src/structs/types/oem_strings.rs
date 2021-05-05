@@ -1,3 +1,4 @@
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use crate::{SMBiosStruct, Strings, UndefinedStruct};
 use std::fmt;
 
@@ -44,6 +45,19 @@ impl fmt::Debug for SMBiosOemStrings<'_> {
             .field("count", &self.count())
             .field("oem_strings", &self.oem_strings())
             .finish()
+    }
+}
+
+impl Serialize for SMBiosOemStrings<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosOemStrings", 3)?;
+            state.serialize_field("header", &self.parts.header)?;
+            state.serialize_field("count", &self.count())?;
+            state.serialize_field("oem_strings", &self.oem_strings())?;
+            state.end()
     }
 }
 

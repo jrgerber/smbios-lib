@@ -1,4 +1,5 @@
 use crate::{SMBiosStruct, UndefinedStruct};
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 use std::ops::Deref;
 
@@ -93,6 +94,27 @@ impl fmt::Debug for SMBiosIpmiDeviceInformation<'_> {
     }
 }
 
+impl Serialize for SMBiosIpmiDeviceInformation<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosIpmiDeviceInformation", 8)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("interface_type", &self.interface_type())?;
+        state.serialize_field(
+            "ipmi_specification_revision",
+            &self.ipmi_specification_revision(),
+        )?;
+        state.serialize_field("i2c_target_address", &self.i2c_target_address())?;
+        state.serialize_field("nvstorage_device_address", &self.nvstorage_device_address())?;
+        state.serialize_field("base_address", &self.base_address())?;
+        state.serialize_field("base_address_modifier", &self.base_address_modifier())?;
+        state.serialize_field("interrupt_number", &self.interrupt_number())?;
+        state.end()
+    }
+}
+
 /// # Electrical Current Probe Location and Status
 #[derive(PartialEq, Eq)]
 pub struct BaseAddressModifier {
@@ -126,8 +148,24 @@ impl fmt::Debug for BaseAddressModifier {
     }
 }
 
+impl Serialize for BaseAddressModifier {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("BaseAddressModifier", 6)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("register_spacing", &self.register_spacing)?;
+        state.serialize_field("ls_address_bit", &self.ls_address_bit)?;
+        state.serialize_field("interrupt_info", &self.interrupt_info)?;
+        state.serialize_field("interrupt_polarity", &self.interrupt_polarity)?;
+        state.serialize_field("interrupt_trigger_mode", &self.interrupt_trigger_mode)?;
+        state.end()
+    }
+}
+
 /// # Register Spacing
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum RegisterSpacing {
     /// Interface registers are on successive byte boundaries.
     BoundaryByte,
@@ -140,7 +178,7 @@ pub enum RegisterSpacing {
 }
 
 /// # LS-Bit for Addresses
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum AddressBit {
     /// Address bit 0 = 0b
     Zero,
@@ -152,7 +190,7 @@ pub enum AddressBit {
 ///
 /// Identifies the type and polarity of the interrupt
 /// associated with the IPMI system interface, if any
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum InterruptInfo {
     /// Interrupt information specified
     Specified,
@@ -161,7 +199,7 @@ pub enum InterruptInfo {
 }
 
 /// # Interrupt Polarity
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum InterruptPolarity {
     /// active high
     ActiveHigh,
@@ -170,7 +208,7 @@ pub enum InterruptPolarity {
 }
 
 /// # Interrupt Trigger Mode
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum InterruptTriggerMode {
     /// level
     Level,
@@ -213,7 +251,7 @@ impl From<u8> for BaseAddressModifier {
 }
 
 /// # Baseboard Management Controller (BMC) interface type
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum IpmiInterfaceType {
     /// Unknown
     Unknown,
@@ -248,6 +286,18 @@ impl fmt::Debug for IpmiInterfaceTypeData {
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()
+    }
+}
+
+impl Serialize for IpmiInterfaceTypeData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("IpmiInterfaceTypeData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
     }
 }
 

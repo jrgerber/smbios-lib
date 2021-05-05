@@ -1,4 +1,5 @@
 use crate::{SMBiosStruct, UndefinedStruct};
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::{fmt, ops::Deref};
 
 /// # Port Connector Information (Type 8)
@@ -84,6 +85,28 @@ impl fmt::Debug for SMBiosPortConnectorInformation<'_> {
     }
 }
 
+impl Serialize for SMBiosPortConnectorInformation<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosPortConnectorInformation", 6)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field(
+            "internal_reference_designator",
+            &self.internal_reference_designator(),
+        )?;
+        state.serialize_field("internal_connector_type", &self.internal_connector_type())?;
+        state.serialize_field(
+            "external_reference_designator",
+            &self.external_reference_designator(),
+        )?;
+        state.serialize_field("external_connector_type", &self.external_connector_type())?;
+        state.serialize_field("port_type", &self.port_type())?;
+        state.end()
+    }
+}
+
 /// # Port Information - Connector Types Data
 pub struct PortInformationConnectorTypeData {
     /// Raw value
@@ -106,6 +129,18 @@ impl fmt::Debug for PortInformationConnectorTypeData {
     }
 }
 
+impl Serialize for PortInformationConnectorTypeData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("PortInformationConnectorTypeData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
 impl fmt::Display for PortInformationConnectorTypeData {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self.value {
@@ -124,7 +159,7 @@ impl Deref for PortInformationConnectorTypeData {
 }
 
 /// # Port Information - Connector Types
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum PortInformationConnectorType {
     /// There is No Connector
     NoConnector,
@@ -289,6 +324,18 @@ impl fmt::Debug for PortInformationPortTypeData {
     }
 }
 
+impl Serialize for PortInformationPortTypeData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("PortInformationPortTypeData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
 impl fmt::Display for PortInformationPortTypeData {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self.value {
@@ -307,7 +354,7 @@ impl Deref for PortInformationPortTypeData {
 }
 
 /// # Port Types
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum PortInformationPortType {
     /// No Port
     NoPort,

@@ -52,6 +52,7 @@ impl FromStr for Handle {
 /// Each SMBIOS structure has a type number associated with it.
 ///
 /// Dereference a structure type (*struct_type) to access its u8 value.
+#[derive(Serialize)]
 pub struct SMBiosType(pub u8);
 
 impl Deref for SMBiosType {

@@ -1,4 +1,5 @@
 use crate::{SMBiosStruct, Strings, UndefinedStruct};
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 use std::ops::Deref;
 
@@ -67,8 +68,26 @@ impl fmt::Debug for SMBiosBiosLanguageInformation<'_> {
     }
 }
 
+impl Serialize for SMBiosBiosLanguageInformation<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosBiosLanguageInformation", 5)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field(
+            "number_of_installable_languages",
+            &self.number_of_installable_languages(),
+        )?;
+        state.serialize_field("flags", &self.flags())?;
+        state.serialize_field("current_language", &self.current_language())?;
+        state.serialize_field("installable_languages", &self.installable_langauges())?;
+        state.end()
+    }
+}
+
 /// # Language Format
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub enum LanguageFormat {
     /// Language strings use the abbreviated format.
     ///
@@ -118,6 +137,18 @@ impl fmt::Debug for BiosLanguageFlags {
             .field("raw", &self.raw)
             .field("language_format", &self.language_format())
             .finish()
+    }
+}
+
+impl Serialize for BiosLanguageFlags {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("BiosLanguageFlags", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("language_format", &self.language_format())?;
+        state.end()
     }
 }
 

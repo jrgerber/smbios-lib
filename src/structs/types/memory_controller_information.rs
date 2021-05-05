@@ -1,5 +1,6 @@
 use crate::core::{Handle, UndefinedStruct};
 use crate::SMBiosStruct;
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 use std::ops::Deref;
 
@@ -139,6 +140,43 @@ impl fmt::Debug for SMBiosMemoryControllerInformation<'_> {
     }
 }
 
+impl Serialize for SMBiosMemoryControllerInformation<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosMemoryControllerInformation", 12)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("error_detecting_method", &self.error_detecting_method())?;
+        state.serialize_field(
+            "error_correcting_capability",
+            &self.error_correcting_capability(),
+        )?;
+        state.serialize_field("supported_interleave", &self.supported_interleave())?;
+        state.serialize_field("current_interleave", &self.current_interleave())?;
+        state.serialize_field(
+            "maximum_memory_module_size",
+            &self.maximum_memory_module_size(),
+        )?;
+        state.serialize_field("supported_speeds", &self.supported_speeds())?;
+        state.serialize_field("supported_memory_types", &self.supported_memory_types())?;
+        state.serialize_field("memory_module_voltage", &self.memory_module_voltage())?;
+        state.serialize_field(
+            "number_of_associated_memory_slots",
+            &self.number_of_associated_memory_slots(),
+        )?;
+        state.serialize_field(
+            "memory_module_handle_iterator",
+            &self.memory_module_handle_iterator(),
+        )?;
+        state.serialize_field(
+            "error_correcting_capabilities_iterator",
+            &self.error_correcting_capabilities_iterator(),
+        )?;
+        state.end()
+    }
+}
+
 /// # Memory Controller Error Detecting Method Data
 pub struct ErrorDetectingMethodData {
     /// Raw value
@@ -161,6 +199,18 @@ impl fmt::Debug for ErrorDetectingMethodData {
     }
 }
 
+impl Serialize for ErrorDetectingMethodData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("ErrorDetectingMethodData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
 impl Deref for ErrorDetectingMethodData {
     type Target = ErrorDetectingMethod;
 
@@ -170,7 +220,7 @@ impl Deref for ErrorDetectingMethodData {
 }
 
 /// # Memory Controller Error Detecting Method
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum ErrorDetectingMethod {
     /// Other
     Other,
@@ -287,6 +337,29 @@ impl fmt::Debug for ErrorCorrectingCapabilities {
     }
 }
 
+impl Serialize for ErrorCorrectingCapabilities {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("ErrorCorrectingCapabilities", 7)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("other", &self.other())?;
+        state.serialize_field("unknown", &self.unknown())?;
+        state.serialize_field("no_capabilities", &self.no_capabilities())?;
+        state.serialize_field(
+            "single_bit_error_correcting",
+            &self.single_bit_error_correcting(),
+        )?;
+        state.serialize_field(
+            "double_bit_error_correcting",
+            &self.double_bit_error_correcting(),
+        )?;
+        state.serialize_field("error_scrubbing", &self.error_scrubbing())?;
+        state.end()
+    }
+}
+
 /// # Memory Controller Information — Interleave Support Data
 pub struct InterleaveSupportData {
     /// Raw value
@@ -309,6 +382,18 @@ impl fmt::Debug for InterleaveSupportData {
     }
 }
 
+impl Serialize for InterleaveSupportData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("InterleaveSupportData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
 impl Deref for InterleaveSupportData {
     type Target = InterleaveSupport;
 
@@ -318,7 +403,7 @@ impl Deref for InterleaveSupportData {
 }
 
 /// # Memory Controller Information — Interleave Support
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum InterleaveSupport {
     /// Other
     Other,
@@ -414,6 +499,22 @@ impl fmt::Debug for MemorySpeeds {
             .field("ns60", &self.ns60())
             .field("ns50", &self.ns50())
             .finish()
+    }
+}
+
+impl Serialize for MemorySpeeds {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("MemorySpeeds", 6)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("other", &self.other())?;
+        state.serialize_field("unknown", &self.unknown())?;
+        state.serialize_field("ns70", &self.ns70())?;
+        state.serialize_field("ns60", &self.ns60())?;
+        state.serialize_field("ns50", &self.ns50())?;
+        state.end()
     }
 }
 
@@ -514,6 +615,28 @@ impl fmt::Debug for MemoryTypes {
     }
 }
 
+impl Serialize for MemoryTypes {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("MemoryTypes", 12)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("other", &self.other())?;
+        state.serialize_field("unknown", &self.unknown())?;
+        state.serialize_field("standard", &self.standard())?;
+        state.serialize_field("fast_page_mode", &self.fast_page_mode())?;
+        state.serialize_field("edo", &self.edo())?;
+        state.serialize_field("parity", &self.parity())?;
+        state.serialize_field("ecc", &self.ecc())?;
+        state.serialize_field("simm", &self.simm())?;
+        state.serialize_field("dimm", &self.dimm())?;
+        state.serialize_field("burst_edo", &self.burst_edo())?;
+        state.serialize_field("sdram", &self.sdram())?;
+        state.end()
+    }
+}
+
 /// # Memory Module Voltage
 #[derive(PartialEq, Eq)]
 pub struct ModuleVoltage {
@@ -560,6 +683,20 @@ impl fmt::Debug for ModuleVoltage {
             .field("volts_3_3", &self.volts_3_3())
             .field("volts_2_9", &self.volts_2_9())
             .finish()
+    }
+}
+
+impl Serialize for ModuleVoltage {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("ModuleVoltage", 4)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("volts_5", &self.volts_5())?;
+        state.serialize_field("volts_3_3", &self.volts_3_3())?;
+        state.serialize_field("volts_2_9", &self.volts_2_9())?;
+        state.end()
     }
 }
 

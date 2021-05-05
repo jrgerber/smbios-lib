@@ -1,4 +1,5 @@
 use crate::{SMBiosStruct, UndefinedStruct};
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 use std::ops::Deref;
 
@@ -114,13 +115,39 @@ impl fmt::Debug for SMBiosManagementControllerHostInterface<'_> {
     }
 }
 
+impl Serialize for SMBiosManagementControllerHostInterface<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state =
+            serializer.serialize_struct("SMBiosManagementControllerHostInterface", 6)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("interface_type", &self.interface_type())?;
+        state.serialize_field(
+            "interface_type_specific_data_length",
+            &self.interface_type_specific_data_length(),
+        )?;
+        state.serialize_field(
+            "interface_type_specific_data",
+            &self.interface_type_specific_data(),
+        )?;
+        state.serialize_field(
+            "number_of_protocol_records",
+            &self.number_of_protocol_records(),
+        )?;
+        state.serialize_field("protocol_record_iterator", &self.protocol_record_iterator())?;
+        state.end()
+    }
+}
+
 /// # Management Controller Host Interface Types
 ///
 /// 00h-3Fh: MCTP Host Interfaces - Refer to [DSP0239](https://www.dmtf.org/sites/default/files/standards/documents/DSP0239_1.1.0.pdf) for the definition and assignment of MCTP host interface type values
 /// 40h: Network Host Interface - Refer to [DSP0270](https://www.dmtf.org/sites/default/files/DSP0270_1.0.1.pdf) for the definition and details of the Network Host Interface type
 /// F0h: OEM-defined
 /// All others: Reserved
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum HostInterfaceType {
     /// KCS: Keyboard Controller Style
     ///
@@ -172,6 +199,18 @@ impl fmt::Debug for HostInterfaceTypeData {
     }
 }
 
+impl Serialize for HostInterfaceTypeData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("HostInterfaceTypeData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
 impl fmt::Display for HostInterfaceTypeData {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self.value {
@@ -216,7 +255,7 @@ impl From<u8> for HostInterfaceTypeData {
 }
 
 /// # Management Controller Host Interface - Protocol Types
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum HostProtocolType {
     /// IPMI: Intelligent Platform Management Interface
     ///
@@ -276,6 +315,18 @@ impl fmt::Debug for HostProtocolTypeData {
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()
+    }
+}
+
+impl Serialize for HostProtocolTypeData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("HostProtocolTypeData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
     }
 }
 
@@ -356,6 +407,25 @@ impl fmt::Debug for ProtocolRecord<'_> {
                 &self.protocol_type_specific_data(),
             )
             .finish()
+    }
+}
+
+impl Serialize for ProtocolRecord<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("ProtocolRecord", 3)?;
+        state.serialize_field("protocol_type", &self.protocol_type())?;
+        state.serialize_field(
+            "protocol_type_specific_data_length",
+            &self.protocol_type_specific_data_length(),
+        )?;
+        state.serialize_field(
+            "protocol_type_specific_data",
+            &self.protocol_type_specific_data(),
+        )?;
+        state.end()
     }
 }
 

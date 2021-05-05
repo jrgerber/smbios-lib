@@ -1,3 +1,4 @@
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use crate::{SMBiosStruct, UndefinedStruct};
 use std::fmt;
 
@@ -33,5 +34,16 @@ impl fmt::Debug for SMBiosInactive<'_> {
         fmt.debug_struct(std::any::type_name::<SMBiosInactive<'_>>())
             .field("header", &self.parts.header)
             .finish()
+    }
+}
+
+impl Serialize for SMBiosInactive<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosInactive", 1)?;
+            state.serialize_field("header", &self.parts.header)?;
+            state.end()
     }
 }

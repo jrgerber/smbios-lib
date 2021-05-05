@@ -1,5 +1,6 @@
 use crate::core::{Handle, UndefinedStruct};
 use crate::SMBiosStruct;
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 use std::ops::Deref;
 
@@ -60,6 +61,19 @@ impl fmt::Debug for SMBiosProcessorAdditionalInformation<'_> {
         .field("referenced_handle", &self.referenced_handle())
         .field("processor_specific_block", &self.processor_specific_block())
         .finish()
+    }
+}
+
+impl Serialize for SMBiosProcessorAdditionalInformation<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosProcessorAdditionalInformation", 3)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("referenced_handle", &self.referenced_handle())?;
+        state.serialize_field("processor_specific_block", &self.processor_specific_block())?;
+        state.end()
     }
 }
 
@@ -125,6 +139,19 @@ impl fmt::Debug for ProcessorSpecificBlock<'_> {
     }
 }
 
+impl Serialize for ProcessorSpecificBlock<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("ProcessorSpecificBlock", 3)?;
+        state.serialize_field("block_length", &self.block_length())?;
+        state.serialize_field("processor_type", &self.processor_type())?;
+        state.serialize_field("processor_specific_data", &self.processor_specific_data())?;
+        state.end()
+    }
+}
+
 /// # Processor Architecture Types Data
 pub struct ProcessorArchitectureTypeData {
     /// Raw value
@@ -147,6 +174,18 @@ impl fmt::Debug for ProcessorArchitectureTypeData {
     }
 }
 
+impl Serialize for ProcessorArchitectureTypeData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("ProcessorArchitectureTypeData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
 impl fmt::Display for ProcessorArchitectureTypeData {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self.value {
@@ -165,7 +204,7 @@ impl Deref for ProcessorArchitectureTypeData {
 }
 
 /// # Processor Architecture Types
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum ProcessorArchitectureType {
     /// IA32 (x86)
     IA32,

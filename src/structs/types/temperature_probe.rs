@@ -1,4 +1,5 @@
 use crate::{SMBiosStruct, UndefinedStruct};
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 
 /// # Temperature Probe (Type 28)
@@ -132,6 +133,26 @@ impl fmt::Debug for SMBiosTemperatureProbe<'_> {
     }
 }
 
+impl Serialize for SMBiosTemperatureProbe<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosTemperatureProbe", 10)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("description", &self.description())?;
+        state.serialize_field("location_and_status", &self.location_and_status())?;
+        state.serialize_field("maximum_value", &self.maximum_value())?;
+        state.serialize_field("minimum_value", &self.minimum_value())?;
+        state.serialize_field("resolution", &self.resolution())?;
+        state.serialize_field("tolerance", &self.tolerance())?;
+        state.serialize_field("accuracy", &self.accuracy())?;
+        state.serialize_field("oem_defined", &self.oem_defined())?;
+        state.serialize_field("nominal_value", &self.nominal_value())?;
+        state.end()
+    }
+}
+
 /// # Temperature Probe Location and Status
 #[derive(PartialEq, Eq)]
 pub struct TemperatureProbeLocationAndStatus {
@@ -167,8 +188,21 @@ impl fmt::Debug for TemperatureProbeLocationAndStatus {
     }
 }
 
+impl Serialize for TemperatureProbeLocationAndStatus {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("TemperatureProbeLocationAndStatus", 3)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("location", &self.location())?;
+        state.serialize_field("status", &self.status())?;
+        state.end()
+    }
+}
+
 /// # Temperature Probe Status
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum TemperatureProbeStatus {
     /// Other
     Other,
@@ -203,7 +237,7 @@ impl From<u8> for TemperatureProbeStatus {
 }
 
 /// # Temperature Probe Location
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum TemperatureProbeLocation {
     /// Other
     Other,
@@ -263,7 +297,7 @@ impl From<u8> for TemperatureProbeLocation {
 }
 
 /// # Probe Temperature
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub enum ProbeTemperature {
     /// Temperature in 1/10 degrees C
     OneTenthDegreesC(u16),
@@ -281,7 +315,7 @@ impl From<u16> for ProbeTemperature {
 }
 
 /// # Temperature Probe Resolution
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub enum TemperatureProbeResolution {
     /// Resolution for the probe's reading in 1/1000 degrees C
     OneOneThousandthDegreesC(u16),
@@ -299,7 +333,7 @@ impl From<u16> for TemperatureProbeResolution {
 }
 
 /// # Temperature Probe Accuracy
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub enum TemperatureProbeAccuracy {
     /// Accuracy for the probe's reading in 1/100 degrees C
     OneOneHundredthDegreesC(u16),

@@ -1,3 +1,4 @@
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 
 /// # SMBIOS Strings
@@ -103,5 +104,14 @@ impl IntoIterator for &Strings {
 impl fmt::Debug for Strings {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_list().entries(self.into_iter()).finish()
+    }
+}
+
+impl Serialize for Strings {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Strings", self.count())?;
     }
 }

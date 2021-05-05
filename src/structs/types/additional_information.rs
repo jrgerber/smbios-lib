@@ -1,3 +1,4 @@
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use crate::core::{Handle, UndefinedStruct};
 use crate::structs::SMBiosStruct;
 use std::fmt;
@@ -79,6 +80,21 @@ impl fmt::Debug for AdditionalInformationEntry<'_> {
             .field("string", &self.string())
             .field("value", &self.value())
             .finish()
+    }
+}
+
+impl Serialize for AdditionalInformationEntry<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("AdditionalInformationEntry", 5)?;
+            state.serialize_field("entry_length", &self.entry_length())?;
+            state.serialize_field("referenced_handle", &self.referenced_handle())?;
+            state.serialize_field("referenced_offset", &self.referenced_offset())?;
+            state.serialize_field("string", &self.string())?;
+            state.serialize_field("value", &self.value())?;
+            state.end()
     }
 }
 
@@ -214,6 +230,19 @@ impl fmt::Debug for SMBiosAdditionalInformation<'_> {
             .field("number_of_entries", &self.number_of_entries())
             .field("entry_iterator", &self.entry_iterator())
             .finish()
+    }
+}
+
+impl Serialize for SMBiosAdditionalInformation<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosAdditionalInformation", 3)?;
+            state.serialize_field("header", &self.parts.header)?;
+            state.serialize_field("number_of_entries", &self.number_of_entries())?;
+            state.serialize_field("entry_iterator", &self.entry_iterator())?;
+            state.end()
     }
 }
 

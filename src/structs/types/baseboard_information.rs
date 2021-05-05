@@ -1,5 +1,6 @@
 use crate::core::{Handle, UndefinedStruct};
 use crate::SMBiosStruct;
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 use std::ops::Deref;
 
@@ -110,6 +111,34 @@ impl fmt::Debug for SMBiosBaseboardInformation<'_> {
     }
 }
 
+impl Serialize for SMBiosBaseboardInformation<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosBaseboardInformation", 12)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("manufacturer", &self.manufacturer())?;
+        state.serialize_field("product", &self.product())?;
+        state.serialize_field("version", &self.version())?;
+        state.serialize_field("serial_number", &self.serial_number())?;
+        state.serialize_field("asset_tag", &self.asset_tag())?;
+        state.serialize_field("feature_flags", &self.feature_flags())?;
+        state.serialize_field("location_in_chassis", &self.location_in_chassis())?;
+        state.serialize_field("chassis_handle", &self.chassis_handle())?;
+        state.serialize_field("board_type", &self.board_type())?;
+        state.serialize_field(
+            "number_of_contained_object_handles",
+            &self.number_of_contained_object_handles(),
+        )?;
+        state.serialize_field(
+            "contained_object_handle_iterator",
+            &self.contained_object_handle_iterator(),
+        )?;
+        state.end()
+    }
+}
+
 /// # Board Type Data
 pub struct BoardTypeData {
     /// Raw value
@@ -129,6 +158,18 @@ impl fmt::Debug for BoardTypeData {
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()
+    }
+}
+
+impl Serialize for BoardTypeData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("BoardTypeData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
     }
 }
 
@@ -174,7 +215,7 @@ impl From<u8> for BoardTypeData {
 }
 
 /// # Board Type
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum BoardType {
     /// Unknown
     Unknown,
@@ -263,6 +304,22 @@ impl fmt::Debug for BaseboardFeatures {
             .field("is_replaceable", &self.is_replaceable())
             .field("is_hot_swappable", &self.is_hot_swappable())
             .finish()
+    }
+}
+
+impl Serialize for BaseboardFeatures {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("BaseboardFeatures", 6)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("hosting_board", &self.hosting_board())?;
+        state.serialize_field("requires_daughterboard", &self.requires_daughterboard())?;
+        state.serialize_field("is_removable", &self.is_removable())?;
+        state.serialize_field("is_replaceable", &self.is_replaceable())?;
+        state.serialize_field("is_hot_swappable", &self.is_hot_swappable())?;
+        state.end()
     }
 }
 

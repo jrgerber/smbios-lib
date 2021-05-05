@@ -1,4 +1,5 @@
 use crate::{SMBiosStruct, UndefinedStruct};
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 
 /// # System Reset (Type 23)
@@ -97,6 +98,22 @@ impl fmt::Debug for SMBiosSystemReset<'_> {
     }
 }
 
+impl Serialize for SMBiosSystemReset<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosSystemReset", 6)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("capabilities", &self.capabilities())?;
+        state.serialize_field("reset_count", &self.reset_count())?;
+        state.serialize_field("reset_limit", &self.reset_limit())?;
+        state.serialize_field("timer_interval", &self.timer_interval())?;
+        state.serialize_field("timeout", &self.timeout())?;
+        state.end()
+    }
+}
+
 /// # System Reset Capabilities
 #[derive(PartialEq, Eq)]
 pub struct SystemResetCapabilities {
@@ -154,11 +171,26 @@ impl fmt::Debug for SystemResetCapabilities {
     }
 }
 
+impl Serialize for SystemResetCapabilities {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SystemResetCapabilities", 5)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("has_watchdog_timer", &self.has_watchdog_timer())?;
+        state.serialize_field("boot_option_on_limit", &self.boot_option_on_limit())?;
+        state.serialize_field("boot_option", &self.boot_option())?;
+        state.serialize_field("reset_enabled", &self.reset_enabled())?;
+        state.end()
+    }
+}
+
 /// # Boot Option on Limit
 ///
 /// Identifies one of the following system actions to
 /// be taken when the Reset Limit is reached
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum BootOptionOnLimit {
     /// Reserved, do not use.
     Reserved,
@@ -186,7 +218,7 @@ impl From<u8> for BootOptionOnLimit {
 ///
 /// Indicates one of the following actions to be taken
 //  after a watchdog reset
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum BootOption {
     /// Reserved, do not use.
     Reserved,
@@ -211,7 +243,7 @@ impl From<u8> for BootOption {
 }
 
 /// # Reset Count
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub enum ResetCount {
     /// Number of automatic system resets since the last intentional reset
     Count(u16),
@@ -229,7 +261,7 @@ impl From<u16> for ResetCount {
 }
 
 /// # Reset Limit
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub enum ResetLimit {
     /// Number of consecutive times the system reset is attempted
     Count(u16),
@@ -247,7 +279,7 @@ impl From<u16> for ResetLimit {
 }
 
 /// # Timer Interval
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub enum TimerInterval {
     /// Number of minutes to use for the watchdog timer
     ///
@@ -268,7 +300,7 @@ impl From<u16> for TimerInterval {
 }
 
 /// # Timeout
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub enum Timeout {
     /// Number of minutes before the reboot is initiated
     ///

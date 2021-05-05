@@ -1,4 +1,5 @@
 use crate::{SMBiosStruct, UndefinedStruct};
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 use std::ops::Deref;
 
@@ -189,7 +190,7 @@ impl<'a> SMBiosInformation<'a> {
 }
 
 /// # Extended BIOS ROM size
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum ExtendedRomSize {
     /// Extended size of the physical device(s)
     /// containing the BIOS (in MB).
@@ -270,6 +271,56 @@ impl fmt::Debug for SMBiosInformation<'_> {
             )
             .field("extended_rom_size", &self.extended_rom_size())
             .finish()
+    }
+}
+
+impl Serialize for SMBiosInformation<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosInformation", 16)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("vendor", &self.vendor())?;
+        state.serialize_field("version", &self.version())?;
+        state.serialize_field("starting_address_segment", &self.starting_address_segment())?;
+        state.serialize_field("release_date", &self.release_date())?;
+        state.serialize_field("rom_size", &self.rom_size())?;
+        state.serialize_field("characteristics", &self.characteristics())?;
+        state.serialize_field(
+            "bios_vendor_reserved_characteristics",
+            &self.bios_vendor_reserved_characteristics(),
+        )?;
+        state.serialize_field(
+            "system_vendor_reserved_characteristics",
+            &self.system_vendor_reserved_characteristics(),
+        )?;
+        state.serialize_field(
+            "characteristics_extension0",
+            &self.characteristics_extension0(),
+        )?;
+        state.serialize_field(
+            "characteristics_extension1",
+            &self.characteristics_extension1(),
+        )?;
+        state.serialize_field(
+            "system_bios_major_release",
+            &self.system_bios_major_release(),
+        )?;
+        state.serialize_field(
+            "system_bios_minor_release",
+            &self.system_bios_minor_release(),
+        )?;
+        state.serialize_field(
+            "e_c_firmware_major_release",
+            &self.e_c_firmware_major_release(),
+        )?;
+        state.serialize_field(
+            "e_c_firmware_minor_release",
+            &self.e_c_firmware_minor_release(),
+        )?;
+        state.serialize_field("extended_rom_size", &self.extended_rom_size())?;
+        state.end()
     }
 }
 
@@ -517,6 +568,80 @@ impl fmt::Debug for BiosCharacteristics {
     }
 }
 
+impl Serialize for BiosCharacteristics {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("BiosCharacteristics", 31)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("unknown", &self.unknown())?;
+        state.serialize_field(
+            "bios_characteristics_not_supported",
+            &self.bios_characteristics_not_supported(),
+        )?;
+        state.serialize_field("isa_supported", &self.isa_supported())?;
+        state.serialize_field("mca_supported", &self.mca_supported())?;
+        state.serialize_field("eisa_supported", &self.eisa_supported())?;
+        state.serialize_field("pci_supported", &self.pci_supported())?;
+        state.serialize_field("pcmcia_supported", &self.pcmcia_supported())?;
+        state.serialize_field("plug_and_play_supported", &self.plug_and_play_supported())?;
+        state.serialize_field("apm_supported", &self.apm_supported())?;
+        state.serialize_field("bios_upgradeable", &self.bios_upgradeable())?;
+        state.serialize_field("bios_shadowing_allowed", &self.bios_shadowing_allowed())?;
+        state.serialize_field("vlvesa_supported", &self.vlvesa_supported())?;
+        state.serialize_field("escd_support_available", &self.escd_support_available())?;
+        state.serialize_field("boot_from_cdsupported", &self.boot_from_cdsupported())?;
+        state.serialize_field(
+            "selectable_boot_supported",
+            &self.selectable_boot_supported(),
+        )?;
+        state.serialize_field("bios_rom_socketed", &self.bios_rom_socketed())?;
+        state.serialize_field(
+            "boot_from_pcmcia_supported",
+            &self.boot_from_pcmcia_supported(),
+        )?;
+        state.serialize_field(
+            "edd_specification_supported",
+            &self.edd_specification_supported(),
+        )?;
+        state.serialize_field(
+            "floppy_nec_japanese_supported",
+            &self.floppy_nec_japanese_supported(),
+        )?;
+        state.serialize_field(
+            "floppy_toshiba_japanese_supported",
+            &self.floppy_toshiba_japanese_supported(),
+        )?;
+        state.serialize_field("floppy_525_360_supported", &self.floppy_525_360_supported())?;
+        state.serialize_field("floppy_525_12_supported", &self.floppy_525_12_supported())?;
+        state.serialize_field("floppy_35_720_supported", &self.floppy_35_720_supported())?;
+        state.serialize_field("floppy_35_288_supported", &self.floppy_35_288_supported())?;
+        state.serialize_field(
+            "print_screen_service_supported",
+            &self.print_screen_service_supported(),
+        )?;
+        state.serialize_field(
+            "keyboard_8042services_supported",
+            &self.keyboard_8042services_supported(),
+        )?;
+        state.serialize_field(
+            "serial_services_supported",
+            &self.serial_services_supported(),
+        )?;
+        state.serialize_field(
+            "printer_services_supported",
+            &self.printer_services_supported(),
+        )?;
+        state.serialize_field(
+            "cga_mono_video_services_supported",
+            &self.cga_mono_video_services_supported(),
+        )?;
+        state.serialize_field("nec_pc_98supported", &self.nec_pc_98supported())?;
+        state.end()
+    }
+}
+
 /// # BIOS Characteristics Extension Byte 0
 #[derive(PartialEq, Eq)]
 pub struct BiosCharacteristicsExtension0 {
@@ -605,6 +730,34 @@ impl fmt::Debug for BiosCharacteristicsExtension0 {
     }
 }
 
+impl Serialize for BiosCharacteristicsExtension0 {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("BiosCharacteristicsExtension0", 9)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("acpi_is_supported", &self.acpi_is_supported())?;
+        state.serialize_field("usb_legacy_is_supported", &self.usb_legacy_is_supported())?;
+        state.serialize_field("agp_is_supported", &self.agp_is_supported())?;
+        state.serialize_field("i2oboot_is_supported", &self.i2oboot_is_supported())?;
+        state.serialize_field(
+            "ls120super_disk_boot_is_supported",
+            &self.ls120super_disk_boot_is_supported(),
+        )?;
+        state.serialize_field(
+            "atapi_zip_drive_boot_is_supported",
+            &self.atapi_zip_drive_boot_is_supported(),
+        )?;
+        state.serialize_field("boot_1394is_supported", &self.boot_1394is_supported())?;
+        state.serialize_field(
+            "smart_battery_is_supported",
+            &self.smart_battery_is_supported(),
+        )?;
+        state.end()
+    }
+}
+
 /// # BIOS Characteristics Extension Byte 1
 #[derive(PartialEq, Eq)]
 pub struct BiosCharacteristicsExtension1 {
@@ -684,6 +837,37 @@ impl fmt::Debug for BiosCharacteristicsExtension1 {
                 &self.smbios_table_describes_avirtual_machine(),
             )
             .finish()
+    }
+}
+
+impl Serialize for BiosCharacteristicsExtension1 {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("BiosCharacteristicsExtension1", 6)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field(
+            "bios_boot_specification_is_supported",
+            &self.bios_boot_specification_is_supported(),
+        )?;
+        state.serialize_field(
+            "fkey_initiated_network_boot_is_supported",
+            &self.fkey_initiated_network_boot_is_supported(),
+        )?;
+        state.serialize_field(
+            "targeted_content_distribution_is_supported",
+            &self.targeted_content_distribution_is_supported(),
+        )?;
+        state.serialize_field(
+            "uefi_specification_is_supported",
+            &self.uefi_specification_is_supported(),
+        )?;
+        state.serialize_field(
+            "smbios_table_describes_avirtual_machine",
+            &self.smbios_table_describes_avirtual_machine(),
+        )?;
+        state.end()
     }
 }
 

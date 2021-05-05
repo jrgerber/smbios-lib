@@ -1,4 +1,5 @@
 use crate::{SMBiosStruct, UndefinedStruct};
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 use std::ops::Deref;
 
@@ -63,6 +64,21 @@ impl fmt::Debug for SMBiosManagementDevice<'_> {
     }
 }
 
+impl Serialize for SMBiosManagementDevice<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosManagementDevice", 5)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("description", &self.description())?;
+        state.serialize_field("device_type", &self.device_type())?;
+        state.serialize_field("address", &self.address())?;
+        state.serialize_field("address_type", &self.address_type())?;
+        state.end()
+    }
+}
+
 /// # Management Device - Type Data
 pub struct ManagementDeviceTypeData {
     /// Raw value
@@ -85,6 +101,18 @@ impl fmt::Debug for ManagementDeviceTypeData {
     }
 }
 
+impl Serialize for ManagementDeviceTypeData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("ManagementDeviceTypeData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
 impl fmt::Display for ManagementDeviceTypeData {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self.value {
@@ -103,7 +131,7 @@ impl Deref for ManagementDeviceTypeData {
 }
 
 /// # Management Device - Type
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum ManagementDeviceType {
     /// Other
     Other,
@@ -181,6 +209,18 @@ impl fmt::Debug for ManagementDeviceAddressTypeData {
     }
 }
 
+impl Serialize for ManagementDeviceAddressTypeData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("ManagementDeviceAddressTypeData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
 impl fmt::Display for ManagementDeviceAddressTypeData {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self.value {
@@ -199,7 +239,7 @@ impl Deref for ManagementDeviceAddressTypeData {
 }
 
 /// # Management Device — Address Type
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum ManagementDeviceAddressType {
     /// Other
     Other,

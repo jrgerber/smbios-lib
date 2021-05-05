@@ -1,3 +1,4 @@
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use crate::{SMBiosStruct, UndefinedStruct};
 use std::fmt;
 
@@ -102,5 +103,19 @@ impl fmt::Debug for SMBiosBisEntryPoint<'_> {
             .field("bis_entry_16", &self.bis_entry_16())
             .field("bis_entry_32", &self.bis_entry_32())
             .finish()
+    }
+}
+
+impl Serialize for SMBiosBisEntryPoint<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosBisEntryPoint", 4)?;
+            state.serialize_field("header", &self.parts.header)?;
+            state.serialize_field("checksum", &self.checksum())?;
+            state.serialize_field("bis_entry_16", &self.bis_entry_16())?;
+            state.serialize_field("bis_entry_32", &self.bis_entry_32())?;
+            state.end()
     }
 }

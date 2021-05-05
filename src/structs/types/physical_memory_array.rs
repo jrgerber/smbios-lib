@@ -1,4 +1,5 @@
 use crate::{SMBiosStruct, UndefinedStruct};
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::{fmt, ops::Deref};
 /// # Physical Memory Array (Type 16)
 ///
@@ -114,6 +115,30 @@ impl fmt::Debug for SMBiosPhysicalMemoryArray<'_> {
     }
 }
 
+impl Serialize for SMBiosPhysicalMemoryArray<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosPhysicalMemoryArray", 8)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("location", &self.location())?;
+        state.serialize_field("usage", &self.usage())?;
+        state.serialize_field("memory_error_correction", &self.memory_error_correction())?;
+        state.serialize_field("maximum_capacity", &self.maximum_capacity())?;
+        state.serialize_field(
+            "memory_error_information_handle",
+            &self.memory_error_information_handle(),
+        )?;
+        state.serialize_field("number_of_memory_devices", &self.number_of_memory_devices())?;
+        state.serialize_field(
+            "extended_maximum_capacity",
+            &self.extended_maximum_capacity(),
+        )?;
+        state.end()
+    }
+}
+
 /// # Memory Array - Location Data
 pub struct MemoryArrayLocationData {
     /// Raw value
@@ -136,6 +161,18 @@ impl fmt::Debug for MemoryArrayLocationData {
     }
 }
 
+impl Serialize for MemoryArrayLocationData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("MemoryArrayLocationData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
 impl Deref for MemoryArrayLocationData {
     type Target = MemoryArrayLocation;
 
@@ -145,7 +182,7 @@ impl Deref for MemoryArrayLocationData {
 }
 
 /// # Memory Array - Location
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum MemoryArrayLocation {
     /// Other
     Other = 0x01,
@@ -229,6 +266,18 @@ impl fmt::Debug for MemoryArrayUseData {
     }
 }
 
+impl Serialize for MemoryArrayUseData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("MemoryArrayUseData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
 impl Deref for MemoryArrayUseData {
     type Target = MemoryArrayUse;
 
@@ -238,7 +287,7 @@ impl Deref for MemoryArrayUseData {
 }
 
 /// # Memory Array - Use
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum MemoryArrayUse {
     /// Other
     Other,
@@ -298,6 +347,18 @@ impl fmt::Debug for MemoryArrayErrorCorrectionData {
     }
 }
 
+impl Serialize for MemoryArrayErrorCorrectionData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("MemoryArrayErrorCorrectionData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
 impl Deref for MemoryArrayErrorCorrectionData {
     type Target = MemoryArrayErrorCorrection;
 
@@ -307,7 +368,7 @@ impl Deref for MemoryArrayErrorCorrectionData {
 }
 
 /// # Memory Array - Error Correction Types
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum MemoryArrayErrorCorrection {
     /// Other
     Other,
@@ -346,7 +407,7 @@ impl From<u8> for MemoryArrayErrorCorrectionData {
 }
 
 /// # Maximum memory capacity, in kilobytes, for this array
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum MaximumMemoryCapacity {
     /// Maximum memory capacity in Kilobytes
     Kilobytes(u32),

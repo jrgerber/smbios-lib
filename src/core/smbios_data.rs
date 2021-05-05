@@ -1,15 +1,14 @@
 use super::header::Handle;
 use super::undefined_struct::{UndefinedStruct, UndefinedStructTable};
 use crate::structs::{DefinedStructTable, SMBiosStruct};
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::io::Error;
 use std::{cmp::Ordering, slice::Iter};
 use std::{fmt, fs::read};
-use serde::Serialize;
 
 /// # SMBIOS Data
 ///
 /// Contains an optional SMBIOS version and a collection of SMBIOS structures.
-#[derive(Serialize)]
 pub struct SMBiosData {
     table: UndefinedStructTable,
     /// Version of the contained SMBIOS structures.
@@ -22,10 +21,7 @@ impl<'a> SMBiosData {
     /// `table` is iterable table data.
     /// `version` is optional and represents the DMTF SMBIOS Standard version of the bytes in `data`.
     pub fn new(table: UndefinedStructTable, version: Option<SMBiosVersion>) -> Self {
-        Self {
-            table,
-            version,
-        }
+        Self { table, version }
     }
 
     /// Creates an SMBIOS table parser which can be iterated
@@ -168,6 +164,21 @@ impl fmt::Debug for SMBiosData {
             .field("version", &self.version)
             .field("table", &defined_table)
             .finish()
+    }
+}
+
+impl Serialize for SMBiosData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        // Convert to defined structures to see the structure fields
+        let defined_table: DefinedStructTable<'_> = self.table.iter().collect();
+
+        let mut state = serializer.serialize_struct("SMBiosData", 2)?;
+        state.serialize_field("version", &self.version)?;
+        state.serialize_field("table", &defined_table)?;
+        state.end()
     }
 }
 

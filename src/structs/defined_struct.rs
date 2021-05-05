@@ -1,6 +1,7 @@
 //! [DefinedStruct] and [DefinedStructTable] perform downcast operations
 //! via into() and into_iter() trait functions for [UndefinedStruct].
 
+use serde::Serialize;
 use std::iter::FromIterator;
 
 use crate::core::UndefinedStruct;
@@ -11,7 +12,7 @@ use super::*;
 ///
 /// Represents one of the SMBIOS defined structures or, in the case
 /// of an OEM defined structure, as a generically defined Unknown variant
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub enum DefinedStruct<'a> {
     /// BIOS Information (Type 0)
     Information(SMBiosInformation<'a>),
@@ -287,7 +288,7 @@ impl<'a> From<&'a UndefinedStruct> for DefinedStruct<'a> {
 /// # Defined Struct Table
 ///
 /// Contains a list of [DefinedStruct] items.
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub struct DefinedStructTable<'a>(Vec<DefinedStruct<'a>>);
 
 impl<'a> DefinedStructTable<'a> {

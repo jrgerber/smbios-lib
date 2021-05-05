@@ -1,4 +1,5 @@
 use crate::{SMBiosStruct, UndefinedStruct};
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 use std::ops::Deref;
 
@@ -61,6 +62,20 @@ impl fmt::Debug for SMBiosBuiltInPointingDevice<'_> {
     }
 }
 
+impl Serialize for SMBiosBuiltInPointingDevice<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosBuiltInPointingDevice", 4)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("device_type", &self.device_type())?;
+        state.serialize_field("interface", &self.interface())?;
+        state.serialize_field("number_of_buttons", &self.number_of_buttons())?;
+        state.end()
+    }
+}
+
 /// # Built-in Pointing Device Type Data
 pub struct PointingDeviceTypeData {
     /// Raw value
@@ -83,6 +98,18 @@ impl fmt::Debug for PointingDeviceTypeData {
     }
 }
 
+impl Serialize for PointingDeviceTypeData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("PointingDeviceTypeData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
 impl fmt::Display for PointingDeviceTypeData {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self.value {
@@ -101,7 +128,7 @@ impl Deref for PointingDeviceTypeData {
 }
 
 /// # Built-in Pointing Device Type
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum PointingDeviceType {
     /// Other
     Other,
@@ -167,6 +194,18 @@ impl fmt::Debug for PointingDeviceInterfaceData {
     }
 }
 
+impl Serialize for PointingDeviceInterfaceData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("PointingDeviceInterfaceData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
 impl Deref for PointingDeviceInterfaceData {
     type Target = PointingDeviceInterface;
 
@@ -176,7 +215,7 @@ impl Deref for PointingDeviceInterfaceData {
 }
 
 /// # Built-in Pointing Device Interface
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum PointingDeviceInterface {
     /// Other field
     Other,

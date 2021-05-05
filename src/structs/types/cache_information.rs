@@ -1,4 +1,5 @@
 use crate::{SMBiosStruct, UndefinedStruct};
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 use std::ops::Deref;
 
@@ -123,6 +124,29 @@ impl fmt::Debug for SMBiosCacheInformation<'_> {
     }
 }
 
+impl Serialize for SMBiosCacheInformation<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosCacheInformation", 13)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("socket_designation", &self.socket_designation())?;
+        state.serialize_field("cache_configuration", &self.cache_configuration())?;
+        state.serialize_field("maximum_cache_size", &self.maximum_cache_size())?;
+        state.serialize_field("installed_size", &self.installed_size())?;
+        state.serialize_field("supported_sram_type", &self.supported_sram_type())?;
+        state.serialize_field("current_sram_type", &self.current_sram_type())?;
+        state.serialize_field("cache_speed", &self.cache_speed())?;
+        state.serialize_field("error_correction_type", &self.error_correction_type())?;
+        state.serialize_field("system_cache_type", &self.system_cache_type())?;
+        state.serialize_field("associativity", &self.associativity())?;
+        state.serialize_field("maximum_cache_size_2", &self.maximum_cache_size_2())?;
+        state.serialize_field("installed_cache_size_2", &self.installed_cache_size_2())?;
+        state.end()
+    }
+}
+
 /// # Cache Associativity Data
 pub struct CacheAssociativityData {
     /// Raw value
@@ -145,6 +169,18 @@ impl fmt::Debug for CacheAssociativityData {
     }
 }
 
+impl Serialize for CacheAssociativityData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("CacheAssociativityData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
 impl Deref for CacheAssociativityData {
     type Target = CacheAssociativity;
 
@@ -154,7 +190,7 @@ impl Deref for CacheAssociativityData {
 }
 
 /// # Cache Associativity
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum CacheAssociativity {
     /// Other
     Other = 0x01,
@@ -235,6 +271,18 @@ impl fmt::Debug for SystemCacheTypeData {
     }
 }
 
+impl Serialize for SystemCacheTypeData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SystemCacheTypeData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
 impl fmt::Display for SystemCacheTypeData {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self.value {
@@ -253,7 +301,7 @@ impl Deref for SystemCacheTypeData {
 }
 
 /// # System Cache Type
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum SystemCacheType {
     /// Other
     Other,
@@ -307,6 +355,18 @@ impl fmt::Debug for ErrorCorrectionTypeData {
     }
 }
 
+impl Serialize for ErrorCorrectionTypeData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("ErrorCorrectionTypeData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
 impl fmt::Display for ErrorCorrectionTypeData {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self.value {
@@ -325,7 +385,7 @@ impl Deref for ErrorCorrectionTypeData {
 }
 
 /// # System Cache Error Correction Type
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum ErrorCorrectionType {
     /// Other
     Other = 0x01,
@@ -433,6 +493,24 @@ impl fmt::Debug for SramTypes {
     }
 }
 
+impl Serialize for SramTypes {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SramTypes", 8)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("other", &self.other())?;
+        state.serialize_field("unknown", &self.unknown())?;
+        state.serialize_field("non_burst", &self.non_burst())?;
+        state.serialize_field("burst", &self.burst())?;
+        state.serialize_field("pipeline_burst", &self.pipeline_burst())?;
+        state.serialize_field("synchronous", &self.synchronous())?;
+        state.serialize_field("asynchronous", &self.asynchronous())?;
+        state.end()
+    }
+}
+
 /// # System Cache Configuration
 #[derive(PartialEq, Eq)]
 pub struct CacheConfiguaration {
@@ -525,8 +603,24 @@ impl fmt::Debug for CacheConfiguaration {
             .finish()
     }
 }
+
+impl Serialize for CacheConfiguaration {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("CacheConfiguaration", 6)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("cache_level", &self.cache_level())?;
+        state.serialize_field("cache_socketed", &self.cache_socketed())?;
+        state.serialize_field("location", &self.location())?;
+        state.serialize_field("enabled_at_boot", &self.enabled_at_boot())?;
+        state.serialize_field("operational_mode", &self.operational_mode())?;
+        state.end()
+    }
+}
 /// # System Cache Location (relative to the CPU module)
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum CacheLocation {
     /// Internal to the CPU
     Internal,
@@ -539,7 +633,7 @@ pub enum CacheLocation {
 }
 
 /// # System Cache Operational Mode
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum CacheOperationalMode {
     /// Write Through
     WriteThrough = 0x00,

@@ -1,4 +1,5 @@
 use crate::{SMBiosStruct, UndefinedStruct};
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 
 /// # Management Device Threshold Data (Type 36)
@@ -85,6 +86,35 @@ impl fmt::Debug for SMBiosManagementDeviceThresholdData<'_> {
                 &self.upper_threshold_non_recoverable(),
             )
             .finish()
+    }
+}
+
+impl Serialize for SMBiosManagementDeviceThresholdData<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosManagementDeviceThresholdData", 7)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field(
+            "lower_threshold_non_critical",
+            &self.lower_threshold_non_critical(),
+        )?;
+        state.serialize_field(
+            "upper_threshold_non_critical",
+            &self.upper_threshold_non_critical(),
+        )?;
+        state.serialize_field("lower_threshold_critical", &self.lower_threshold_critical())?;
+        state.serialize_field("upper_threshold_critical", &self.upper_threshold_critical())?;
+        state.serialize_field(
+            "lower_threshold_non_recoverable",
+            &self.lower_threshold_non_recoverable(),
+        )?;
+        state.serialize_field(
+            "upper_threshold_non_recoverable",
+            &self.upper_threshold_non_recoverable(),
+        )?;
+        state.end()
     }
 }
 

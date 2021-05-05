@@ -1,3 +1,4 @@
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use crate::{MemoryTypes, SMBiosStruct, UndefinedStruct};
 use std::fmt;
 
@@ -85,6 +86,24 @@ impl fmt::Debug for SMBiosMemoryModuleInformation<'_> {
             .field("enabled_size", &self.enabled_size())
             .field("error_status", &self.error_status())
             .finish()
+    }
+}
+
+impl Serialize for SMBiosMemoryModuleInformation<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosMemoryModuleInformation", 8)?;
+            state.serialize_field("header", &self.parts.header)?;
+            state.serialize_field("socket_designation", &self.socket_designation())?;
+            state.serialize_field("bank_connections", &self.bank_connections())?;
+            state.serialize_field("current_speed", &self.current_speed())?;
+            state.serialize_field("current_memory_type", &self.current_memory_type())?;
+            state.serialize_field("installed_size", &self.installed_size())?;
+            state.serialize_field("enabled_size", &self.enabled_size())?;
+            state.serialize_field("error_status", &self.error_status())?;
+            state.end()
     }
 }
 

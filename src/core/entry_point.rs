@@ -1,3 +1,4 @@
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::{
     convert::TryFrom,
     convert::TryInto,
@@ -355,6 +356,35 @@ impl fmt::Debug for SMBiosEntryPoint32 {
     }
 }
 
+impl Serialize for SMBiosEntryPoint32 {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosEntryPoint32", 13)?;
+        state.serialize_field(
+            "entry_point_structure_checksum",
+            &self.entry_point_structure_checksum(),
+        )?;
+        state.serialize_field("entry_point_length", &self.entry_point_length())?;
+        state.serialize_field("major_version", &self.major_version())?;
+        state.serialize_field("minor_version", &self.minor_version())?;
+        state.serialize_field("maximum_structure_size", &self.maximum_structure_size())?;
+        state.serialize_field("entry_point_revision", &self.entry_point_revision())?;
+        state.serialize_field("formatted_area", &self.formatted_area())?;
+        state.serialize_field("intermediate_anchor", &self.intermediate_anchor())?;
+        state.serialize_field("intermediate_checksum", &self.intermediate_checksum())?;
+        state.serialize_field("structure_table_length", &self.structure_table_length())?;
+        state.serialize_field("structure_table_address", &self.structure_table_address())?;
+        state.serialize_field(
+            "number_of_smbios_structures",
+            &self.number_of_smbios_structures(),
+        )?;
+        state.serialize_field("bcd_revision", &self.bcd_revision())?;
+        state.end()
+    }
+}
+
 /// # SMBIOS 3.0 (64 bit) Entry Point structure
 ///
 /// On non-UEFI systems, the 64-bit SMBIOS Entry Point structure can be located by application software by
@@ -541,6 +571,29 @@ impl fmt::Debug for SMBiosEntryPoint64 {
             )
             .field("structure_table_address", &self.structure_table_address())
             .finish()
+    }
+}
+
+impl Serialize for SMBiosEntryPoint64 {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosEntryPoint64", 7)?;
+        state.serialize_field(
+            "entry_point_structure_checksum",
+            &self.entry_point_structure_checksum(),
+        )?;
+        state.serialize_field("entry_point_length", &self.entry_point_length())?;
+        state.serialize_field("major_version", &self.major_version())?;
+        state.serialize_field("minor_version", &self.minor_version())?;
+        state.serialize_field("docrev", &self.docrev())?;
+        state.serialize_field(
+            "structure_table_maximum_size",
+            &self.structure_table_maximum_size(),
+        )?;
+        state.serialize_field("structure_table_address", &self.structure_table_address())?;
+        state.end()
     }
 }
 

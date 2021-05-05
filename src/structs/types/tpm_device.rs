@@ -1,4 +1,5 @@
 use crate::{SMBiosStruct, UndefinedStruct};
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::{array::TryFromSliceError, convert::TryFrom, fmt, ops::Deref};
 
 /// # TPM Device (Type 43)
@@ -119,6 +120,25 @@ impl fmt::Debug for SMBiosTpmDevice<'_> {
     }
 }
 
+impl Serialize for SMBiosTpmDevice<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosTpmDevice", 9)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("vendor_id", &self.vendor_id())?;
+        state.serialize_field("major_spec_version", &self.major_spec_version())?;
+        state.serialize_field("minor_spec_version", &self.minor_spec_version())?;
+        state.serialize_field("firmware_version_1", &self.firmware_version_1())?;
+        state.serialize_field("firmware_version_2", &self.firmware_version_2())?;
+        state.serialize_field("description", &self.description())?;
+        state.serialize_field("characteristics", &self.characteristics())?;
+        state.serialize_field("oem_defined", &self.oem_defined())?;
+        state.end()
+    }
+}
+
 /// # Vendor Id
 ///
 /// Specified as four ASCII characters,
@@ -146,6 +166,18 @@ impl<'a> fmt::Debug for VendorId<'a> {
             .field("array", &self.array)
             .field("string", &String::from_utf8_lossy(self.array))
             .finish()
+    }
+}
+
+impl<'a> Serialize for VendorId<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("VendorId", 2)?;
+        state.serialize_field("array", &self.array)?;
+        state.serialize_field("string", &String::from_utf8_lossy(self.array))?;
+        state.end()
     }
 }
 
@@ -221,6 +253,32 @@ impl fmt::Debug for TpmDeviceCharacteristics {
                 &self.family_configurable_via_oem(),
             )
             .finish()
+    }
+}
+
+impl Serialize for TpmDeviceCharacteristics {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("TpmDeviceCharacteristics", 7)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("reserved_0", &self.reserved_0())?;
+        state.serialize_field("reserved_1", &self.reserved_1())?;
+        state.serialize_field("not_supported", &self.not_supported())?;
+        state.serialize_field(
+            "family_configurable_via_firmware",
+            &self.family_configurable_via_firmware(),
+        )?;
+        state.serialize_field(
+            "family_configurable_via_software",
+            &self.family_configurable_via_software(),
+        )?;
+        state.serialize_field(
+            "family_configurable_via_oem",
+            &self.family_configurable_via_oem(),
+        )?;
+        state.end()
     }
 }
 

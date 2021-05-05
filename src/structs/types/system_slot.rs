@@ -1,4 +1,5 @@
 use crate::{SMBiosStruct, UndefinedStruct};
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::{fmt, ops::Deref};
 
 /// # System Slots (Type 9)
@@ -176,6 +177,34 @@ impl fmt::Debug for SMBiosSystemSlot<'_> {
     }
 }
 
+impl Serialize for SMBiosSystemSlot<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosSystemSlot", 18)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("slot_designation", &self.slot_designation())?;
+        state.serialize_field("system_slot_type", &self.system_slot_type())?;
+        state.serialize_field("slot_data_bus_width", &self.slot_data_bus_width())?;
+        state.serialize_field("current_usage", &self.current_usage())?;
+        state.serialize_field("slot_length", &self.slot_length())?;
+        state.serialize_field("slot_id", &self.slot_id())?;
+        state.serialize_field("slot_characteristics_1", &self.slot_characteristics_1())?;
+        state.serialize_field("slot_characteristics_2", &self.slot_characteristics_2())?;
+        state.serialize_field("segment_group_number", &self.segment_group_number())?;
+        state.serialize_field("bus_number", &self.bus_number())?;
+        state.serialize_field("device_function_number", &self.device_function_number())?;
+        state.serialize_field("data_bus_width", &self.data_bus_width())?;
+        state.serialize_field("peer_group_count", &self.peer_group_count())?;
+        state.serialize_field("peer_group_iterator", &self.peer_group_iterator())?;
+        state.serialize_field("slot_information", &self.slot_information())?;
+        state.serialize_field("slot_physical_width", &self.slot_physical_width())?;
+        state.serialize_field("slot_pitch", &self.slot_pitch())?;
+        state.end()
+    }
+}
+
 /// # System Slot Type Data
 pub struct SystemSlotTypeData {
     /// Raw value
@@ -294,6 +323,18 @@ impl fmt::Debug for SystemSlotTypeData {
     }
 }
 
+impl Serialize for SystemSlotTypeData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SystemSlotTypeData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
 impl fmt::Display for SystemSlotTypeData {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self.value {
@@ -304,7 +345,7 @@ impl fmt::Display for SystemSlotTypeData {
 }
 
 /// # System Slot Type
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum SystemSlotType {
     /// Other
     Other,
@@ -517,8 +558,20 @@ impl fmt::Debug for SlotWidthData {
     }
 }
 
+impl Serialize for SlotWidthData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SlotWidthData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
 /// # Slot Width
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum SlotWidth {
     /// Other
     Other,
@@ -598,8 +651,20 @@ impl fmt::Debug for SlotCurrentUsageData {
     }
 }
 
+impl Serialize for SlotCurrentUsageData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SlotCurrentUsageData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
 /// # System Slot Current Usage
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum SlotCurrentUsage {
     /// Other
     Other,
@@ -662,8 +727,20 @@ impl fmt::Debug for SlotLengthData {
     }
 }
 
+impl Serialize for SlotLengthData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SlotLengthData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
 /// # System Slot Length
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum SlotLength {
     /// Other
     Other,
@@ -762,6 +839,28 @@ impl fmt::Debug for SystemSlotCharacteristics1 {
     }
 }
 
+impl Serialize for SystemSlotCharacteristics1 {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SystemSlotCharacteristics1", 9)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("unknown", &self.unknown())?;
+        state.serialize_field("provides5_volts", &self.provides5_volts())?;
+        state.serialize_field("provides33_volts", &self.provides33_volts())?;
+        state.serialize_field("shared", &self.shared())?;
+        state.serialize_field("supports_pc_card16", &self.supports_pc_card16())?;
+        state.serialize_field("supports_card_bus", &self.supports_card_bus())?;
+        state.serialize_field("supports_zoom_video", &self.supports_zoom_video())?;
+        state.serialize_field(
+            "supports_modem_ring_resume",
+            &self.supports_modem_ring_resume(),
+        )?;
+        state.end()
+    }
+}
+
 /// # System Slot Characteristics 2
 #[derive(PartialEq, Eq)]
 pub struct SystemSlotCharacteristics2 {
@@ -852,6 +951,36 @@ impl fmt::Debug for SystemSlotCharacteristics2 {
     }
 }
 
+impl Serialize for SystemSlotCharacteristics2 {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SystemSlotCharacteristics2", 8)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field(
+            "supports_power_management_event",
+            &self.supports_power_management_event(),
+        )?;
+        state.serialize_field(
+            "supports_hot_plug_devices",
+            &self.supports_hot_plug_devices(),
+        )?;
+        state.serialize_field("supports_smbus_signal", &self.supports_smbus_signal())?;
+        state.serialize_field("supports_bifurcation", &self.supports_bifurcation())?;
+        state.serialize_field("supports_suprise_removal", &self.supports_suprise_removal())?;
+        state.serialize_field(
+            "flexbus_slot_cxl10_capable",
+            &self.flexbus_slot_cxl10_capable(),
+        )?;
+        state.serialize_field(
+            "flexbus_slot_cxl20_capable",
+            &self.flexbus_slot_cxl20_capable(),
+        )?;
+        state.end()
+    }
+}
+
 /// # Slot Peer Group entry within [SMBiosSystemSlot]
 pub struct SlotPeerGroup<'a> {
     system_slot: &'a SMBiosSystemSlot<'a>,
@@ -912,6 +1041,20 @@ impl fmt::Debug for SlotPeerGroup<'_> {
             .field("device_function_number", &self.device_function_number())
             .field("data_bus_width", &self.data_bus_width())
             .finish()
+    }
+}
+
+impl Serialize for SlotPeerGroup<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SlotPeerGroup", 4)?;
+        state.serialize_field("segment_group_number", &self.segment_group_number())?;
+        state.serialize_field("bus_number", &self.bus_number())?;
+        state.serialize_field("device_function_number", &self.device_function_number())?;
+        state.serialize_field("data_bus_width", &self.data_bus_width())?;
+        state.end()
     }
 }
 

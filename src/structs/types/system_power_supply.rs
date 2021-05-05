@@ -1,4 +1,5 @@
 use crate::{Handle, SMBiosStruct, UndefinedStruct};
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 
 /// # System Power Supply (Type 39)
@@ -181,6 +182,39 @@ impl fmt::Debug for SMBiosSystemPowerSupply<'_> {
     }
 }
 
+impl Serialize for SMBiosSystemPowerSupply<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosSystemPowerSupply", 14)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("power_unit_group", &self.power_unit_group())?;
+        state.serialize_field("location", &self.location())?;
+        state.serialize_field("device_name", &self.device_name())?;
+        state.serialize_field("manufacturer", &self.manufacturer())?;
+        state.serialize_field("serial_number", &self.serial_number())?;
+        state.serialize_field("asset_tag_number", &self.asset_tag_number())?;
+        state.serialize_field("model_part_number", &self.model_part_number())?;
+        state.serialize_field("revision_level", &self.revision_level())?;
+        state.serialize_field("max_power_capacity", &self.max_power_capacity())?;
+        state.serialize_field(
+            "power_supply_characteristics",
+            &self.power_supply_characteristics(),
+        )?;
+        state.serialize_field(
+            "input_voltage_probe_handle",
+            &self.input_voltage_probe_handle(),
+        )?;
+        state.serialize_field("cooling_device_handle", &self.cooling_device_handle())?;
+        state.serialize_field(
+            "input_current_probe_handle",
+            &self.input_current_probe_handle(),
+        )?;
+        state.end()
+    }
+}
+
 /// # Power Supply Characteristics
 #[derive(PartialEq, Eq)]
 pub struct PowerSupplyCharacteristics {
@@ -248,8 +282,28 @@ impl fmt::Debug for PowerSupplyCharacteristics {
     }
 }
 
+impl Serialize for PowerSupplyCharacteristics {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("PowerSupplyCharacteristics", 7)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("power_supply_type", &self.power_supply_type())?;
+        state.serialize_field("power_supply_status", &self.power_supply_status())?;
+        state.serialize_field(
+            "input_voltage_range_switching",
+            &self.input_voltage_range_switching(),
+        )?;
+        state.serialize_field("unplugged_from_wall", &self.unplugged_from_wall())?;
+        state.serialize_field("is_present", &self.is_present())?;
+        state.serialize_field("hot_replaceable", &self.hot_replaceable())?;
+        state.end()
+    }
+}
+
 /// # DMTF Power Supply Type
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum PowerSupplyType {
     /// Other
     Other,
@@ -288,7 +342,7 @@ impl From<u16> for PowerSupplyType {
 }
 
 /// # Power Supply Status
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum PowerSupplyStatus {
     /// Other
     Other,
@@ -318,7 +372,7 @@ impl From<u16> for PowerSupplyStatus {
 }
 
 /// # DMTF Input Voltage Range Switching
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum InputVoltageRangeSwitching {
     /// Other
     Other,
@@ -353,7 +407,7 @@ impl From<u16> for InputVoltageRangeSwitching {
 /// # Max Power Capacity
 ///
 /// Maximum sustained power output in Watts
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum MaxPowerCapacity {
     /// Maximum sustained power output in Watts
     Watts(u16),

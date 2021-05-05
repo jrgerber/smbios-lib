@@ -1,4 +1,5 @@
 use crate::{SMBiosStruct, UndefinedStruct};
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::{
     array::TryFromSliceError,
     convert::{TryFrom, TryInto},
@@ -115,8 +116,27 @@ impl fmt::Debug for SMBiosSystemInformation<'_> {
     }
 }
 
+impl Serialize for SMBiosSystemInformation<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosSystemInformation", 9)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("manufacturer", &self.manufacturer())?;
+        state.serialize_field("product_name", &self.product_name())?;
+        state.serialize_field("version", &self.version())?;
+        state.serialize_field("serial_number", &self.serial_number())?;
+        state.serialize_field("uuid", &self.uuid())?;
+        state.serialize_field("wakeup_type", &self.wakeup_type())?;
+        state.serialize_field("sku_number", &self.sku_number())?;
+        state.serialize_field("family", &self.family())?;
+        state.end()
+    }
+}
+
 /// # System - UUID Data
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub enum SystemUuidData {
     /// The ID is not currently present in the system, but it can be set
     IdNotPresentButSettable,
@@ -228,6 +248,15 @@ impl fmt::Debug for SystemUuid {
     }
 }
 
+impl Serialize for SystemUuid {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(format!("{}", self).as_str())
+    }
+}
+
 /// # System - Wake-up Type Data
 pub struct SystemWakeUpTypeData {
     /// Raw value
@@ -250,6 +279,18 @@ impl fmt::Debug for SystemWakeUpTypeData {
     }
 }
 
+impl Serialize for SystemWakeUpTypeData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SystemWakeUpTypeData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
 impl fmt::Display for SystemWakeUpTypeData {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self.value {
@@ -268,7 +309,7 @@ impl Deref for SystemWakeUpTypeData {
 }
 
 /// # System - Wake-up Type
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum SystemWakeUpType {
     /// Other
     Other,
