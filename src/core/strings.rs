@@ -1,4 +1,4 @@
-use serde::{ser::SerializeStruct, Serialize, Serializer};
+use serde::{ser::SerializeSeq, Serialize, Serializer};
 use std::fmt;
 
 /// # SMBIOS Strings
@@ -112,6 +112,10 @@ impl Serialize for Strings {
     where
         S: Serializer,
     {
-        let mut state = serializer.serialize_struct("Strings", self.count())?;
+        let mut seq = serializer.serialize_seq(Some(self.count()))?;
+        for e in self {
+            seq.serialize_element(&e)?;
+        }
+        seq.end()
     }
 }

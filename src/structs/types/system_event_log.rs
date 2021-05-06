@@ -1,5 +1,5 @@
 use crate::{SMBiosStruct, UndefinedStruct};
-use serde::{ser::SerializeStruct, Serialize, Serializer};
+use serde::{ser::SerializeSeq, ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 use std::ops::Deref;
 
@@ -558,6 +558,22 @@ impl<'a> fmt::Debug for EventLogTypeDescriptor<'a> {
     }
 }
 
+impl<'a> Serialize for EventLogTypeDescriptor<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("EventLogTypeDescriptor", 3)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("log_type", &self.log_type())?;
+        state.serialize_field(
+            "variable_data_format_type",
+            &self.variable_data_format_type(),
+        )?;
+        state.end()
+    }
+}
+
 /// # System Event Log Type Descriptors within [SMBiosSystemEventLog]
 pub struct TypeDescriptors<'a> {
     raw: &'a [u8],
@@ -597,6 +613,19 @@ impl<'a> fmt::Debug for TypeDescriptors<'a> {
         fmt.debug_struct(std::any::type_name::<TypeDescriptors<'_>>())
             .field("descriptors", &self.into_iter())
             .finish()
+    }
+}
+
+impl<'a> Serialize for TypeDescriptors<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut seq = serializer.serialize_seq(Some(self.record_count))?;
+        for e in self {
+            seq.serialize_element(&e)?;
+        }
+        seq.end()
     }
 }
 
@@ -656,6 +685,19 @@ impl<'a> fmt::Debug for TypeDescriptorsIterator<'a> {
         fmt.debug_list()
             .entries(self.descriptors.into_iter())
             .finish()
+    }
+}
+
+impl<'a> Serialize for TypeDescriptorsIterator<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut seq = serializer.serialize_seq(Some(self.count()))?;
+        for e in self.into_iter() {
+            seq.serialize_element(&e)?;
+        }
+        seq.end()
     }
 }
 

@@ -1,6 +1,6 @@
 use crate::core::UndefinedStruct;
 use crate::{BoardTypeData, SMBiosStruct, SMBiosType};
-use serde::{ser::SerializeStruct, Serialize, Serializer};
+use serde::{ser::SerializeSeq, ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 use std::ops::Deref;
 
@@ -652,6 +652,19 @@ impl<'a> fmt::Debug for ContainedElements<'a> {
     }
 }
 
+impl<'a> Serialize for ContainedElements<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut seq = serializer.serialize_seq(Some(self.record_count))?;
+        for e in self {
+            seq.serialize_element(&e)?;
+        }
+        seq.end()
+    }
+}
+
 /// # Contained Chassis Element
 pub struct ChassisElement<'a> {
     /// Raw byte slice for this chassis element
@@ -835,6 +848,19 @@ impl<'a> fmt::Debug for ContainedElementsIterator<'a> {
         fmt.debug_list()
             .entries(self.contained_elements.into_iter())
             .finish()
+    }
+}
+
+impl<'a> Serialize for ContainedElementsIterator<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut seq = serializer.serialize_seq(Some(self.count()))?;
+        for e in self.into_iter() {
+            seq.serialize_element(&e)?;
+        }
+        seq.end()
     }
 }
 

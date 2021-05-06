@@ -1,6 +1,6 @@
 use crate::core::{Handle, UndefinedStruct};
 use crate::SMBiosStruct;
-use serde::{ser::SerializeStruct, Serialize, Serializer};
+use serde::{ser::SerializeSeq, ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 use std::ops::Deref;
 
@@ -397,6 +397,19 @@ impl<'a> Iterator for ObjectHandleIterator<'a> {
 impl<'a> fmt::Debug for ObjectHandleIterator<'a> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_list().entries(self.into_iter()).finish()
+    }
+}
+
+impl<'a> Serialize for ObjectHandleIterator<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut seq = serializer.serialize_seq(Some(self.count()))?;
+        for e in self {
+            seq.serialize_element(&e)?;
+        }
+        seq.end()
     }
 }
 
