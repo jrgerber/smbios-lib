@@ -1,4 +1,5 @@
 use crate::{SMBiosStruct, UndefinedStruct};
+use serde::{ser::SerializeSeq, ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 use std::ops::Deref;
 
@@ -154,6 +155,34 @@ impl fmt::Debug for SMBiosSystemEventLog<'_> {
     }
 }
 
+impl Serialize for SMBiosSystemEventLog<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosSystemEventLog", 12)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("log_area_length", &self.log_area_length())?;
+        state.serialize_field("log_header_start_offset", &self.log_header_start_offset())?;
+        state.serialize_field("log_data_start_offset", &self.log_data_start_offset())?;
+        state.serialize_field("access_method", &self.access_method())?;
+        state.serialize_field("log_status", &self.log_status())?;
+        state.serialize_field("log_change_token", &self.log_change_token())?;
+        state.serialize_field("access_method_address", &self.access_method_address())?;
+        state.serialize_field("log_header_format", &self.log_header_format())?;
+        state.serialize_field(
+            "number_of_supported_log_type_descriptors",
+            &self.number_of_supported_log_type_descriptors(),
+        )?;
+        state.serialize_field(
+            "length_of_each_log_type_descriptor",
+            &self.length_of_each_log_type_descriptor(),
+        )?;
+        state.serialize_field("type_descriptors", &self.type_descriptors())?;
+        state.end()
+    }
+}
+
 /// # System Event Log - Log Type Data
 pub struct LogTypeData {
     /// Raw value
@@ -176,6 +205,27 @@ impl fmt::Debug for LogTypeData {
     }
 }
 
+impl Serialize for LogTypeData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("LogTypeData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
+impl fmt::Display for LogTypeData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.value {
+            LogType::None => write!(f, "{}", &self.raw),
+            _ => write!(f, "{:?}", &self.value),
+        }
+    }
+}
+
 impl Deref for LogTypeData {
     type Target = LogType;
 
@@ -185,7 +235,7 @@ impl Deref for LogTypeData {
 }
 
 /// # System Event Log - Log Type
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum LogType {
     /// Single-bit ECC memory error
     SingleBitEccMemoryError,
@@ -293,6 +343,27 @@ impl fmt::Debug for VariableDataFormatTypeData {
     }
 }
 
+impl Serialize for VariableDataFormatTypeData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("VariableDataFormatTypeData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
+impl fmt::Display for VariableDataFormatTypeData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.value {
+            VariableDataFormatType::None => write!(f, "{}", &self.raw),
+            _ => write!(f, "{:?}", &self.value),
+        }
+    }
+}
+
 impl Deref for VariableDataFormatTypeData {
     type Target = VariableDataFormatType;
 
@@ -302,7 +373,7 @@ impl Deref for VariableDataFormatTypeData {
 }
 
 /// # System Event Log - Variable Data Format Type
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum VariableDataFormatType {
     /// No standard format data is available; the first byte of the variable data (if present) contains OEM-specific unformatted information.
     NoStandardFormat,
@@ -362,6 +433,18 @@ impl fmt::Debug for AccessMethodData {
     }
 }
 
+impl Serialize for AccessMethodData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("AccessMethodData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
 impl Deref for AccessMethodData {
     type Target = AccessMethod;
 
@@ -381,7 +464,7 @@ impl From<u8> for AccessMethodData {
 /// # System Event Log - Access Method
 ///
 /// Defines the Location and Method used by higher-level software to access the log area.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum AccessMethod {
     /// 00h Indexed I/O
     ///
@@ -475,6 +558,22 @@ impl<'a> fmt::Debug for EventLogTypeDescriptor<'a> {
     }
 }
 
+impl<'a> Serialize for EventLogTypeDescriptor<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("EventLogTypeDescriptor", 3)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("log_type", &self.log_type())?;
+        state.serialize_field(
+            "variable_data_format_type",
+            &self.variable_data_format_type(),
+        )?;
+        state.end()
+    }
+}
+
 /// # System Event Log Type Descriptors within [SMBiosSystemEventLog]
 pub struct TypeDescriptors<'a> {
     raw: &'a [u8],
@@ -514,6 +613,19 @@ impl<'a> fmt::Debug for TypeDescriptors<'a> {
         fmt.debug_struct(std::any::type_name::<TypeDescriptors<'_>>())
             .field("descriptors", &self.into_iter())
             .finish()
+    }
+}
+
+impl<'a> Serialize for TypeDescriptors<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut seq = serializer.serialize_seq(Some(self.record_count))?;
+        for e in self {
+            seq.serialize_element(&e)?;
+        }
+        seq.end()
     }
 }
 
@@ -576,6 +688,20 @@ impl<'a> fmt::Debug for TypeDescriptorsIterator<'a> {
     }
 }
 
+impl<'a> Serialize for TypeDescriptorsIterator<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let descriptors: Vec<EventLogTypeDescriptor<'_>> = self.descriptors.into_iter().collect();
+        let mut seq = serializer.serialize_seq(Some(descriptors.len()))?;
+        for e in descriptors {
+            seq.serialize_element(&e)?;
+        }
+        seq.end()
+    }
+}
+
 /// # System Event Log - Log Status
 #[derive(PartialEq, Eq)]
 pub struct LogStatus {
@@ -619,6 +745,19 @@ impl fmt::Debug for LogStatus {
     }
 }
 
+impl Serialize for LogStatus {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("LogStatus", 3)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("log_area_valid", &self.log_area_valid())?;
+        state.serialize_field("log_area_full", &self.log_area_full())?;
+        state.end()
+    }
+}
+
 /// # System Event Log - Header Format Data
 pub struct HeaderFormatData {
     /// Raw value
@@ -641,6 +780,18 @@ impl fmt::Debug for HeaderFormatData {
     }
 }
 
+impl Serialize for HeaderFormatData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("HeaderFormatData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
 impl Deref for HeaderFormatData {
     type Target = HeaderFormat;
 
@@ -650,7 +801,7 @@ impl Deref for HeaderFormatData {
 }
 
 /// # System Event Log - Header Format
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum HeaderFormat {
     /// No header (for example, the header is 0 bytes in length)
     NoHeader,

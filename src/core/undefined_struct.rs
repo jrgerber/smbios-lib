@@ -1,6 +1,7 @@
 use super::header::{Handle, Header};
 use super::strings::Strings;
 use crate::structs::{DefinedStruct, SMBiosEndOfTable, SMBiosStruct};
+use serde::{Serialize, Serializer};
 use std::fmt;
 use std::{
     convert::TryInto,
@@ -8,7 +9,6 @@ use std::{
     io::{prelude::*, Error, ErrorKind, SeekFrom},
     slice::Iter,
 };
-
 /// # Embodies the three basic parts of an SMBIOS structure
 ///
 /// Every SMBIOS structure contains three distinct sections:
@@ -23,6 +23,7 @@ use std::{
 /// necessary.  Therefore, [UndefinedStruct] is public for the case of OEM,
 /// as well as when working with structures that are defined in an SMBIOS
 /// standard newer than the one this library currently supports.
+#[derive(Serialize)]
 pub struct UndefinedStruct {
     /// The [Header] of the structure
     pub header: Header,
@@ -47,7 +48,15 @@ pub struct UndefinedStruct {
     pub fields: Vec<u8>,
 
     /// The strings of the structure
+    #[serde(serialize_with = "ser_strings")]
     pub strings: Strings,
+}
+
+fn ser_strings<S>(data: &Strings, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    serializer.serialize_str(format!("{:?}", data).as_str())
 }
 
 impl<'a> UndefinedStruct {
@@ -184,7 +193,7 @@ impl Default for UndefinedStruct {
 /// # Undefined Struct Table
 ///
 /// A collection of [UndefinedStruct] items.
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct UndefinedStructTable(Vec<UndefinedStruct>);
 
 impl<'a> UndefinedStructTable {

@@ -1,5 +1,6 @@
 use crate::core::{Handle, UndefinedStruct};
 use crate::SMBiosStruct;
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 
 /// # Cooling Device (Type 27)
@@ -89,6 +90,23 @@ impl fmt::Debug for SMBiosCoolingDevice<'_> {
     }
 }
 
+impl Serialize for SMBiosCoolingDevice<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosCoolingDevice", 7)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("temperature_probe_handle", &self.temperature_probe_handle())?;
+        state.serialize_field("device_type_and_status", &self.device_type_and_status())?;
+        state.serialize_field("cooling_unit_group", &self.cooling_unit_group())?;
+        state.serialize_field("oem_defined", &self.oem_defined())?;
+        state.serialize_field("nominal_speed", &self.nominal_speed())?;
+        state.serialize_field("description", &self.description())?;
+        state.end()
+    }
+}
+
 /// # Cooling Device Type and Status
 #[derive(PartialEq, Eq)]
 pub struct CoolingDeviceTypeAndStatus {
@@ -115,8 +133,21 @@ impl fmt::Debug for CoolingDeviceTypeAndStatus {
     }
 }
 
+impl Serialize for CoolingDeviceTypeAndStatus {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("CoolingDeviceTypeAndStatus", 3)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("device_status", &self.device_status)?;
+        state.serialize_field("device_type", &self.device_type)?;
+        state.end()
+    }
+}
+
 /// # Cooling Device Status
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum CoolingDeviceStatus {
     /// Other
     Other,
@@ -135,7 +166,7 @@ pub enum CoolingDeviceStatus {
 }
 
 /// # Cooling Device Type
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum CoolingDeviceType {
     /// Other
     Other,

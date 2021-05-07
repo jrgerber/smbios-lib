@@ -1,5 +1,6 @@
 use crate::core::{Handle, UndefinedStruct};
 use crate::SMBiosStruct;
+use serde::{ser::SerializeSeq, ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 use std::ops::Deref;
 
@@ -75,6 +76,24 @@ impl fmt::Debug for SMBiosMemoryChannel<'_> {
     }
 }
 
+impl Serialize for SMBiosMemoryChannel<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosMemoryChannel", 5)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("channel_type", &self.channel_type())?;
+        state.serialize_field("maximum_channel_load", &self.maximum_channel_load())?;
+        state.serialize_field("memory_device_count", &self.memory_device_count())?;
+        state.serialize_field(
+            "load_handle_pairs_iterator",
+            &self.load_handle_pairs_iterator(),
+        )?;
+        state.end()
+    }
+}
+
 /// # Memory Channel — Channel Type Data
 pub struct MemoryChannelTypeData {
     /// Raw value
@@ -97,6 +116,27 @@ impl fmt::Debug for MemoryChannelTypeData {
     }
 }
 
+impl Serialize for MemoryChannelTypeData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("MemoryChannelTypeData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
+impl fmt::Display for MemoryChannelTypeData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.value {
+            MemoryChannelType::None => write!(f, "{}", &self.raw),
+            _ => write!(f, "{:?}", &self.value),
+        }
+    }
+}
+
 impl Deref for MemoryChannelTypeData {
     type Target = MemoryChannelType;
 
@@ -106,7 +146,7 @@ impl Deref for MemoryChannelTypeData {
 }
 
 /// # Memory Channel — Channel Type
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum MemoryChannelType {
     /// Other,
     Other,
@@ -173,6 +213,18 @@ impl fmt::Debug for LoadHandlePair<'_> {
             .field("load", &self.load())
             .field("handle", &self.handle())
             .finish()
+    }
+}
+
+impl Serialize for LoadHandlePair<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("LoadHandlePair", 2)?;
+        state.serialize_field("load", &self.load())?;
+        state.serialize_field("handle", &self.handle())?;
+        state.end()
     }
 }
 
@@ -248,6 +300,20 @@ impl<'a> Iterator for LoadHandlePairIterator<'a> {
 impl<'a> fmt::Debug for LoadHandlePairIterator<'a> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_list().entries(self.into_iter()).finish()
+    }
+}
+
+impl<'a> Serialize for LoadHandlePairIterator<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let pairs: Vec<LoadHandlePair<'_>> = self.into_iter().collect();
+        let mut seq = serializer.serialize_seq(Some(pairs.len()))?;
+        for e in pairs {
+            seq.serialize_element(&e)?;
+        }
+        seq.end()
     }
 }
 

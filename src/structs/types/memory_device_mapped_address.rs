@@ -1,5 +1,6 @@
 use crate::core::{Handle, UndefinedStruct};
 use crate::SMBiosStruct;
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 
 /// # Memory Device Mapped Address (Type 20)
@@ -152,6 +153,32 @@ impl fmt::Debug for SMBiosMemoryDeviceMappedAddress<'_> {
             )
             .field("extended_ending_address", &self.extended_ending_address())
             .finish()
+    }
+}
+
+impl Serialize for SMBiosMemoryDeviceMappedAddress<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosMemoryDeviceMappedAddress", 10)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("starting_address", &self.starting_address())?;
+        state.serialize_field("ending_address", &self.ending_address())?;
+        state.serialize_field("memory_device_handle", &self.memory_device_handle())?;
+        state.serialize_field(
+            "memory_array_mapped_address_handle",
+            &self.memory_array_mapped_address_handle(),
+        )?;
+        state.serialize_field("partition_row_position", &self.partition_row_position())?;
+        state.serialize_field("interleave_position", &self.interleave_position())?;
+        state.serialize_field("interleaved_data_depth", &self.interleaved_data_depth())?;
+        state.serialize_field(
+            "extended_starting_address",
+            &self.extended_starting_address(),
+        )?;
+        state.serialize_field("extended_ending_address", &self.extended_ending_address())?;
+        state.end()
     }
 }
 

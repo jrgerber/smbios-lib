@@ -1,4 +1,5 @@
 use crate::{Header, SMBiosStruct, UndefinedStruct};
+use serde::{ser::SerializeSeq, ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 
 /// # On Board Devices Information (Type 10, Obsolete)
@@ -54,6 +55,19 @@ impl fmt::Debug for SMBiosOnBoardDeviceInformation<'_> {
     }
 }
 
+impl Serialize for SMBiosOnBoardDeviceInformation<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosOnBoardDeviceInformation", 3)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("number_of_devices", &self.number_of_devices())?;
+        state.serialize_field("onboard_device_iterator", &self.onboard_device_iterator())?;
+        state.end()
+    }
+}
+
 /// # On Board Device entry within [SMBiosOnBoardDeviceInformation]
 pub struct OnBoardDevice<'a> {
     onboard_device_information: &'a SMBiosOnBoardDeviceInformation<'a>,
@@ -101,6 +115,18 @@ impl fmt::Debug for OnBoardDevice<'_> {
             .field("device_type", &self.device_type())
             .field("description", &self.description())
             .finish()
+    }
+}
+
+impl Serialize for OnBoardDevice<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("OnBoardDevice", 2)?;
+        state.serialize_field("device_type", &self.device_type())?;
+        state.serialize_field("description", &self.description())?;
+        state.end()
     }
 }
 
@@ -155,8 +181,21 @@ impl fmt::Debug for OnBoardDeviceType {
     }
 }
 
+impl Serialize for OnBoardDeviceType {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("OnBoardDeviceType", 3)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("type_of_device", &self.type_of_device())?;
+        state.serialize_field("status", &self.status())?;
+        state.end()
+    }
+}
+
 /// # Onboard Device Types
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum TypeOfDevice {
     /// Other
     Other,
@@ -183,7 +222,7 @@ pub enum TypeOfDevice {
 }
 
 /// # Enabled/Disabled Device Status
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum DeviceStatus {
     /// Device is enabled
     Enabled,
@@ -263,6 +302,20 @@ impl<'a> Iterator for OnBoardDeviceIterator<'a> {
 impl<'a> fmt::Debug for OnBoardDeviceIterator<'a> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_list().entries(self.into_iter()).finish()
+    }
+}
+
+impl<'a> Serialize for OnBoardDeviceIterator<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let devices: Vec<OnBoardDevice<'_>> = self.into_iter().collect();
+        let mut seq = serializer.serialize_seq(Some(devices.len()))?;
+        for e in devices {
+            seq.serialize_element(&e)?;
+        }
+        seq.end()
     }
 }
 

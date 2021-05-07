@@ -1,4 +1,5 @@
 use crate::{SMBiosStruct, UndefinedStruct};
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::{fmt, ops::Deref};
 
 /// # Out-of-Band Remote Access (Type 30)
@@ -101,6 +102,25 @@ impl fmt::Debug for Connections {
     }
 }
 
+impl Serialize for Connections {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Connections", 3)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field(
+            "inbound_connection_enabled",
+            &self.inbound_connection_enabled(),
+        )?;
+        state.serialize_field(
+            "outbound_connection_enabled",
+            &self.outbound_connection_enabled(),
+        )?;
+        state.end()
+    }
+}
+
 impl fmt::Debug for SMBiosOutOfBandRemoteAccess<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(std::any::type_name::<SMBiosOutOfBandRemoteAccess<'_>>())
@@ -108,6 +128,19 @@ impl fmt::Debug for SMBiosOutOfBandRemoteAccess<'_> {
             .field("manufacturer_name", &self.manufacturer_name())
             .field("connections", &self.connections())
             .finish()
+    }
+}
+
+impl Serialize for SMBiosOutOfBandRemoteAccess<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosOutOfBandRemoteAccess", 3)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("manufacturer_name", &self.manufacturer_name())?;
+        state.serialize_field("connections", &self.connections())?;
+        state.end()
     }
 }
 

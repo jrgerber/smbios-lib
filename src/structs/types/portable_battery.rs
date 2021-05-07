@@ -1,4 +1,5 @@
 use crate::{SMBiosStruct, UndefinedStruct};
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 use std::ops::Deref;
 
@@ -192,6 +193,38 @@ impl fmt::Debug for SMBiosPortableBattery<'_> {
     }
 }
 
+impl Serialize for SMBiosPortableBattery<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosPortableBattery", 16)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("location", &self.location())?;
+        state.serialize_field("manufacturer", &self.manufacturer())?;
+        state.serialize_field("manufacture_date", &self.manufacture_date())?;
+        state.serialize_field("serial_number", &self.serial_number())?;
+        state.serialize_field("device_name", &self.device_name())?;
+        state.serialize_field("device_chemistry", &self.device_chemistry())?;
+        state.serialize_field("design_capacity", &self.design_capacity())?;
+        state.serialize_field("design_voltage", &self.design_voltage())?;
+        state.serialize_field("sbds_version_number", &self.sbds_version_number())?;
+        state.serialize_field(
+            "maximum_error_in_battery_data",
+            &self.maximum_error_in_battery_data(),
+        )?;
+        state.serialize_field("sbds_serial_number", &self.sbds_serial_number())?;
+        state.serialize_field("sbds_manufacture_date", &self.sbds_manufacture_date())?;
+        state.serialize_field("sbds_device_chemistry", &self.sbds_device_chemistry())?;
+        state.serialize_field(
+            "design_capacity_multiplier",
+            &self.design_capacity_multiplier(),
+        )?;
+        state.serialize_field("oem_specific", &self.oem_specific())?;
+        state.end()
+    }
+}
+
 /// # Portable Battery - Device Chemistry Data
 pub struct PortableBatteryDeviceChemistryData {
     /// Raw value
@@ -214,6 +247,18 @@ impl fmt::Debug for PortableBatteryDeviceChemistryData {
     }
 }
 
+impl Serialize for PortableBatteryDeviceChemistryData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("PortableBatteryDeviceChemistryData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
 impl Deref for PortableBatteryDeviceChemistryData {
     type Target = PortableBatteryDeviceChemistry;
 
@@ -223,7 +268,7 @@ impl Deref for PortableBatteryDeviceChemistryData {
 }
 
 /// # Portable Battery - Device Chemistry
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum PortableBatteryDeviceChemistry {
     /// Other
     Other,
@@ -269,7 +314,7 @@ impl From<u8> for PortableBatteryDeviceChemistryData {
 }
 
 /// # Portable Battery - Design Capacity
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum PortableBatteryDesignCapacity {
     /// Design capacity of the battery in mWatt-hours
     ///
@@ -291,7 +336,7 @@ impl From<u16> for PortableBatteryDesignCapacity {
 }
 
 /// # Portable Battery - Design Voltage
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum PortableBatteryDesignVoltage {
     /// Design voltage of the battery in mVolts.
     MilliVolts(u16),

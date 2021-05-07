@@ -1,4 +1,5 @@
 use crate::{SMBiosStruct, UndefinedStruct};
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 
 /// #  Voltage Probe (Type 26)
@@ -125,6 +126,26 @@ impl fmt::Debug for SMBiosVoltageProbe<'_> {
     }
 }
 
+impl Serialize for SMBiosVoltageProbe<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosVoltageProbe", 10)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("description", &self.description())?;
+        state.serialize_field("location_and_status", &self.location_and_status())?;
+        state.serialize_field("maximum_value", &self.maximum_value())?;
+        state.serialize_field("minimum_value", &self.minimum_value())?;
+        state.serialize_field("resolution", &self.resolution())?;
+        state.serialize_field("tolerance", &self.tolerance())?;
+        state.serialize_field("accuracy", &self.accuracy())?;
+        state.serialize_field("oem_defined", &self.oem_defined())?;
+        state.serialize_field("nominal_value", &self.nominal_value())?;
+        state.end()
+    }
+}
+
 /// # Voltage Probe Location and Status
 #[derive(PartialEq, Eq)]
 pub struct VoltageProbeLocationAndStatus {
@@ -160,8 +181,21 @@ impl fmt::Debug for VoltageProbeLocationAndStatus {
     }
 }
 
+impl Serialize for VoltageProbeLocationAndStatus {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("VoltageProbeLocationAndStatus", 3)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("location", &self.location())?;
+        state.serialize_field("status", &self.status())?;
+        state.end()
+    }
+}
+
 /// # Voltage Probe Status
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum VoltageProbeStatus {
     /// Other
     Other,
@@ -196,7 +230,7 @@ impl From<u8> for VoltageProbeStatus {
 }
 
 /// # Voltage Probe Location
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum VoltageProbeLocation {
     /// Other
     Other,
@@ -256,7 +290,7 @@ impl From<u8> for VoltageProbeLocation {
 }
 
 /// # Probe Voltage
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub enum ProbeVoltage {
     /// Voltage in millivolts
     Millivolts(u16),
@@ -274,7 +308,7 @@ impl From<u16> for ProbeVoltage {
 }
 
 /// # Voltage Probe Resolution
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub enum VoltageProbeResolution {
     /// Resolution for the probe's reading in tenths of millivolts
     TenthsOfMillivolts(u16),
@@ -292,7 +326,7 @@ impl From<u16> for VoltageProbeResolution {
 }
 
 /// # Voltage Probe Accuracy
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub enum VoltageProbeAccuracy {
     /// Accuracy for the probe's reading in 1/100th of a percent
     OneOneHundredthPercent(u16),

@@ -1,5 +1,6 @@
 use crate::core::{Handle, UndefinedStruct};
 use crate::SMBiosStruct;
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::convert::TryInto;
 use std::fmt;
 use std::ops::Deref;
@@ -323,6 +324,46 @@ impl fmt::Debug for SMBiosProcessorInformation<'_> {
     }
 }
 
+impl Serialize for SMBiosProcessorInformation<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosProcessorInformation", 27)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("socket_designation", &self.socket_designation())?;
+        state.serialize_field("processor_type", &self.processor_type())?;
+        state.serialize_field("processor_family", &self.processor_family())?;
+        state.serialize_field("processor_manufacturer", &self.processor_manufacturer())?;
+        state.serialize_field("processor_id", &self.processor_id())?;
+        state.serialize_field("processor_version", &self.processor_version())?;
+        state.serialize_field("voltage", &self.voltage())?;
+        state.serialize_field("external_clock", &self.external_clock())?;
+        state.serialize_field("max_speed", &self.max_speed())?;
+        state.serialize_field("current_speed", &self.current_speed())?;
+        state.serialize_field("status", &self.status())?;
+        state.serialize_field("processor_upgrade", &self.processor_upgrade())?;
+        state.serialize_field("l1cache_handle", &self.l1cache_handle())?;
+        state.serialize_field("l2cache_handle", &self.l2cache_handle())?;
+        state.serialize_field("l3cache_handle", &self.l3cache_handle())?;
+        state.serialize_field("serial_number", &self.serial_number())?;
+        state.serialize_field("asset_tag", &self.asset_tag())?;
+        state.serialize_field("part_number", &self.part_number())?;
+        state.serialize_field("core_count", &self.core_count())?;
+        state.serialize_field("cores_enabled", &self.cores_enabled())?;
+        state.serialize_field("thread_count", &self.thread_count())?;
+        state.serialize_field(
+            "processor_characteristics",
+            &self.processor_characteristics(),
+        )?;
+        state.serialize_field("processor_family_2", &self.processor_family_2())?;
+        state.serialize_field("core_count_2", &self.core_count_2())?;
+        state.serialize_field("cores_enabled_2", &self.cores_enabled_2())?;
+        state.serialize_field("thread_count_2", &self.thread_count_2())?;
+        state.end()
+    }
+}
+
 /// # Processor Type Data
 pub struct ProcessorTypeData {
     /// Raw value
@@ -345,6 +386,27 @@ impl fmt::Debug for ProcessorTypeData {
     }
 }
 
+impl Serialize for ProcessorTypeData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("ProcessorTypeData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
+impl fmt::Display for ProcessorTypeData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.value {
+            ProcessorType::None => write!(f, "{}", &self.raw),
+            _ => write!(f, "{:?}", &self.value),
+        }
+    }
+}
+
 impl Deref for ProcessorTypeData {
     type Target = ProcessorType;
 
@@ -354,7 +416,7 @@ impl Deref for ProcessorTypeData {
 }
 
 /// # Processor Type
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum ProcessorType {
     /// Other
     Other,
@@ -411,6 +473,18 @@ impl fmt::Debug for ProcessorFamilyData {
     }
 }
 
+impl Serialize for ProcessorFamilyData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("ProcessorFamilyData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
 impl fmt::Display for ProcessorFamilyData {
     /// Displays ProcessorFamily either by name or as a hex value if the name for the value is unknown.
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -460,6 +534,18 @@ impl fmt::Debug for ProcessorFamilyData2 {
     }
 }
 
+impl Serialize for ProcessorFamilyData2 {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("ProcessorFamilyData2", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
 impl fmt::Display for ProcessorFamilyData2 {
     /// Displays ProcessorFamily either by name or as a hex value if the name for the value is unknown.
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -487,7 +573,7 @@ impl From<u16> for ProcessorFamilyData2 {
     }
 }
 /// # Processor Family
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum ProcessorFamily {
     /// Other
     Other,
@@ -1168,6 +1254,18 @@ impl fmt::Debug for ProcessorUpgradeData {
     }
 }
 
+impl Serialize for ProcessorUpgradeData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("ProcessorUpgradeData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
 impl Deref for ProcessorUpgradeData {
     type Target = ProcessorUpgrade;
 
@@ -1177,7 +1275,7 @@ impl Deref for ProcessorUpgradeData {
 }
 
 /// #
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum ProcessorUpgrade {
     /// Other
     Other,
@@ -1468,8 +1566,31 @@ impl fmt::Debug for ProcessorCharacteristics {
     }
 }
 
+impl Serialize for ProcessorCharacteristics {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("ProcessorCharacteristics", 10)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("unknown", &self.unknown())?;
+        state.serialize_field("bit_64capable", &self.bit_64capable())?;
+        state.serialize_field("multi_core", &self.multi_core())?;
+        state.serialize_field("hardware_thread", &self.hardware_thread())?;
+        state.serialize_field("execute_protection", &self.execute_protection())?;
+        state.serialize_field("enhanced_virtualization", &self.enhanced_virtualization())?;
+        state.serialize_field(
+            "power_performance_control",
+            &self.power_performance_control(),
+        )?;
+        state.serialize_field("bit_128capable", &self.bit_128capable())?;
+        state.serialize_field("arm_64soc_id", &self.arm_64soc_id())?;
+        state.end()
+    }
+}
+
 /// # Processor Voltage
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub enum ProcessorVoltage {
     /// Current Processor Voltage
     CurrentVolts(f32),
@@ -1554,8 +1675,20 @@ impl fmt::Debug for ProcessorSupportedVoltages {
     }
 }
 
+impl Serialize for ProcessorSupportedVoltages {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("ProcessorSupportedVoltages", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("voltages", &self.voltages().as_slice())?;
+        state.end()
+    }
+}
+
 /// External Clock Frequency in MHz
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub enum ProcessorExternalClock {
     /// The value is unknown
     Unknown,
@@ -1573,7 +1706,7 @@ impl From<u16> for ProcessorExternalClock {
 }
 
 /// Processor Speed in MHz
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub enum ProcessorSpeed {
     /// The value is unknown
     Unknown,
@@ -1633,8 +1766,21 @@ impl fmt::Debug for ProcessorStatus {
     }
 }
 
+impl Serialize for ProcessorStatus {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("ProcessorStatus", 3)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("socket_populated", &self.socket_populated())?;
+        state.serialize_field("cpu_status", &self.cpu_status())?;
+        state.end()
+    }
+}
+
 /// CPU Status
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum CpuStatus {
     /// 0h – Unknown
     Unknown,
@@ -1667,7 +1813,7 @@ impl From<u8> for CpuStatus {
 }
 
 /// Processor Core Count
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub enum CoreCount {
     /// The value is unknown
     Unknown,
@@ -1689,7 +1835,7 @@ impl From<u8> for CoreCount {
 }
 
 /// Processor Core Count #2
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub enum CoreCount2 {
     /// The value is unknown
     Unknown,
@@ -1710,7 +1856,7 @@ impl From<u16> for CoreCount2 {
 }
 
 /// Processor Cores Enabled
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub enum CoresEnabled {
     /// The value is unknown
     Unknown,
@@ -1732,7 +1878,7 @@ impl From<u8> for CoresEnabled {
 }
 
 /// Processor Cores Enabled #2
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub enum CoresEnabled2 {
     /// The value is unknown
     Unknown,
@@ -1753,7 +1899,7 @@ impl From<u16> for CoresEnabled2 {
 }
 
 /// Processor Thread Count
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub enum ThreadCount {
     /// The value is unknown
     Unknown,
@@ -1775,7 +1921,7 @@ impl From<u8> for ThreadCount {
 }
 
 /// Processor Thread Count #2
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub enum ThreadCount2 {
     /// The value is unknown
     Unknown,

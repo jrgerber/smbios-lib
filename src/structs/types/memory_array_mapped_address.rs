@@ -1,5 +1,6 @@
 use crate::core::{Handle, UndefinedStruct};
 use crate::SMBiosStruct;
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 
 /// # Memory Array Mapped Address (Type 19)
@@ -113,6 +114,29 @@ impl fmt::Debug for SMBiosMemoryArrayMappedAddress<'_> {
             )
             .field("extended_ending_address", &self.extended_ending_address())
             .finish()
+    }
+}
+
+impl Serialize for SMBiosMemoryArrayMappedAddress<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosMemoryArrayMappedAddress", 7)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("starting_address", &self.starting_address())?;
+        state.serialize_field("ending_address", &self.ending_address())?;
+        state.serialize_field(
+            "physical_memory_array_handle",
+            &self.physical_memory_array_handle(),
+        )?;
+        state.serialize_field("partition_width", &self.partition_width())?;
+        state.serialize_field(
+            "extended_starting_address",
+            &self.extended_starting_address(),
+        )?;
+        state.serialize_field("extended_ending_address", &self.extended_ending_address())?;
+        state.end()
     }
 }
 

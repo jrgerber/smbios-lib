@@ -179,6 +179,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let file_option = "f";
     let output_option = "o";
     let string_option = "s";
+    let json_option = "j";
 
     let args: Vec<String> = std::env::args().collect();
     let mut opts = getopts::Options::new();
@@ -190,12 +191,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "Only display the value of the DMI string identified by KEYWORD.",
         "KEYWORD",
     );
+    opts.optflag(json_option, "", "output in json format");
 
     let matches = opts.parse(&args[1..])?;
 
     if !matches.opt_present(file_option)
         && !matches.opt_present(output_option)
         && !matches.opt_present(string_option)
+        && !matches.opt_present(json_option)
     {
         println!("table_data: {:#?}", table_load_from_device()?);
         return Ok(());
@@ -224,6 +227,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("{}", output);
         }
         None => (),
+    }
+    if matches.opt_present(json_option) {
+        let smbios_data = table_load_from_device()?;
+        if let Ok(output) = serde_json::to_string(&smbios_data) {
+            println!("{}", output)
+        }
     }
 
     Ok(())

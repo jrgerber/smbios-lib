@@ -1,5 +1,6 @@
 use crate::core::{Handle, UndefinedStruct};
 use crate::structs::SMBiosStruct;
+use serde::{ser::SerializeSeq, ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 
 /// # Additional Information Entry contained within [SMBiosAdditionalInformation]
@@ -79,6 +80,21 @@ impl fmt::Debug for AdditionalInformationEntry<'_> {
             .field("string", &self.string())
             .field("value", &self.value())
             .finish()
+    }
+}
+
+impl Serialize for AdditionalInformationEntry<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("AdditionalInformationEntry", 5)?;
+        state.serialize_field("entry_length", &self.entry_length())?;
+        state.serialize_field("referenced_handle", &self.referenced_handle())?;
+        state.serialize_field("referenced_offset", &self.referenced_offset())?;
+        state.serialize_field("string", &self.string())?;
+        state.serialize_field("value", &self.value())?;
+        state.end()
     }
 }
 
@@ -171,6 +187,20 @@ impl<'a> fmt::Debug for AdditionalInformationEntryIterator<'a> {
     }
 }
 
+impl<'a> Serialize for AdditionalInformationEntryIterator<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let entries: Vec<AdditionalInformationEntry<'_>> = self.into_iter().collect();
+        let mut seq = serializer.serialize_seq(Some(entries.len()))?;
+        for e in entries {
+            seq.serialize_element(&e)?;
+        }
+        seq.end()
+    }
+}
+
 /// # Additional Information (Type 40)
 ///
 /// This structure is intended to provide additional information for handling unspecified enumerated values
@@ -214,6 +244,19 @@ impl fmt::Debug for SMBiosAdditionalInformation<'_> {
             .field("number_of_entries", &self.number_of_entries())
             .field("entry_iterator", &self.entry_iterator())
             .finish()
+    }
+}
+
+impl Serialize for SMBiosAdditionalInformation<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosAdditionalInformation", 3)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("number_of_entries", &self.number_of_entries())?;
+        state.serialize_field("entry_iterator", &self.entry_iterator())?;
+        state.end()
     }
 }
 

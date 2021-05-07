@@ -2,6 +2,7 @@ use crate::{
     MemoryErrorGranularityData, MemoryErrorOperationData, MemoryErrorTypeData, SMBiosStruct,
     UndefinedStruct,
 };
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 
 /// # 64-Bit Memory Error Information (Type 33)
@@ -103,6 +104,27 @@ impl fmt::Debug for SMBiosMemoryErrorInformation64<'_> {
             .field("device_error_address", &self.device_error_address())
             .field("error_resolution", &self.error_resolution())
             .finish()
+    }
+}
+
+impl Serialize for SMBiosMemoryErrorInformation64<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosMemoryErrorInformation64", 8)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("error_type", &self.error_type())?;
+        state.serialize_field("error_granularity", &self.error_granularity())?;
+        state.serialize_field("error_operation", &self.error_operation())?;
+        state.serialize_field("vendor_syndrome", &self.vendor_syndrome())?;
+        state.serialize_field(
+            "memory_array_error_address",
+            &self.memory_array_error_address(),
+        )?;
+        state.serialize_field("device_error_address", &self.device_error_address())?;
+        state.serialize_field("error_resolution", &self.error_resolution())?;
+        state.end()
     }
 }
 

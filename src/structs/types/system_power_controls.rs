@@ -1,4 +1,5 @@
 use crate::{SMBiosStruct, UndefinedStruct};
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 
 /// # System Power Controls (Type 25)
@@ -97,6 +98,37 @@ impl fmt::Debug for SMBiosSystemPowerControls<'_> {
                 &self.next_scheduled_power_on_second(),
             )
             .finish()
+    }
+}
+
+impl Serialize for SMBiosSystemPowerControls<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosSystemPowerControls", 6)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field(
+            "next_scheduled_power_on_month",
+            &self.next_scheduled_power_on_month(),
+        )?;
+        state.serialize_field(
+            "next_scheduled_power_on_day_of_month",
+            &self.next_scheduled_power_on_day_of_month(),
+        )?;
+        state.serialize_field(
+            "next_scheduled_power_on_hour",
+            &self.next_scheduled_power_on_hour(),
+        )?;
+        state.serialize_field(
+            "next_scheduled_power_on_minute",
+            &self.next_scheduled_power_on_minute(),
+        )?;
+        state.serialize_field(
+            "next_scheduled_power_on_second",
+            &self.next_scheduled_power_on_second(),
+        )?;
+        state.end()
     }
 }
 

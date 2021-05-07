@@ -1,4 +1,5 @@
 use crate::{SMBiosStruct, UndefinedStruct};
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 
 /// # Electrical Current Probe (Type 29)
@@ -90,6 +91,26 @@ impl fmt::Debug for SMBiosElectricalCurrentProbe<'_> {
     }
 }
 
+impl Serialize for SMBiosElectricalCurrentProbe<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosElectricalCurrentProbe", 10)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("description", &self.description())?;
+        state.serialize_field("location_and_status", &self.location_and_status())?;
+        state.serialize_field("maximum_value", &self.maximum_value())?;
+        state.serialize_field("minimum_value", &self.minimum_value())?;
+        state.serialize_field("resolution", &self.resolution())?;
+        state.serialize_field("tolerance", &self.tolerance())?;
+        state.serialize_field("accuracy", &self.accuracy())?;
+        state.serialize_field("oem_defined", &self.oem_defined())?;
+        state.serialize_field("nominal_value", &self.nominal_value())?;
+        state.end()
+    }
+}
+
 /// # Electrical Current Probe Location and Status
 #[derive(PartialEq, Eq)]
 pub struct CurrentProbeLocationAndStatus {
@@ -116,8 +137,21 @@ impl fmt::Debug for CurrentProbeLocationAndStatus {
     }
 }
 
+impl Serialize for CurrentProbeLocationAndStatus {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("CurrentProbeLocationAndStatus", 3)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("status", &self.status)?;
+        state.serialize_field("location", &self.location)?;
+        state.end()
+    }
+}
+
 /// # Electrical Current Probe Status
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum CurrentProbeStatus {
     /// Other
     Other,
@@ -136,7 +170,7 @@ pub enum CurrentProbeStatus {
 }
 
 /// # Electrical Current Probe Location
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum CurrentProbeLocation {
     /// Other
     Other,

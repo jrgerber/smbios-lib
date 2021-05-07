@@ -1,4 +1,5 @@
 use crate::{SMBiosStruct, UndefinedStruct};
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 
 /// # Hardware Security (Type 24)
@@ -45,6 +46,21 @@ impl fmt::Debug for SMBiosHardwareSecurity<'_> {
     }
 }
 
+impl Serialize for SMBiosHardwareSecurity<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosHardwareSecurity", 2)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field(
+            "hardware_security_settings",
+            &self.hardware_security_settings(),
+        )?;
+        state.end()
+    }
+}
+
 /// # Hardware Security Settings
 #[derive(PartialEq, Eq)]
 pub struct HardwareSecuritySettings {
@@ -75,8 +91,26 @@ impl fmt::Debug for HardwareSecuritySettings {
     }
 }
 
+impl Serialize for HardwareSecuritySettings {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("HardwareSecuritySettings", 5)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("power_on_password_status", &self.power_on_password_status)?;
+        state.serialize_field("keyboard_password_status", &self.keyboard_password_status)?;
+        state.serialize_field(
+            "administrator_password_status",
+            &self.administrator_password_status,
+        )?;
+        state.serialize_field("front_panel_reset_status", &self.front_panel_reset_status)?;
+        state.end()
+    }
+}
+
 /// # Hardware Security Status
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum HardwareSecurityStatus {
     /// Disabled
     Disabled,

@@ -1,4 +1,5 @@
 use crate::{Header, UndefinedStruct};
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 
 /// # OEM or Unknown Structure
@@ -37,6 +38,21 @@ impl fmt::Debug for SMBiosUnknown<'_> {
             .field("fields", &fields)
             .field("strings", &self.parts.strings)
             .finish()
+    }
+}
+
+impl Serialize for SMBiosUnknown<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let fields = &self.parts.fields[Header::SIZE..];
+
+        let mut state = serializer.serialize_struct("SMBiosUnknown", 3)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("fields", &fields)?;
+        state.serialize_field("strings", &self.parts.strings)?;
+        state.end()
     }
 }
 

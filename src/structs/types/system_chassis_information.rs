@@ -1,5 +1,6 @@
 use crate::core::UndefinedStruct;
 use crate::{BoardTypeData, SMBiosStruct, SMBiosType};
+use serde::{ser::SerializeSeq, ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 use std::ops::Deref;
 
@@ -209,8 +210,38 @@ impl fmt::Debug for SMBiosSystemChassisInformation<'_> {
     }
 }
 
+impl Serialize for SMBiosSystemChassisInformation<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosSystemChassisInformation", 17)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("manufacturer", &self.manufacturer())?;
+        state.serialize_field("chassis_type", &self.chassis_type())?;
+        state.serialize_field("version", &self.version())?;
+        state.serialize_field("serial_number", &self.serial_number())?;
+        state.serialize_field("asset_tag_number", &self.asset_tag_number())?;
+        state.serialize_field("bootup_state", &self.bootup_state())?;
+        state.serialize_field("power_supply_state", &self.power_supply_state())?;
+        state.serialize_field("thermal_state", &self.thermal_state())?;
+        state.serialize_field("security_status", &self.security_status())?;
+        state.serialize_field("oem_defined", &self.oem_defined())?;
+        state.serialize_field("height", &self.height())?;
+        state.serialize_field("number_of_power_cords", &self.number_of_power_cords())?;
+        state.serialize_field("contained_element_count", &self.contained_element_count())?;
+        state.serialize_field(
+            "contained_element_record_length",
+            &self.contained_element_record_length(),
+        )?;
+        state.serialize_field("contained_elements", &self.contained_elements())?;
+        state.serialize_field("sku_number", &self.sku_number())?;
+        state.end()
+    }
+}
+
 /// # Chassis Height
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub enum ChassisHeight {
     /// A chassis enclosure height is not specified.
     Unspecified,
@@ -232,7 +263,7 @@ impl From<u8> for ChassisHeight {
 }
 
 /// # Number of Power Cords
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub enum PowerCords {
     /// The number of power cords is not specified.
     Unspecified,
@@ -257,9 +288,9 @@ pub struct ChassisTypeData {
     /// This is most likely to occur when the standard was updated but
     /// this library code has not been updated to match the current
     /// standard.
-    raw: u8,
+    pub raw: u8,
     /// The contained [ChassisType] value
-    value: ChassisType,
+    pub value: ChassisType,
 }
 
 impl fmt::Debug for ChassisTypeData {
@@ -271,9 +302,24 @@ impl fmt::Debug for ChassisTypeData {
     }
 }
 
+impl Serialize for ChassisTypeData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("ChassisTypeData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
 impl fmt::Display for ChassisTypeData {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "raw: {}, value: {:?}", &self.raw, &self.value)
+        match &self.value {
+            ChassisType::None => write!(f, "{}", &self.raw),
+            _ => write!(f, "{:?}", &self.value),
+        }
     }
 }
 
@@ -286,7 +332,7 @@ impl Deref for ChassisTypeData {
 }
 
 /// # Chassis Type
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum ChassisType {
     /// Other
     Other,
@@ -433,6 +479,18 @@ impl fmt::Debug for ChassisStateData {
     }
 }
 
+impl Serialize for ChassisStateData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("ChassisStateData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
 impl Deref for ChassisStateData {
     type Target = ChassisState;
 
@@ -442,7 +500,7 @@ impl Deref for ChassisStateData {
 }
 
 /// # Chassis Statue
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum ChassisState {
     /// Other
     Other,
@@ -499,6 +557,18 @@ impl fmt::Debug for ChassisSecurityStatusData {
     }
 }
 
+impl Serialize for ChassisSecurityStatusData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("ChassisSecurityStatusData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
 impl Deref for ChassisSecurityStatusData {
     type Target = ChassisSecurityStatus;
 
@@ -508,7 +578,7 @@ impl Deref for ChassisSecurityStatusData {
 }
 
 /// # Chassis Security Status
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum ChassisSecurityStatus {
     /// Other
     Other,
@@ -582,6 +652,20 @@ impl<'a> fmt::Debug for ContainedElements<'a> {
     }
 }
 
+impl<'a> Serialize for ContainedElements<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let elements: Vec<ChassisElement<'_>> = self.into_iter().collect();
+        let mut seq = serializer.serialize_seq(Some(elements.len()))?;
+        for e in elements {
+            seq.serialize_element(&e)?;
+        }
+        seq.end()
+    }
+}
+
 /// # Contained Chassis Element
 pub struct ChassisElement<'a> {
     /// Raw byte slice for this chassis element
@@ -629,8 +713,22 @@ impl fmt::Debug for ChassisElement<'_> {
     }
 }
 
+impl Serialize for ChassisElement<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("ChassisElement", 4)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("element_type", &self.element_type())?;
+        state.serialize_field("element_minimum", &self.element_minimum())?;
+        state.serialize_field("element_maximum", &self.element_maximum())?;
+        state.end()
+    }
+}
+
 /// # Contained Element Type
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub enum ElementType {
     /// SMBIOS Baseboard Type enumeration
     BaseboardType(BoardTypeData),
@@ -653,7 +751,7 @@ impl From<u8> for ElementType {
 /// Specifies the minimum number of the 'element_type' that can be
 /// installed in the chassis for the chassis to properly operate,
 /// in the range 0 to 254.
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub enum ElementMinimum {
     /// Specifies the minimum number of the 'element_type' that can be
     /// installed in the chassis for the chassis to properly operate,
@@ -676,7 +774,7 @@ impl From<u8> for ElementMinimum {
 ///
 /// Specifies the minimum number of the 'element_type' that can be
 /// installed in the chassis in the range 0 to 254.
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub enum ElementMaximum {
     /// Specifies the maximum number of the 'element_type' that can be
     /// installed in the chassis for the chassis to properly operate,
@@ -751,6 +849,20 @@ impl<'a> fmt::Debug for ContainedElementsIterator<'a> {
         fmt.debug_list()
             .entries(self.contained_elements.into_iter())
             .finish()
+    }
+}
+
+impl<'a> Serialize for ContainedElementsIterator<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let elements: Vec<ChassisElement<'_>> = self.contained_elements.into_iter().collect();
+        let mut seq = serializer.serialize_seq(Some(elements.len()))?;
+        for e in elements {
+            seq.serialize_element(&e)?;
+        }
+        seq.end()
     }
 }
 

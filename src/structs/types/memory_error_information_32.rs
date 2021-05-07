@@ -1,4 +1,5 @@
 use crate::{SMBiosStruct, UndefinedStruct};
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 use std::ops::Deref;
 
@@ -101,6 +102,27 @@ impl fmt::Debug for SMBiosMemoryErrorInformation32<'_> {
     }
 }
 
+impl Serialize for SMBiosMemoryErrorInformation32<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosMemoryErrorInformation32", 8)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("error_type", &self.error_type())?;
+        state.serialize_field("error_granularity", &self.error_granularity())?;
+        state.serialize_field("error_operation", &self.error_operation())?;
+        state.serialize_field("vendor_syndrome", &self.vendor_syndrome())?;
+        state.serialize_field(
+            "memory_array_error_address",
+            &self.memory_array_error_address(),
+        )?;
+        state.serialize_field("device_error_address", &self.device_error_address())?;
+        state.serialize_field("error_resolution", &self.error_resolution())?;
+        state.end()
+    }
+}
+
 /// # Memory Error - Error Type Data
 pub struct MemoryErrorTypeData {
     /// Raw value
@@ -123,6 +145,27 @@ impl fmt::Debug for MemoryErrorTypeData {
     }
 }
 
+impl Serialize for MemoryErrorTypeData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("MemoryErrorTypeData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
+impl fmt::Display for MemoryErrorTypeData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.value {
+            MemoryErrorType::None => write!(f, "{}", &self.raw),
+            _ => write!(f, "{:?}", &self.value),
+        }
+    }
+}
+
 impl Deref for MemoryErrorTypeData {
     type Target = MemoryErrorType;
 
@@ -132,7 +175,7 @@ impl Deref for MemoryErrorTypeData {
 }
 
 /// # Memory Error - Error Type
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum MemoryErrorType {
     /// Other
     Other,
@@ -213,6 +256,18 @@ impl fmt::Debug for MemoryErrorGranularityData {
     }
 }
 
+impl Serialize for MemoryErrorGranularityData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("MemoryErrorGranularityData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
 impl Deref for MemoryErrorGranularityData {
     type Target = MemoryErrorGranularity;
 
@@ -222,7 +277,7 @@ impl Deref for MemoryErrorGranularityData {
 }
 
 /// # Memory Error - Error Granularity
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum MemoryErrorGranularity {
     /// Other
     Other,
@@ -273,6 +328,18 @@ impl fmt::Debug for MemoryErrorOperationData {
     }
 }
 
+impl Serialize for MemoryErrorOperationData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("MemoryErrorOperationData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
 impl Deref for MemoryErrorOperationData {
     type Target = MemoryErrorOperation;
 
@@ -282,7 +349,7 @@ impl Deref for MemoryErrorOperationData {
 }
 
 /// # Memory Error - Error Operation
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum MemoryErrorOperation {
     /// Other
     Other,

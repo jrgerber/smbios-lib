@@ -1,5 +1,6 @@
 use crate::core::{Handle, UndefinedStruct};
 use crate::SMBiosStruct;
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 use std::ops::Deref;
 
@@ -367,6 +368,70 @@ impl fmt::Debug for SMBiosMemoryDevice<'_> {
     }
 }
 
+impl Serialize for SMBiosMemoryDevice<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosMemoryDevice", 36)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field(
+            "physical_memory_array_handle",
+            &self.physical_memory_array_handle(),
+        )?;
+        state.serialize_field(
+            "memory_error_information_handle",
+            &self.memory_error_information_handle(),
+        )?;
+        state.serialize_field("total_width", &self.total_width())?;
+        state.serialize_field("data_width", &self.data_width())?;
+        state.serialize_field("size", &self.size())?;
+        state.serialize_field("form_factor", &self.form_factor())?;
+        state.serialize_field("device_set", &self.device_set())?;
+        state.serialize_field("device_locator", &self.device_locator())?;
+        state.serialize_field("bank_locator", &self.bank_locator())?;
+        state.serialize_field("memory_type", &self.memory_type())?;
+        state.serialize_field("type_detail", &self.type_detail())?;
+        state.serialize_field("speed", &self.speed())?;
+        state.serialize_field("manufacturer", &self.manufacturer())?;
+        state.serialize_field("serial_number", &self.serial_number())?;
+        state.serialize_field("asset_tag", &self.asset_tag())?;
+        state.serialize_field("part_number", &self.part_number())?;
+        state.serialize_field("attributes", &self.attributes())?;
+        state.serialize_field("extended_size", &self.extended_size())?;
+        state.serialize_field("configured_memory_speed", &self.configured_memory_speed())?;
+        state.serialize_field("minimum_voltage", &self.minimum_voltage())?;
+        state.serialize_field("maximum_voltage", &self.maximum_voltage())?;
+        state.serialize_field("configured_voltage", &self.configured_voltage())?;
+        state.serialize_field("memory_technology", &self.memory_technology())?;
+        state.serialize_field(
+            "memory_operating_mode_capability",
+            &self.memory_operating_mode_capability(),
+        )?;
+        state.serialize_field("firmware_version", &self.firmware_version())?;
+        state.serialize_field("module_manufacturer_id", &self.module_manufacturer_id())?;
+        state.serialize_field("module_product_id", &self.module_product_id())?;
+        state.serialize_field(
+            "memory_subsystem_controller_manufacturer_id",
+            &self.memory_subsystem_controller_manufacturer_id(),
+        )?;
+        state.serialize_field(
+            "memory_subsystem_controller_product_id",
+            &self.memory_subsystem_controller_product_id(),
+        )?;
+        state.serialize_field("non_volatile_size", &self.non_volatile_size())?;
+        state.serialize_field("volatile_size", &self.volatile_size())?;
+        state.serialize_field("cache_size", &self.cache_size())?;
+        state.serialize_field("logical_size", &self.logical_size())?;
+        state.serialize_field("extended_speed", &self.extended_speed())?;
+        state.serialize_field(
+            "extended_configured_memory_speed",
+            &self.extended_configured_memory_speed(),
+        )?;
+        state.end()
+    }
+}
+
 /// # Memory Device - Type Data
 #[derive(PartialEq, Eq)]
 pub struct MemoryDeviceTypeData {
@@ -390,6 +455,27 @@ impl fmt::Debug for MemoryDeviceTypeData {
     }
 }
 
+impl Serialize for MemoryDeviceTypeData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("MemoryDeviceTypeData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
+impl fmt::Display for MemoryDeviceTypeData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.value {
+            MemoryDeviceType::None => write!(f, "{}", &self.raw),
+            _ => write!(f, "{:?}", &self.value),
+        }
+    }
+}
+
 impl Deref for MemoryDeviceTypeData {
     type Target = MemoryDeviceType;
 
@@ -399,7 +485,7 @@ impl Deref for MemoryDeviceTypeData {
 }
 
 /// # Memory Device -Type
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum MemoryDeviceType {
     /// Other
     Other,
@@ -534,6 +620,18 @@ impl fmt::Debug for MemoryFormFactorData {
     }
 }
 
+impl Serialize for MemoryFormFactorData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("MemoryFormFactorData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
 impl Deref for MemoryFormFactorData {
     type Target = MemoryFormFactor;
 
@@ -543,7 +641,7 @@ impl Deref for MemoryFormFactorData {
 }
 
 /// # Memory Device — Form Factor
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum MemoryFormFactor {
     /// Other
     Other,
@@ -729,6 +827,32 @@ impl fmt::Debug for MemoryTypeDetails {
     }
 }
 
+impl Serialize for MemoryTypeDetails {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("MemoryTypeDetails", 16)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("other", &self.other())?;
+        state.serialize_field("unknown", &self.unknown())?;
+        state.serialize_field("fast_paged", &self.fast_paged())?;
+        state.serialize_field("static_column", &self.static_column())?;
+        state.serialize_field("pseudo_static", &self.pseudo_static())?;
+        state.serialize_field("ram_bus", &self.ram_bus())?;
+        state.serialize_field("synchronous", &self.synchronous())?;
+        state.serialize_field("cmos", &self.cmos())?;
+        state.serialize_field("edo", &self.edo())?;
+        state.serialize_field("window_dram", &self.window_dram())?;
+        state.serialize_field("cache_dram", &self.cache_dram())?;
+        state.serialize_field("non_volatile", &self.non_volatile())?;
+        state.serialize_field("registered", &self.registered())?;
+        state.serialize_field("unbuffered", &self.unbuffered())?;
+        state.serialize_field("lrdimm", &self.lrdimm())?;
+        state.end()
+    }
+}
+
 /// # Memory Device — Memory Technology Data
 pub struct MemoryDeviceTechnologyData {
     /// Raw value
@@ -751,6 +875,18 @@ impl fmt::Debug for MemoryDeviceTechnologyData {
     }
 }
 
+impl Serialize for MemoryDeviceTechnologyData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("MemoryDeviceTechnologyData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
 impl Deref for MemoryDeviceTechnologyData {
     type Target = MemoryDeviceTechnology;
 
@@ -760,7 +896,7 @@ impl Deref for MemoryDeviceTechnologyData {
 }
 
 /// # Memory Device — Memory Technology
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum MemoryDeviceTechnology {
     /// Other
     Other,
@@ -865,8 +1001,30 @@ impl fmt::Debug for MemoryOperatingModeCapabilities {
     }
 }
 
+impl Serialize for MemoryOperatingModeCapabilities {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("MemoryOperatingModeCapabilities", 6)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("other", &self.other())?;
+        state.serialize_field("unknown", &self.unknown())?;
+        state.serialize_field("volatile_memory", &self.volatile_memory())?;
+        state.serialize_field(
+            "byte_accessible_persistent_memory",
+            &self.byte_accessible_persistent_memory(),
+        )?;
+        state.serialize_field(
+            "block_accessible_persistent_memory",
+            &self.block_accessible_persistent_memory(),
+        )?;
+        state.end()
+    }
+}
+
 /// # Speed of Memory
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub enum MemorySpeed {
     /// Memory Speed is Unknown
     Unknown,
@@ -887,7 +1045,7 @@ impl From<u16> for MemorySpeed {
 }
 
 /// # Size of Memory
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum MemorySize {
     /// No Memory Device Installed in the Socket
     NotInstalled,
@@ -928,7 +1086,7 @@ impl From<u16> for MemorySize {
 }
 
 /// # Size of Memory in Bytes
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub enum MemoryIndicatedSize {
     /// Memory Size is Unknown
     Unknown,

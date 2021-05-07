@@ -1,5 +1,6 @@
 use crate::core::{Handle, UndefinedStruct};
 use crate::SMBiosStruct;
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 
 /// # Management Device Component (Type 35)
@@ -60,6 +61,21 @@ impl fmt::Debug for SMBiosManagementDeviceComponent<'_> {
             .field("component_handle", &self.component_handle())
             .field("threshold_handle", &self.threshold_handle())
             .finish()
+    }
+}
+
+impl Serialize for SMBiosManagementDeviceComponent<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosManagementDeviceComponent", 5)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("description", &self.description())?;
+        state.serialize_field("management_device_handle", &self.management_device_handle())?;
+        state.serialize_field("component_handle", &self.component_handle())?;
+        state.serialize_field("threshold_handle", &self.threshold_handle())?;
+        state.end()
     }
 }
 

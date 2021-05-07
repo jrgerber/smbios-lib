@@ -1,4 +1,5 @@
 use crate::{SMBiosStruct, UndefinedStruct};
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 
 /// # System Boot Information (Type 32)
@@ -66,6 +67,18 @@ impl fmt::Debug for SMBiosSystemBootInformation<'_> {
     }
 }
 
+impl Serialize for SMBiosSystemBootInformation<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosSystemBootInformation", 2)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("boot_status_data", &self.boot_status_data())?;
+        state.end()
+    }
+}
+
 /// # Boot Status data of [SMBiosSystemBootInformation]
 pub struct SystemBootStatusData<'a> {
     /// Raw data
@@ -99,8 +112,19 @@ impl fmt::Debug for SystemBootStatusData<'_> {
     }
 }
 
+impl Serialize for SystemBootStatusData<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SystemBootStatusData", 1)?;
+        state.serialize_field("system_boot_status", &self.system_boot_status())?;
+        state.end()
+    }
+}
+
 /// # System Boot Status
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum SystemBootStatus {
     /// No errors detected
     NoErrors,

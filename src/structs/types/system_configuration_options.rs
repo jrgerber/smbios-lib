@@ -1,4 +1,5 @@
 use crate::{SMBiosStruct, Strings, UndefinedStruct};
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 
 /// # System Configuration Options (Type 12)
@@ -47,6 +48,19 @@ impl fmt::Debug for SMBiosSystemConfigurationOptions<'_> {
             .field("count", &self.count())
             .field("configuration_strings", &self.configuration_strings())
             .finish()
+    }
+}
+
+impl Serialize for SMBiosSystemConfigurationOptions<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SMBiosSystemConfigurationOptions", 3)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("count", &self.count())?;
+        state.serialize_field("configuration_strings", &self.configuration_strings())?;
+        state.end()
     }
 }
 

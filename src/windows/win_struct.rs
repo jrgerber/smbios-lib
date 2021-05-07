@@ -1,3 +1,4 @@
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::{
     convert::TryInto,
     fmt,
@@ -150,6 +151,22 @@ impl fmt::Debug for WinSMBiosData {
             .field("table_data_length", &self.table_data_length())
             .field("smbios_data", &self.smbios_data)
             .finish()
+    }
+}
+
+impl Serialize for WinSMBiosData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("WinSMBiosData", 6)?;
+            state.serialize_field("used20_calling_method", &self.used20_calling_method())?;
+            state.serialize_field("smbios_major_version", &self.smbios_major_version())?;
+            state.serialize_field("smbios_minor_version", &self.smbios_minor_version())?;
+            state.serialize_field("dmi_revision", &self.dmi_revision())?;
+            state.serialize_field("table_data_length", &self.table_data_length())?;
+            state.serialize_field("smbios_data", &self.smbios_data)?;
+            state.end()
     }
 }
 

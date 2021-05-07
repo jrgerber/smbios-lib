@@ -1,4 +1,5 @@
 use crate::{OnBoardDeviceType, SMBiosStruct, UndefinedStruct};
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 
 /// # Onboard Devices Extended Information (Type 41)
@@ -88,8 +89,26 @@ impl fmt::Debug for SMBiosOnboardDevicesExtendedInformation<'_> {
     }
 }
 
+impl Serialize for SMBiosOnboardDevicesExtendedInformation<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state =
+            serializer.serialize_struct("SMBiosOnboardDevicesExtendedInformation", 7)?;
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("reference_designation", &self.reference_designation())?;
+        state.serialize_field("device_type", &self.device_type())?;
+        state.serialize_field("device_type_instance", &self.device_type_instance())?;
+        state.serialize_field("segment_group_number", &self.segment_group_number())?;
+        state.serialize_field("bus_number", &self.bus_number())?;
+        state.serialize_field("device_function_number", &self.device_function_number())?;
+        state.end()
+    }
+}
+
 /// # Segment Group Number
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum SegmentGroupNumber {
     /// Single-Segment Topology (no group number)
     SingleSegment,
@@ -111,7 +130,7 @@ impl From<u16> for SegmentGroupNumber {
 }
 
 /// # Bus Number
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum BusNumber {
     /// Bus Number
     Number(u8),
@@ -130,7 +149,7 @@ impl From<u8> for BusNumber {
 }
 
 /// # Device/Function Number
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum DeviceFunctionNumber {
     /// Device/Function Number
     Number {

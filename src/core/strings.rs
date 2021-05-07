@@ -1,3 +1,4 @@
+use serde::{ser::SerializeSeq, Serialize, Serializer};
 use std::fmt;
 
 /// # SMBIOS Strings
@@ -103,5 +104,19 @@ impl IntoIterator for &Strings {
 impl fmt::Debug for Strings {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_list().entries(self.into_iter()).finish()
+    }
+}
+
+impl Serialize for Strings {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let strings: Vec<String> = self.into_iter().collect();
+        let mut seq = serializer.serialize_seq(Some(strings.len()))?;
+        for e in strings {
+            seq.serialize_element(&e)?;
+        }
+        seq.end()
     }
 }
