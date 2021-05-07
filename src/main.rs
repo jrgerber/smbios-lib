@@ -2,7 +2,7 @@ use std::{error::Error, fmt::Display, path::Path};
 
 use smbioslib::*;
 
-#[derive(Serialize, Debug)]
+#[derive(Debug)]
 enum BiosParseError {
     BiosVendorNotFound,
     BiosVersionNotFound,

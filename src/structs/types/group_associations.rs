@@ -219,8 +219,9 @@ impl<'a> Serialize for GroupAssociationItemIterator<'a> {
     where
         S: Serializer,
     {
-        let mut seq = serializer.serialize_seq(Some(self.count()))?;
-        for e in self {
+        let items: Vec<GroupAssociationItem<'_>> = self.into_iter().collect();
+        let mut seq = serializer.serialize_seq(Some(items.len()))?;
+        for e in items {
             seq.serialize_element(&e)?;
         }
         seq.end()

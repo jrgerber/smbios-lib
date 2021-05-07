@@ -308,8 +308,9 @@ impl<'a> Serialize for LoadHandlePairIterator<'a> {
     where
         S: Serializer,
     {
-        let mut seq = serializer.serialize_seq(Some(self.count()))?;
-        for e in self {
+        let pairs: Vec<LoadHandlePair<'_>> = self.into_iter().collect();
+        let mut seq = serializer.serialize_seq(Some(pairs.len()))?;
+        for e in pairs {
             seq.serialize_element(&e)?;
         }
         seq.end()

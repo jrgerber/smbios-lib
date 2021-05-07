@@ -693,8 +693,9 @@ impl<'a> Serialize for TypeDescriptorsIterator<'a> {
     where
         S: Serializer,
     {
-        let mut seq = serializer.serialize_seq(Some(self.count()))?;
-        for e in self.into_iter() {
+        let descriptors: Vec<EventLogTypeDescriptor<'_>> = self.descriptors.into_iter().collect();
+        let mut seq = serializer.serialize_seq(Some(descriptors.len()))?;
+        for e in descriptors {
             seq.serialize_element(&e)?;
         }
         seq.end()

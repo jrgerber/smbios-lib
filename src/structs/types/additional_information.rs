@@ -192,8 +192,9 @@ impl<'a> Serialize for AdditionalInformationEntryIterator<'a> {
     where
         S: Serializer,
     {
-        let mut seq = serializer.serialize_seq(Some(self.count()))?;
-        for e in self {
+        let entries: Vec<AdditionalInformationEntry<'_>> = self.into_iter().collect();
+        let mut seq = serializer.serialize_seq(Some(entries.len()))?;
+        for e in entries {
             seq.serialize_element(&e)?;
         }
         seq.end()

@@ -777,8 +777,9 @@ impl<'a> Serialize for ModuleHandleIterator<'a> {
     where
         S: Serializer,
     {
-        let mut seq = serializer.serialize_seq(Some(self.count()))?;
-        for e in self {
+        let handles: Vec<Handle> = self.into_iter().collect();
+        let mut seq = serializer.serialize_seq(Some(handles.len()))?;
+        for e in handles {
             seq.serialize_element(&e)?;
         }
         seq.end()
@@ -867,8 +868,9 @@ impl<'a> Serialize for ErrorCapabilitiesIterator<'a> {
     where
         S: Serializer,
     {
-        let mut seq = serializer.serialize_seq(Some(self.count()))?;
-        for e in self {
+        let capabilities: Vec<ErrorCorrectingCapabilities> = self.into_iter().collect();
+        let mut seq = serializer.serialize_seq(Some(capabilities.len()))?;
+        for e in capabilities {
             seq.serialize_element(&e)?;
         }
         seq.end()

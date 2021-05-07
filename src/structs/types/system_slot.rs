@@ -1138,8 +1138,9 @@ impl<'a> Serialize for SlotPeerGroupIterator<'a> {
     where
         S: Serializer,
     {
-        let mut seq = serializer.serialize_seq(Some(self.count()))?;
-        for e in self {
+        let groups: Vec<SlotPeerGroup<'_>> = self.into_iter().collect();
+        let mut seq = serializer.serialize_seq(Some(groups.len()))?;
+        for e in groups {
             seq.serialize_element(&e)?;
         }
         seq.end()

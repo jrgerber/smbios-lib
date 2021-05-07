@@ -112,8 +112,9 @@ impl Serialize for Strings {
     where
         S: Serializer,
     {
-        let mut seq = serializer.serialize_seq(Some(self.count()))?;
-        for e in self {
+        let strings: Vec<String> = self.into_iter().collect();
+        let mut seq = serializer.serialize_seq(Some(strings.len()))?;
+        for e in strings {
             seq.serialize_element(&e)?;
         }
         seq.end()

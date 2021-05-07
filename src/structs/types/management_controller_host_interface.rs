@@ -531,8 +531,9 @@ impl<'a> Serialize for ProtocolRecordIterator<'a> {
     where
         S: Serializer,
     {
-        let mut seq = serializer.serialize_seq(Some(self.count()))?;
-        for e in self {
+        let records: Vec<ProtocolRecord<'_>> = self.into_iter().collect();
+        let mut seq = serializer.serialize_seq(Some(records.len()))?;
+        for e in records {
             seq.serialize_element(&e)?;
         }
         seq.end()

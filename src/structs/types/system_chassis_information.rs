@@ -657,8 +657,9 @@ impl<'a> Serialize for ContainedElements<'a> {
     where
         S: Serializer,
     {
-        let mut seq = serializer.serialize_seq(Some(self.record_count))?;
-        for e in self {
+        let elements: Vec<ChassisElement<'_>> = self.into_iter().collect();
+        let mut seq = serializer.serialize_seq(Some(elements.len()))?;
+        for e in elements {
             seq.serialize_element(&e)?;
         }
         seq.end()
@@ -856,8 +857,9 @@ impl<'a> Serialize for ContainedElementsIterator<'a> {
     where
         S: Serializer,
     {
-        let mut seq = serializer.serialize_seq(Some(self.count()))?;
-        for e in self.into_iter() {
+        let elements: Vec<ChassisElement<'_>> = self.contained_elements.into_iter().collect();
+        let mut seq = serializer.serialize_seq(Some(elements.len()))?;
+        for e in elements {
             seq.serialize_element(&e)?;
         }
         seq.end()

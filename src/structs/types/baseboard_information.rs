@@ -405,8 +405,9 @@ impl<'a> Serialize for ObjectHandleIterator<'a> {
     where
         S: Serializer,
     {
-        let mut seq = serializer.serialize_seq(Some(self.count()))?;
-        for e in self {
+        let handles: Vec<Handle> = self.into_iter().collect();
+        let mut seq = serializer.serialize_seq(Some(handles.len()))?;
+        for e in handles {
             seq.serialize_element(&e)?;
         }
         seq.end()

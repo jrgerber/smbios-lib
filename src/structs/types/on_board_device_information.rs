@@ -310,8 +310,9 @@ impl<'a> Serialize for OnBoardDeviceIterator<'a> {
     where
         S: Serializer,
     {
-        let mut seq = serializer.serialize_seq(Some(self.count()))?;
-        for e in self {
+        let devices: Vec<OnBoardDevice<'_>> = self.into_iter().collect();
+        let mut seq = serializer.serialize_seq(Some(devices.len()))?;
+        for e in devices {
             seq.serialize_element(&e)?;
         }
         seq.end()
