@@ -250,7 +250,13 @@ pub enum BoardType {
 /// # Baseboard Features
 #[derive(PartialEq, Eq)]
 pub struct BaseboardFeatures {
-    raw: u8,
+    /// Raw value
+    ///
+    /// _raw_ is useful when there are values not yet defiend.
+    /// This is most likely to occur when the standard was updated but
+    /// this library code has not been updated to match the current
+    /// standard.
+    pub raw: u8,
 }
 
 impl Deref for BaseboardFeatures {
