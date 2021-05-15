@@ -183,7 +183,7 @@ impl Serialize for SMBiosData {
 }
 
 /// # Version of SMBIOS Structure
-#[derive(Debug, Eq, PartialEq, Serialize)]
+#[derive(Debug, Eq, PartialEq, Serialize, Clone, Copy)]
 pub struct SMBiosVersion {
     /// SMBIOS major version
     pub major: u8,
@@ -191,6 +191,17 @@ pub struct SMBiosVersion {
     pub minor: u8,
     /// SMBIOS version revision
     pub revision: u8,
+}
+
+impl SMBiosVersion {
+    /// Creates a new [SMBiosVersion] struct
+    pub fn new(major: u8, minor: u8, revision: u8) -> SMBiosVersion {
+        SMBiosVersion {
+            major,
+            minor,
+            revision,
+        }
+    }
 }
 
 impl Ord for SMBiosVersion {

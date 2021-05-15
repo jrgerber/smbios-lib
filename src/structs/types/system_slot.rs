@@ -213,9 +213,9 @@ pub struct SystemSlotTypeData {
     /// This is most likely to occur when the standard was updated but
     /// this library code has not been updated to match the current
     /// standard.
-    raw: u8,
+    pub raw: u8,
     /// The contained [SystemSlotType] value
-    value: SystemSlotType,
+    pub value: SystemSlotType,
 }
 
 impl Deref for SystemSlotTypeData {
@@ -761,7 +761,10 @@ pub enum SlotLength {
 /// # System Slot Characteristics 1
 #[derive(PartialEq, Eq)]
 pub struct SystemSlotCharacteristics1 {
-    raw: u8,
+    /// Raw value
+    ///
+    /// _raw_ is useful for masked comparisons.
+    pub raw: u8,
 }
 
 impl Deref for SystemSlotCharacteristics1 {
@@ -864,7 +867,13 @@ impl Serialize for SystemSlotCharacteristics1 {
 /// # System Slot Characteristics 2
 #[derive(PartialEq, Eq)]
 pub struct SystemSlotCharacteristics2 {
-    raw: u8,
+    /// Raw value
+    ///
+    /// _raw_ is useful when there are values not yet defiend.
+    /// This is most likely to occur when the standard was updated but
+    /// this library code has not been updated to match the current
+    /// standard.
+    pub raw: u8,
 }
 
 impl Deref for SystemSlotCharacteristics2 {

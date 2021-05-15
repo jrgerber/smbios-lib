@@ -280,6 +280,15 @@ impl From<u8> for PowerCords {
     }
 }
 
+/// # Chassis Lock Presence
+#[derive(Serialize, Debug)]
+pub enum ChassisLockPresence {
+    /// The enclosure has a lock.
+    Present,
+    /// Either a lock is not present or it is unknown if the enclosure has a lock.
+    NotPresent,
+}
+
 /// # Chassis Type Data
 pub struct ChassisTypeData {
     /// Raw value
@@ -291,6 +300,8 @@ pub struct ChassisTypeData {
     pub raw: u8,
     /// The contained [ChassisType] value
     pub value: ChassisType,
+    /// Chassis lock presence
+    pub lock_presence: ChassisLockPresence,
 }
 
 impl fmt::Debug for ChassisTypeData {
@@ -298,6 +309,7 @@ impl fmt::Debug for ChassisTypeData {
         fmt.debug_struct(std::any::type_name::<ChassisTypeData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
+            .field("lock_presence", &self.lock_presence)
             .finish()
     }
 }
@@ -310,6 +322,7 @@ impl Serialize for ChassisTypeData {
         let mut state = serializer.serialize_struct("ChassisTypeData", 2)?;
         state.serialize_field("raw", &self.raw)?;
         state.serialize_field("value", &self.value)?;
+        state.serialize_field("lock_presence", &self.lock_presence)?;
         state.end()
     }
 }
@@ -413,7 +426,7 @@ pub enum ChassisType {
 impl From<u8> for ChassisTypeData {
     fn from(raw: u8) -> Self {
         ChassisTypeData {
-            value: match raw {
+            value: match raw & 0x7F {
                 0x01 => ChassisType::Other,
                 0x02 => ChassisType::Unknown,
                 0x03 => ChassisType::Desktop,
@@ -453,6 +466,11 @@ impl From<u8> for ChassisTypeData {
                 _ => ChassisType::None,
             },
             raw,
+            lock_presence: if raw & 0x80 == 0x80 {
+                ChassisLockPresence::Present
+            } else {
+                ChassisLockPresence::NotPresent
+            },
         }
     }
 }
@@ -465,9 +483,9 @@ pub struct ChassisStateData {
     /// This is most likely to occur when the standard was updated but
     /// this library code has not been updated to match the current
     /// standard.
-    raw: u8,
+    pub raw: u8,
     /// The contained [ChassisState] value
-    value: ChassisState,
+    pub value: ChassisState,
 }
 
 impl fmt::Debug for ChassisStateData {
@@ -543,9 +561,9 @@ pub struct ChassisSecurityStatusData {
     /// This is most likely to occur when the standard was updated but
     /// this library code has not been updated to match the current
     /// standard.
-    raw: u8,
+    pub raw: u8,
     /// The contained [ChassisSecurityStatus] value
-    value: ChassisSecurityStatus,
+    pub value: ChassisSecurityStatus,
 }
 
 impl fmt::Debug for ChassisSecurityStatusData {
