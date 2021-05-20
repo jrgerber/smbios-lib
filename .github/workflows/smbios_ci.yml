@@ -1,4 +1,4 @@
-name: Linux
+name: smbioslib_ci
 
 on:
   push:
@@ -12,8 +12,11 @@ env:
 
 jobs:
   build:
-    if: ${{ github.event.label.name == 'ready for review' }} || github.event_name == 'push'
-    runs-on: ubuntu-latest
+    if: ${{ github.event.label.name == 'Ready for Review' }} || github.event_name == 'push'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
 
     steps:
     - uses: actions/checkout@v2

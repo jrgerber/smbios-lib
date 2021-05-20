@@ -184,7 +184,13 @@ impl<'a> Serialize for VendorId<'a> {
 /// # TPM Device Characteristics
 #[derive(PartialEq, Eq)]
 pub struct TpmDeviceCharacteristics {
-    raw: u64,
+    /// Raw value
+    ///
+    /// _raw_ is useful when there are values not yet defiend.
+    /// This is most likely to occur when the standard was updated but
+    /// this library code has not been updated to match the current
+    /// standard.
+    pub raw: u64,
 }
 
 impl Deref for TpmDeviceCharacteristics {
