@@ -268,6 +268,9 @@ impl From<u8> for SystemSlotTypeData {
                 0x23 => SystemSlotType::PciExpressMini76,
                 0x24 => SystemSlotType::PciExpressGen4Sff8639,
                 0x25 => SystemSlotType::PciExpressGen5Sff8639,
+                0x26 => SystemSlotType::OcpNic30SmallFormFactor,
+                0x27 => SystemSlotType::OcpNic30LargeFormFactor,
+                0x28 => SystemSlotType::OcpNicPriorTo30,
                 0x30 => SystemSlotType::CxlFlexbus1,
                 0xA0 => SystemSlotType::PC98C20,
                 0xA1 => SystemSlotType::PC98C24,
@@ -421,6 +424,12 @@ pub enum SystemSlotType {
     PciExpressGen4Sff8639,
     /// PCI Express Gen 5 SFF-8639 (U.2)
     PciExpressGen5Sff8639,
+    /// OCP NIC 3.0 Small Form Factor (SFF)
+    OcpNic30SmallFormFactor,
+    /// OCP NIC 3.0 Large Form Factor (LFF)
+    OcpNic30LargeFormFactor,
+    /// OCP NIC Prior to 3.0
+    OcpNicPriorTo30,
     /// CXL Flexbus 1.0 (deprecated, see note below)
     CxlFlexbus1,
     /// PC-98/C20
