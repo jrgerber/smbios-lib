@@ -229,88 +229,93 @@ impl Deref for SystemSlotTypeData {
 impl From<u8> for SystemSlotTypeData {
     /// System Slot Type
     fn from(raw: u8) -> Self {
+        use M2SlotType::*;
+        use MXMSlotType::*;
+        use PciExpressGeneration::*;
+        use PciExpressSlotWidth::*;
+        use SystemSlotType::*;
         SystemSlotTypeData {
             value: match raw {
-                0x01 => SystemSlotType::Other,
-                0x02 => SystemSlotType::Unknown,
-                0x03 => SystemSlotType::Isa,
-                0x04 => SystemSlotType::Mca,
-                0x05 => SystemSlotType::Eisa,
-                0x06 => SystemSlotType::Pci,
-                0x07 => SystemSlotType::Pcmcia,
-                0x08 => SystemSlotType::VlVesa,
-                0x09 => SystemSlotType::Proprietary,
-                0x0A => SystemSlotType::ProcessorCardSlot,
-                0x0B => SystemSlotType::ProprietaryMemoryCardSlot,
-                0x0C => SystemSlotType::IORiserCardSlot,
-                0x0D => SystemSlotType::NuBus,
-                0x0E => SystemSlotType::Pci66MhzCapable,
-                0x0F => SystemSlotType::Agp,
-                0x10 => SystemSlotType::Agp2x,
-                0x11 => SystemSlotType::Agp4x,
-                0x12 => SystemSlotType::PciX,
-                0x13 => SystemSlotType::Agp8X,
-                0x14 => SystemSlotType::M2Socket1DP,
-                0x15 => SystemSlotType::M2Socket1SD,
-                0x16 => SystemSlotType::M2Socket2,
-                0x17 => SystemSlotType::M2Socket3,
-                0x18 => SystemSlotType::MxmTypeI,
-                0x19 => SystemSlotType::MxmTypeII,
-                0x1A => SystemSlotType::MxmTypeIIIStandard,
-                0x1B => SystemSlotType::MxmTypeIIIHE,
-                0x1C => SystemSlotType::MxmTypeIV,
-                0x1D => SystemSlotType::Mxm3TypeA,
-                0x1E => SystemSlotType::Mxm3TypeB,
-                0x1F => SystemSlotType::PciExpressGen2Sff8639,
-                0x20 => SystemSlotType::PciExpressGen3Sff8639,
-                0x21 => SystemSlotType::PciExpressMini52WithKeepouts,
-                0x22 => SystemSlotType::PciExpressMini52WithoutKeepouts,
-                0x23 => SystemSlotType::PciExpressMini76,
-                0x24 => SystemSlotType::PciExpressGen4Sff8639,
-                0x25 => SystemSlotType::PciExpressGen5Sff8639,
-                0x26 => SystemSlotType::OcpNic30SmallFormFactor,
-                0x27 => SystemSlotType::OcpNic30LargeFormFactor,
-                0x28 => SystemSlotType::OcpNicPriorTo30,
-                0x30 => SystemSlotType::CxlFlexbus1,
-                0xA0 => SystemSlotType::PC98C20,
-                0xA1 => SystemSlotType::PC98C24,
-                0xA2 => SystemSlotType::PC98E,
-                0xA3 => SystemSlotType::PC98LocalBus,
-                0xA4 => SystemSlotType::PC98Card,
-                0xA5 => SystemSlotType::PciExpress,
-                0xA6 => SystemSlotType::PciExpressx1,
-                0xA7 => SystemSlotType::PciExpressx2,
-                0xA8 => SystemSlotType::PciExpressx4,
-                0xA9 => SystemSlotType::PciExpressx8,
-                0xAA => SystemSlotType::PciExpressx16,
-                0xAB => SystemSlotType::PciExpressGen2,
-                0xAC => SystemSlotType::PciExpressGen2x1,
-                0xAD => SystemSlotType::PciExpressGen2x2,
-                0xAE => SystemSlotType::PciExpressGen2x4,
-                0xAF => SystemSlotType::PciExpressGen2x8,
-                0xB0 => SystemSlotType::PciExpressGen2x16,
-                0xB1 => SystemSlotType::PciExpressGen3,
-                0xB2 => SystemSlotType::PciExpressGen3x1,
-                0xB3 => SystemSlotType::PciExpressGen3x2,
-                0xB4 => SystemSlotType::PciExpressGen3x4,
-                0xB5 => SystemSlotType::PciExpressGen3x8,
-                0xB6 => SystemSlotType::PciExpressGen3x16,
-                0xB8 => SystemSlotType::PciExpressGen4,
-                0xB9 => SystemSlotType::PciExpressGen4x1,
-                0xBA => SystemSlotType::PciExpressGen4x2,
-                0xBB => SystemSlotType::PciExpressGen4x4,
-                0xBC => SystemSlotType::PciExpressGen4x8,
-                0xBD => SystemSlotType::PciExpressGen4x16,
-                0xBE => SystemSlotType::PciExpressGen5,
-                0xBF => SystemSlotType::PciExpressGen5x1,
-                0xC0 => SystemSlotType::PciExpressGen5x2,
-                0xC1 => SystemSlotType::PciExpressGen5x4,
-                0xC2 => SystemSlotType::PciExpressGen5x8,
-                0xC3 => SystemSlotType::PciExpressGen5x16,
-                0xC4 => SystemSlotType::PciExpressGen6,
-                0xC5 => SystemSlotType::EnterpriseAndDataCenter1UE1,
-                0xC6 => SystemSlotType::EnterpriseAndDataCenter3InE3,
-                _ => SystemSlotType::None,
+                0x01 => Other,
+                0x02 => Unknown,
+                0x03 => Isa,
+                0x04 => Mca,
+                0x05 => Eisa,
+                0x06 => Pci,
+                0x07 => Pcmcia,
+                0x08 => VlVesa,
+                0x09 => Proprietary,
+                0x0A => ProcessorCardSlot,
+                0x0B => ProprietaryMemoryCardSlot,
+                0x0C => IORiserCardSlot,
+                0x0D => NuBus,
+                0x0E => Pci66MhzCapable,
+                0x0F => Agp(AgpSlotWidth::X1),
+                0x10 => Agp(AgpSlotWidth::X2),
+                0x11 => Agp(AgpSlotWidth::X4),
+                0x12 => PciX,
+                0x13 => Agp(AgpSlotWidth::X8),
+                0x14 => M2(M2Socket1DP),
+                0x15 => M2(M2Socket1SD),
+                0x16 => M2(M2Socket2),
+                0x17 => M2(M2Socket3),
+                0x18 => Mxm(MxmTypeI),
+                0x19 => Mxm(MxmTypeII),
+                0x1A => Mxm(MxmTypeIIIStandard),
+                0x1B => Mxm(MxmTypeIIIHE),
+                0x1C => Mxm(MxmTypeIV),
+                0x1D => Mxm(Mxm3TypeA),
+                0x1E => Mxm(Mxm3TypeB),
+                0x1F => PciExpress(PCIExpressGen2, Sff8639),
+                0x20 => PciExpress(PCIExpressGen3, Sff8639),
+                0x21 => PciExpress(Undefined, PciExpressMini52WithKeepouts),
+                0x22 => PciExpress(Undefined, PciExpressMini52WithoutKeepouts),
+                0x23 => PciExpress(Undefined, PciExpressMini76),
+                0x24 => PciExpress(PCIExpressGen4, Sff8639),
+                0x25 => PciExpress(PCIExpressGen5, Sff8639),
+                0x26 => OcpNic30SmallFormFactor,
+                0x27 => OcpNic30LargeFormFactor,
+                0x28 => OcpNicPriorTo30,
+                0x30 => CxlFlexbus1,
+                0xA0 => PC98C20,
+                0xA1 => PC98C24,
+                0xA2 => PC98E,
+                0xA3 => PC98LocalBus,
+                0xA4 => PC98Card,
+                0xA5 => PciExpress(PCIExpressGen1, UndefinedSlotWidth),
+                0xA6 => PciExpress(PCIExpressGen1, X1),
+                0xA7 => PciExpress(PCIExpressGen1, X2),
+                0xA8 => PciExpress(PCIExpressGen1, X4),
+                0xA9 => PciExpress(PCIExpressGen1, X8),
+                0xAA => PciExpress(PCIExpressGen1, X16),
+                0xAB => PciExpress(PCIExpressGen2, UndefinedSlotWidth),
+                0xAC => PciExpress(PCIExpressGen2, X1),
+                0xAD => PciExpress(PCIExpressGen2, X2),
+                0xAE => PciExpress(PCIExpressGen2, X4),
+                0xAF => PciExpress(PCIExpressGen2, X8),
+                0xB0 => PciExpress(PCIExpressGen2, X16),
+                0xB1 => PciExpress(PCIExpressGen3, UndefinedSlotWidth),
+                0xB2 => PciExpress(PCIExpressGen3, X1),
+                0xB3 => PciExpress(PCIExpressGen3, X2),
+                0xB4 => PciExpress(PCIExpressGen3, X4),
+                0xB5 => PciExpress(PCIExpressGen3, X8),
+                0xB6 => PciExpress(PCIExpressGen3, X16),
+                0xB8 => PciExpress(PCIExpressGen4, UndefinedSlotWidth),
+                0xB9 => PciExpress(PCIExpressGen4, X1),
+                0xBA => PciExpress(PCIExpressGen4, X2),
+                0xBB => PciExpress(PCIExpressGen4, X4),
+                0xBC => PciExpress(PCIExpressGen4, X8),
+                0xBD => PciExpress(PCIExpressGen4, X16),
+                0xBE => PciExpress(PCIExpressGen5, UndefinedSlotWidth),
+                0xBF => PciExpress(PCIExpressGen5, X1),
+                0xC0 => PciExpress(PCIExpressGen5, X2),
+                0xC1 => PciExpress(PCIExpressGen5, X4),
+                0xC2 => PciExpress(PCIExpressGen5, X8),
+                0xC3 => PciExpress(PCIExpressGen5, X16),
+                0xC4 => PciExpress(PCIExpressGen6, UndefinedSlotWidth),
+                0xC5 => EnterpriseAndDataCenter1UE1,
+                0xC6 => EnterpriseAndDataCenter3InE3,
+                _ => None,
             },
             raw,
         }
@@ -379,51 +384,13 @@ pub enum SystemSlotType {
     /// PCI – 66MHz Capable
     Pci66MhzCapable,
     /// AGP
-    Agp,
-    /// AGP 2X
-    Agp2x,
-    /// AGP 4X
-    Agp4x,
+    Agp(AgpSlotWidth),
+    /// MXM
+    Mxm(MXMSlotType),
     /// PCI-X
     PciX,
-    /// AGP 8X
-    Agp8X,
-    /// M.2 Socket 1-DP (Mechanical Key A)
-    M2Socket1DP,
-    /// M.2 Socket 1-SD (Mechanical Key E)
-    M2Socket1SD,
-    /// M.2 Socket 2 (Mechanical Key B)
-    M2Socket2,
-    /// M.2 Socket 3 (Mechanical Key M)
-    M2Socket3,
-    /// MXM Type I
-    MxmTypeI,
-    /// MXM Type II
-    MxmTypeII,
-    /// MXM Type III (standard connector)
-    MxmTypeIIIStandard,
-    /// MXM Type III (HE connector)
-    MxmTypeIIIHE,
-    /// MXM Type IV
-    MxmTypeIV,
-    /// MXM 3.0 Type A
-    Mxm3TypeA,
-    /// MXM 3.0 Type B
-    Mxm3TypeB,
-    /// PCI Express Gen 2 SFF-8639 (U.2)
-    PciExpressGen2Sff8639,
-    /// PCI Express Gen 3 SFF-8639 (U.2)
-    PciExpressGen3Sff8639,
-    /// PCI Express Mini 52-pin (CEM spec. 2.0) with bottom-side keep-outs. Use Slot Length field value 03h (short length) for "half-Mini card" -only support, 04h (long length) for "full-Mini card" or dual support.
-    PciExpressMini52WithKeepouts,
-    /// PCI Express Mini 52-pin (CEM spec. 2.0) without bottom-side keep-outs. Use Slot Length field value 03h (short length) for "half-Mini card" -only support, 04h (long length) for "full-Mini card" or dual support.
-    PciExpressMini52WithoutKeepouts,
-    /// PCI Express Mini 76-pin (CEM spec. 2.0) Corresponds to Display-Mini card.
-    PciExpressMini76,
-    /// PCI Express Gen 4 SFF-8639 (U.2)
-    PciExpressGen4Sff8639,
-    /// PCI Express Gen 5 SFF-8639 (U.2)
-    PciExpressGen5Sff8639,
+    /// M.2
+    M2(M2SlotType),
     /// OCP NIC 3.0 Small Form Factor (SFF)
     OcpNic30SmallFormFactor,
     /// OCP NIC 3.0 Large Form Factor (LFF)
@@ -442,74 +409,103 @@ pub enum SystemSlotType {
     PC98LocalBus,
     /// PC-98/Card
     PC98Card,
-    /// PCI Express (see note below)
-    PciExpress,
-    /// PCI Express x1
-    PciExpressx1,
-    /// PCI Express x2
-    PciExpressx2,
-    /// PCI Express x4
-    PciExpressx4,
-    /// PCI Express x8
-    PciExpressx8,
-    /// PCI Express x16
-    PciExpressx16,
-    /// PCI Express Gen 2 (see note below)
-    PciExpressGen2,
-    /// PCI Express Gen 2 x1
-    PciExpressGen2x1,
-    /// PCI Express Gen 2 x2
-    PciExpressGen2x2,
-    /// PCI Express Gen 2 x4
-    PciExpressGen2x4,
-    /// PCI Express Gen 2 x8
-    PciExpressGen2x8,
-    /// PCI Express Gen 2 x16
-    PciExpressGen2x16,
-    /// PCI Express Gen 3 (see note below)
-    PciExpressGen3,
-    /// PCI Express Gen 3 x1
-    PciExpressGen3x1,
-    /// PCI Express Gen 3 x2
-    PciExpressGen3x2,
-    /// PCI Express Gen 3 x4
-    PciExpressGen3x4,
-    /// PCI Express Gen 3 x8
-    PciExpressGen3x8,
-    /// PCI Express Gen 3 x16
-    PciExpressGen3x16,
-    /// PCI Express Gen 4 (see note below)
-    PciExpressGen4,
-    /// PCI Express Gen 4 x1
-    PciExpressGen4x1,
-    /// PCI Express Gen 4 x2
-    PciExpressGen4x2,
-    /// PCI Express Gen 4 x4
-    PciExpressGen4x4,
-    /// PCI Express Gen 4 x8
-    PciExpressGen4x8,
-    /// PCI Express Gen 4 x16
-    PciExpressGen4x16,
-    /// PCI Express Gen 5 (see note below)
-    PciExpressGen5,
-    /// PCI Express Gen 5 x1
-    PciExpressGen5x1,
-    /// PCI Express Gen 5 x2
-    PciExpressGen5x2,
-    /// PCI Express Gen 5 x4
-    PciExpressGen5x4,
-    /// PCI Express Gen 5 x8
-    PciExpressGen5x8,
-    /// PCI Express Gen 5 x16
-    PciExpressGen5x16,
-    /// PCI Express Gen 6 and Beyond (see Slot Information and Slot Physical Width fields for more details)
-    PciExpressGen6,
+    /// PCI Express
+    PciExpress(PciExpressGeneration, PciExpressSlotWidth),
     /// Enterprise and Datacenter 1U E1 Form Factor Slot (EDSFF E1.S, E1.L) E1 slot length is reported in Slot Length field (see section 7.10.4). E1 slot pitch is reported in Slot Pitch field (see section 7.10.12). See specifications SFF-TA-1006 and SFF-TA-1007 for more details on values for slot length and pitch.
     EnterpriseAndDataCenter1UE1,
     /// Enterprise and Datacenter 3" E3 Form Factor Slot (EDSFF E3.S, E3.L) E3 slot length is reported in Slot Length field (see section 7.10.4). E3 slot pitch is reported in Slot Pitch field (see section 7.10.12). See specification SFF-TA-1008 for details on values for slot length and pitch.
     EnterpriseAndDataCenter3InE3,
     /// A value unknown to this standard, check the raw value
     None,
+}
+
+/// The generation of PciExpress used by the slot.
+#[derive(Serialize, Debug, PartialEq, Eq)]
+pub enum PciExpressGeneration {
+    /// PCI Express Gen 1
+    PCIExpressGen1,
+    /// PCI Express Gen 2
+    PCIExpressGen2,
+    /// PCI Express Gen 3
+    PCIExpressGen3,
+    /// PCI Express Gen 4
+    PCIExpressGen4,
+    /// PCI Express Gen 5
+    PCIExpressGen5,
+    /// PCI Express Gen 6 and Beyond
+    PCIExpressGen6,
+    /// Undefined
+    Undefined,
+}
+
+/// The slot width of a PCI Express slot specified in the SystemSlotType
+#[derive(Serialize, Debug, PartialEq, Eq)]
+pub enum PciExpressSlotWidth {
+    /// An undefined slot width
+    UndefinedSlotWidth,
+    /// X1
+    X1,
+    /// X2
+    X2,
+    /// X4
+    X4,
+    /// X8
+    X8,
+    /// X16
+    X16,
+    /// Small form factor 639
+    Sff8639,
+    /// PCI Express Mini 52-pin (CEM spec. 2.0) with bottom-side keep-outs. Use Slot Length field value 03h (short length) for "half-Mini card" -only support, 04h (long length) for "full-Mini card" or dual support.
+    PciExpressMini52WithKeepouts,
+    /// PCI Express Mini 52-pin (CEM spec. 2.0) without bottom-side keep-outs. Use Slot Length field value 03h (short length) for "half-Mini card" -only support, 04h (long length) for "full-Mini card" or dual support.
+    PciExpressMini52WithoutKeepouts,
+    /// PCI Express Mini 76-pin (CEM spec. 2.0) Corresponds to Display-Mini card.
+    PciExpressMini76,
+}
+
+/// The slot width of an AGP slot specified in the SystemSlotType
+#[derive(Serialize, Debug, PartialEq, Eq)]
+pub enum AgpSlotWidth {
+    /// X1
+    X1,
+    /// X2
+    X2,
+    /// X4
+    X4,
+    /// X8
+    X8,
+}
+
+/// An MXM SlotType
+#[derive(Serialize, Debug, PartialEq, Eq)]
+pub enum MXMSlotType {
+    /// MXM Type I
+    MxmTypeI,
+    /// MXM Type II
+    MxmTypeII,
+    /// MXM Type III (standard connector)
+    MxmTypeIIIStandard,
+    /// MXM Type III (HE connector)
+    MxmTypeIIIHE,
+    /// MXM Type IV
+    MxmTypeIV,
+    /// MXM 3.0 Type A
+    Mxm3TypeA,
+    /// MXM 3.0 Type B
+    Mxm3TypeB,
+}
+
+/// An M.2 SlotType
+#[derive(Serialize, Debug, PartialEq, Eq)]
+pub enum M2SlotType {
+    /// M.2 Socket 1-DP (Mechanical Key A)
+    M2Socket1DP,
+    /// M.2 Socket 1-SD (Mechanical Key E)
+    M2Socket1SD,
+    /// M.2 Socket 2 (Mechanical Key B)
+    M2Socket2,
+    /// M.2 Socket 3 (Mechanical Key M)
+    M2Socket3,
 }
 
 /// # Data Bus Width Data
@@ -712,15 +708,16 @@ impl Deref for SlotLengthData {
 
 impl From<u8> for SlotLengthData {
     fn from(raw: u8) -> Self {
+        use SlotLength::*;
         SlotLengthData {
             value: match raw {
-                0x01 => SlotLength::Other,
-                0x02 => SlotLength::Unknown,
-                0x03 => SlotLength::ShortLength,
-                0x04 => SlotLength::LongLength,
-                0x05 => SlotLength::DriveFormFactor25,
-                0x06 => SlotLength::DriveFormFactor35,
-                _ => SlotLength::None,
+                0x01 => Other,
+                0x02 => Unknown,
+                0x03 => ShortLength,
+                0x04 => LongLength,
+                0x05 => DriveFormFactor25,
+                0x06 => DriveFormFactor35,
+                _ => None,
             },
             raw,
         }
@@ -1190,7 +1187,10 @@ mod tests {
 
         assert_eq!(
             *test_struct.system_slot_type().unwrap(),
-            SystemSlotType::PciExpress
+            SystemSlotType::PciExpress(
+                PciExpressGeneration::PCIExpressGen1,
+                PciExpressSlotWidth::UndefinedSlotWidth,
+            )
         );
 
         assert_eq!(*test_struct.slot_data_bus_width().unwrap(), SlotWidth::X16);
