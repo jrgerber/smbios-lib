@@ -6,7 +6,7 @@ use std::ops::Deref;
 
 /// # Memory Channel (Type 37)
 ///
-/// The information in this structure provides the correlation between a Memory Channel and its associated [SMBiosMemoryDevice]s.
+/// The information in this structure provides the correlation between a Memory Channel and its associated [super::SMBiosMemoryDevice]s.
 ///
 /// Each device presents one or more loads to the channel; the sum of all device loads cannot exceed the channel’s defined maximum.
 ///
@@ -45,7 +45,7 @@ impl<'a> SMBiosMemoryChannel<'a> {
         self.parts.get_field_byte(0x05)
     }
 
-    /// Number of [SMBiosMemoryDevice]s (Type 11h) that are
+    /// Number of [super::SMBiosMemoryDevice]s (Type 11h) that are
     /// associated with this channel
     ///
     /// This value also defines the number of Load/Handle pairs
@@ -54,7 +54,7 @@ impl<'a> SMBiosMemoryChannel<'a> {
         self.parts.get_field_byte(0x06)
     }
 
-    /// Load/Handle pairs defining the [SMBiosMemoryDevice]s
+    /// Load/Handle pairs defining the [super::SMBiosMemoryDevice]s
     /// associated with this memory channel.
     pub fn load_handle_pairs_iterator(&self) -> LoadHandlePairIterator<'_> {
         LoadHandlePairIterator::new(self)
@@ -192,14 +192,14 @@ impl<'a> LoadHandlePair<'a> {
         }
     }
 
-    /// Channel load provided by the [SMBiosMemoryDevice] associated with this channel
+    /// Channel load provided by the [super::SMBiosMemoryDevice] associated with this channel
     pub fn load(&self) -> Option<u8> {
         self.memory_channel
             .parts()
             .get_field_byte(self.entry_offset)
     }
 
-    /// Structure handle that identifies the [SMBiosMemoryDevice] associated with this channel
+    /// Structure handle that identifies the [super::SMBiosMemoryDevice] associated with this channel
     pub fn handle(&self) -> Option<Handle> {
         self.memory_channel
             .parts()

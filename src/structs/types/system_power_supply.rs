@@ -120,7 +120,7 @@ impl<'a> SMBiosSystemPowerSupply<'a> {
 
     /// Input voltage probe handle
     ///
-    /// Handle, or instance number, of a [SMBiosVoltageProbe] (Type 26)
+    /// Handle, or instance number, of a [super::SMBiosVoltageProbe] (Type 26)
     /// monitoring this power supply's input voltage
     ///
     /// A value of 0xFFFF indicates that no probe is provided
@@ -130,7 +130,7 @@ impl<'a> SMBiosSystemPowerSupply<'a> {
 
     /// Cooling device handle
     ///
-    /// Handle, or instance number, of a [SMBiosCoolingDevice] (Type
+    /// Handle, or instance number, of a [super::SMBiosCoolingDevice] (Type
     /// 27) associated with this power supply
     ///
     /// A value of 0xFFFF indicates that no cooling device is
@@ -141,7 +141,7 @@ impl<'a> SMBiosSystemPowerSupply<'a> {
 
     /// Input current probe handle
     ///
-    /// Handle, or instance number, of the [SMBiosElectricalCurrentProbe]
+    /// Handle, or instance number, of the [super::SMBiosElectricalCurrentProbe]
     /// (Type 29) monitoring this power supply’s input
     /// current
     ///

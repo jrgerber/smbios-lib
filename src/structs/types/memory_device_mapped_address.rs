@@ -28,7 +28,7 @@ impl<'a> SMBiosStruct<'a> for SMBiosMemoryDeviceMappedAddress<'a> {
 
 impl<'a> SMBiosMemoryDeviceMappedAddress<'a> {
     /// Physical address, in kilobytes, of a range of
-    /// memory mapped to the referenced [SMBiosMemoryDevice]
+    /// memory mapped to the referenced [super::SMBiosMemoryDevice]
     /// When the field value is FFFF FFFFh the actual
     /// address is stored in the Extended Starting
     /// Address field. When this field contains a valid
@@ -42,7 +42,7 @@ impl<'a> SMBiosMemoryDeviceMappedAddress<'a> {
 
     /// Physical ending address of the last kilobyte of a
     /// range of addresses mapped to the referenced
-    /// [SMBiosMemoryDevice]
+    /// [super::SMBiosMemoryDevice]
     /// When the field value is FFFF FFFFh the actual
     /// address is stored in the Extended Ending Address
     /// field. When this field contains a valid address,
@@ -53,10 +53,10 @@ impl<'a> SMBiosMemoryDeviceMappedAddress<'a> {
     }
 
     /// Handle, or instance number, associated with the
-    /// [SMBiosMemoryDevice] structure to which this address
+    /// [super::SMBiosMemoryDevice] structure to which this address
     /// range is mapped
     /// Multiple address ranges can be mapped to a
-    /// single [SMBiosMemoryDevice]
+    /// single [super::SMBiosMemoryDevice]
     pub fn memory_device_handle(&self) -> Option<Handle> {
         self.parts.get_field_handle(0xC)
     }
@@ -65,12 +65,12 @@ impl<'a> SMBiosMemoryDeviceMappedAddress<'a> {
     /// Memory Array Mapped Address structure to which
     /// this device address range is mapped
     /// Multiple address ranges can be mapped to a
-    /// single [SMBiosMemoryArrayMappedAddress].
+    /// single [super::SMBiosMemoryArrayMappedAddress].
     pub fn memory_array_mapped_address_handle(&self) -> Option<Handle> {
         self.parts.get_field_handle(0xE)
     }
 
-    /// Position of the referenced [SMBiosMemoryDevice] in a row
+    /// Position of the referenced [super::SMBiosMemoryDevice] in a row
     /// of the address partition
     /// For example, if two 8-bit devices form a 16-bit row,
     /// this field’s value is either 1 or 2.
@@ -80,7 +80,7 @@ impl<'a> SMBiosMemoryDeviceMappedAddress<'a> {
         self.parts.get_field_byte(0x10)
     }
 
-    /// Position of the referenced [SMBiosMemoryDevice] in an
+    /// Position of the referenced [super::SMBiosMemoryDevice] in an
     /// interleave
     /// The value 0 indicates non-interleaved, 1 indicates
     /// first interleave position, 2 the second interleave
@@ -94,7 +94,7 @@ impl<'a> SMBiosMemoryDeviceMappedAddress<'a> {
     }
 
     /// Maximum number of consecutive rows from the
-    /// referenced [SMBiosMemoryDevice] that are accessed in a
+    /// referenced [super::SMBiosMemoryDevice] that are accessed in a
     /// single interleaved transfer
     /// If the device is not part of an interleave, the field
     /// contains 0; if the interleave configuration is
@@ -108,7 +108,7 @@ impl<'a> SMBiosMemoryDeviceMappedAddress<'a> {
     }
 
     /// Physical address, in bytes, of a range of memory
-    /// mapped to the referenced [SMBiosMemoryDevice]
+    /// mapped to the referenced [super::SMBiosMemoryDevice]
     /// This field is valid when Starting Address contains
     /// the value FFFF FFFFh. If Starting Address
     /// contains a value other than FFFF FFFFh, this field
@@ -121,7 +121,7 @@ impl<'a> SMBiosMemoryDeviceMappedAddress<'a> {
 
     /// Physical ending address, in bytes, of the last of a
     /// range of addresses mapped to the referenced
-    /// [SMBiosMemoryDevice]
+    /// [super::SMBiosMemoryDevice]
     /// This field is valid when both Starting Address and
     /// Ending Address contain the value FFFF FFFFh. If
     /// Ending Address contains a value other than FFFF

@@ -5,7 +5,7 @@ use std::ops::Deref;
 
 /// # 32-Bit Memory Error Information (Type 18)
 ///
-/// This structure identifies the specifics of an error that might be detected within a [SMBiosPhysicalMemoryArray].
+/// This structure identifies the specifics of an error that might be detected within a [super::SMBiosPhysicalMemoryArray].
 ///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
