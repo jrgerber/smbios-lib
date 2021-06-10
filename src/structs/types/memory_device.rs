@@ -6,7 +6,7 @@ use std::ops::Deref;
 
 /// # Memory Device (Type 17)
 ///
-/// This structure describes a single memory device that is part of a larger [SMBiosPhysicalMemoryArray] (Type 16) structure.
+/// This structure describes a single memory device that is part of a larger [super::SMBiosPhysicalMemoryArray] (Type 16) structure.
 ///
 /// Compliant with:
 /// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
@@ -29,7 +29,7 @@ impl<'a> SMBiosStruct<'a> for SMBiosMemoryDevice<'a> {
 
 impl<'a> SMBiosMemoryDevice<'a> {
     /// Handle, or instance number, associated with the
-    /// [SMBiosPhysicalMemoryArray] to which this device belongs
+    /// [super::SMBiosPhysicalMemoryArray] to which this device belongs
     pub fn physical_memory_array_handle(&self) -> Option<Handle> {
         self.parts.get_field_handle(0x04)
     }
@@ -40,8 +40,8 @@ impl<'a> SMBiosMemoryDevice<'a> {
     /// structure, the field contains FFFEh; otherwise, the
     /// field contains either FFFFh (if no error was
     /// detected) or the handle of the error-information
-    /// structure ([SMBiosMemoryErrorInformation32] or
-    /// [SMBiosMemoryErrorInformation64]).
+    /// structure ([super::SMBiosMemoryErrorInformation32] or
+    /// [super::SMBiosMemoryErrorInformation64]).
     pub fn memory_error_information_handle(&self) -> Option<Handle> {
         self.parts.get_field_handle(0x06)
     }

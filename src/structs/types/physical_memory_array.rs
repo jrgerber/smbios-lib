@@ -72,11 +72,11 @@ impl<'a> SMBiosPhysicalMemoryArray<'a> {
         self.parts.get_field_word(0x0B)
     }
 
-    /// Number of slots or sockets available for [SMBiosMemoryDevice]s in this array
+    /// Number of slots or sockets available for [super::SMBiosMemoryDevice]s in this array
     ///
-    /// This value represents the number of [SMBiosMemoryDevice]
+    /// This value represents the number of [super::SMBiosMemoryDevice]
     /// structures that compose this Memory
-    /// Array. Each [SMBiosMemoryDevice] has a reference to
+    /// Array. Each [super::SMBiosMemoryDevice] has a reference to
     /// the "owning" Memory Array.
     pub fn number_of_memory_devices(&self) -> Option<u16> {
         self.parts.get_field_word(0x0D)

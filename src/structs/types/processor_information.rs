@@ -136,7 +136,7 @@ impl<'a> SMBiosProcessorInformation<'a> {
             .map(|raw| ProcessorUpgradeData::from(raw))
     }
 
-    /// Handle of a [SMBiosCacheInformation] structure that
+    /// Handle of a [super::SMBiosCacheInformation] structure that
     /// defines the attributes of the primary (Level 1)
     /// cache for this processor
     ///
@@ -149,7 +149,7 @@ impl<'a> SMBiosProcessorInformation<'a> {
         self.parts.get_field_handle(0x1A)
     }
 
-    /// Handle of a [SMBiosCacheInformation] structure that
+    /// Handle of a [super::SMBiosCacheInformation] structure that
     /// defines the attributes of the primary (Level 2)
     /// cache for this processor
     ///
@@ -162,7 +162,7 @@ impl<'a> SMBiosProcessorInformation<'a> {
         self.parts.get_field_handle(0x1C)
     }
 
-    /// Handle of a [SMBiosCacheInformation] structure that
+    /// Handle of a [super::SMBiosCacheInformation] structure that
     /// defines the attributes of the primary (Level 3)
     /// cache for this processor
     ///

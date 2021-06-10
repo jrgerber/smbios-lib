@@ -1,6 +1,6 @@
 use crate::{SMBiosStruct, UndefinedStruct};
 use serde::{ser::SerializeSeq, ser::SerializeStruct, Serialize, Serializer};
-use std::{fmt, ops::Deref};
+use std::{convert::TryInto, fmt, ops::Deref};
 
 /// # System Slots (Type 9)
 ///
@@ -57,8 +57,10 @@ impl<'a> SMBiosSystemSlot<'a> {
     }
 
     /// Slot Id
-    pub fn slot_id(&self) -> Option<u16> {
-        self.parts.get_field_word(0x09)
+    pub fn slot_id(&self) -> Option<SystemSlotId> {
+        self.parts
+            .get_field_data(0x09, 0x0B)
+            .map(|id| SystemSlotId(id.try_into().unwrap()))
     }
 
     /// Slot Characteristics 1
@@ -202,6 +204,40 @@ impl Serialize for SMBiosSystemSlot<'_> {
         state.serialize_field("slot_physical_width", &self.slot_physical_width())?;
         state.serialize_field("slot_pitch", &self.slot_pitch())?;
         state.end()
+    }
+}
+
+/// # System Slots - Slot Id
+///
+/// The Slot ID field of the System Slot structure provides a mechanism to correlate the physical attributes of
+/// the slot to its logical access method (which varies based on the Slot Type field). The Slot ID field has
+/// meaning only for the slot types described in the table:
+///
+/// | Slot Type | Slot ID Field Meaning |
+/// | --------- | --------------------- |
+/// | MCA | Identifies the logical Micro Channel slot number, in the range 1 to 15, in byte 0. Byte 1 is set to 0. |
+/// | PCI, AGP, PCIX, PCI Express | On a system that supports ACPI, identifies the value returned in the _SUN object for this slot. On a system that supports the PCI IRQ Routing Table Specification, identifies the value present in the Slot Number field of the PCI Interrupt Routing table entry that is associated with this slot, in byte 0 - byte 1 is set to 0. The table is returned by the "Get PCI Interrupt Routing Options" PCI BIOS function call and provided directly in the PCI IRQ Routing Table Specification ($PIRQ). Software can determine the PCI bus number and device associated with the slot by matching the "Slot ID" to an entry in the routing-table and ultimately determine what device is present in that slot. NOTE: This definition also applies to the 66 MHz-capable PCI slots. |
+/// | PCMCIA | Identifies the Adapter Number (byte 0) and Socket Number (byte 1) to be passed toPCMCIA Socket Services to identify this slot |
+#[derive(Serialize, Debug, PartialEq, Eq, Clone, Copy)]
+pub struct SystemSlotId(pub [u8; 2]);
+
+impl Deref for SystemSlotId {
+    type Target = [u8; 2];
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl SystemSlotId {
+    /// The first system slot Id byte (found at offset 09h).
+    pub fn byte_0(&self) -> u8 {
+        self.0[0]
+    }
+
+    /// The second system slot Id byte (found at offset 0Ah).
+    pub fn byte_1(&self) -> u8 {
+        self.0[1]
     }
 }
 
@@ -1176,7 +1212,7 @@ mod tests {
 
         // 2.6 to 3.1.1 System Slot structure (0x11 length, it does not include _data_bus_width()_ and beyond)
         let struct_type9 = vec![
-            0x09, 0x11, 0x1C, 0x00, 0x01, 0xA5, 0x0D, 0x04, 0x04, 0x00, 0x00, 0x0C, 0x01, 0x00,
+            0x09, 0x11, 0x1C, 0x00, 0x01, 0xA5, 0x0D, 0x04, 0x04, 0x05, 0x07, 0x0C, 0x01, 0x00,
             0x00, 0x00, 0x08, 0x4A, 0x36, 0x42, 0x32, 0x00, 0x00,
         ];
 
@@ -1194,6 +1230,10 @@ mod tests {
         );
 
         assert_eq!(*test_struct.slot_data_bus_width().unwrap(), SlotWidth::X16);
+
+        let slot_id = test_struct.slot_id().unwrap();
+        assert_eq!(slot_id.byte_0(), 5);
+        assert_eq!(slot_id.byte_1(), 7);
 
         // 2.6 to 3.1.1 has no data_bus_width() field or beyond fields
         assert!(test_struct.data_bus_width().is_none());

@@ -1,5 +1,5 @@
-use serde::{ser::SerializeStruct, Serialize, Serializer};
 use crate::{SMBiosStruct, UndefinedStruct};
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 
 /// # End-of-Table (Type 127)
@@ -8,7 +8,7 @@ use std::fmt;
 ///
 /// To ensure backward compatibility with management software written to previous versions of this
 /// specification, a system implementation should use the end-of-table indicator in a manner similar to the
-/// [SMBiosInactive] (Type 126) structure type; the structure table is still reported as a fixed-length, and the entire
+/// [super::SMBiosInactive] (Type 126) structure type; the structure table is still reported as a fixed-length, and the entire
 /// length of the table is still indexable. If the end-of-table indicator is used in the last physical structure in a
 /// table, the field’s length is encoded as 4.
 ///
@@ -47,7 +47,7 @@ impl Serialize for SMBiosEndOfTable<'_> {
         S: Serializer,
     {
         let mut state = serializer.serialize_struct("SMBiosEndOfTable", 1)?;
-            state.serialize_field("header", &self.parts.header)?;
-            state.end()
+        state.serialize_field("header", &self.parts.header)?;
+        state.end()
     }
 }

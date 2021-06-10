@@ -6,7 +6,7 @@ use std::ops::Deref;
 
 /// # Processor Additional Information (Type 44)
 ///
-/// The information in this structure defines the processor additional information in case SMBIOS type 4 [SMBiosProcessorInformation] is
+/// The information in this structure defines the processor additional information in case SMBIOS type 4 [super::SMBiosProcessorInformation] is
 /// not sufficient to describe processor characteristics. The SMBIOS type 44 structure has a reference
 /// handle field to link back to the related SMBIOS type 4 structure. There may be multiple SMBIOS type 44
 /// structures linked to the same SMBIOS type 4 structure. For example, when cores are not identical in a
@@ -40,7 +40,7 @@ impl<'a> SMBiosProcessorAdditionalInformation<'a> {
     const PROCESSOR_SPECIFIC_BLOCK_OFFSET: usize = 0x06usize;
 
     /// Handle, or instance number, associated with the
-    /// [SMBiosProcessorInformation] structure (SMBIOS type 4) which the
+    /// [super::SMBiosProcessorInformation] structure (SMBIOS type 4) which the
     /// Processor Additional Information structure describes.
     pub fn referenced_handle(&self) -> Option<Handle> {
         self.parts.get_field_handle(0x04)
