@@ -78,18 +78,24 @@ impl<'a> SMBiosSystemSlot<'a> {
     }
 
     /// Segment Group Number (Base)
-    pub fn segment_group_number(&self) -> Option<u16> {
-        self.parts.get_field_word(0x0D)
+    pub fn segment_group_number(&self) -> Option<SegmentGroupNumber> {
+        self.parts
+            .get_field_word(0x0D)
+            .map(|raw| SegmentGroupNumber::from(raw))
     }
 
     /// Bus Number (Base)
-    pub fn bus_number(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x0F)
+    pub fn bus_number(&self) -> Option<BusNumber> {
+        self.parts
+            .get_field_byte(0x0F)
+            .map(|raw| BusNumber::from(raw))
     }
 
     /// Device/Function Number (Base)
-    pub fn device_function_number(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x10)
+    pub fn device_function_number(&self) -> Option<DeviceFunctionNumber> {
+        self.parts
+            .get_field_byte(0x10)
+            .map(|raw| DeviceFunctionNumber::from(raw))
     }
 
     /// Data Bus Width (Base)
@@ -1029,6 +1035,74 @@ impl Serialize for SystemSlotCharacteristics2 {
             &self.flexbus_slot_cxl20_capable(),
         )?;
         state.end()
+    }
+}
+
+/// # Segment Group Number
+#[derive(Serialize, Debug, PartialEq, Eq)]
+pub enum SegmentGroupNumber {
+    /// Single-Segment Topology (no group number)
+    SingleSegment,
+    /// Segment Group Number
+    Number(u16),
+    /// For devices that are not of types PCI, AGP, PCI-X, or PCI-Express
+    /// and that do not have bus/device/function information.
+    NotApplicable,
+}
+
+impl From<u16> for SegmentGroupNumber {
+    fn from(raw: u16) -> Self {
+        match raw {
+            0x00 => SegmentGroupNumber::SingleSegment,
+            0xFF => SegmentGroupNumber::NotApplicable,
+            _ => SegmentGroupNumber::Number(raw),
+        }
+    }
+}
+
+/// # Bus Number
+#[derive(Serialize, Debug, PartialEq, Eq)]
+pub enum BusNumber {
+    /// Bus Number
+    Number(u8),
+    /// For devices that are not of types PCI, AGP, PCI-X, or PCI-Express
+    /// and that do not have bus/device/function information.
+    NotApplicable,
+}
+
+impl From<u8> for BusNumber {
+    fn from(raw: u8) -> Self {
+        match raw {
+            0xFF => BusNumber::NotApplicable,
+            _ => BusNumber::Number(raw),
+        }
+    }
+}
+
+/// # Device/Function Number
+#[derive(Serialize, Debug, PartialEq, Eq)]
+pub enum DeviceFunctionNumber {
+    /// Device/Function Number
+    Number {
+        ///Bits 7:3 – Device number
+        device: u8,
+        /// Bits 2:0 – Function number
+        function: u8,
+    },
+    /// For devices that are not of types PCI, AGP, PCI-X, or PCI-Express
+    /// and that do not have bus/device/function information.
+    NotApplicable,
+}
+
+impl From<u8> for DeviceFunctionNumber {
+    fn from(raw: u8) -> Self {
+        match raw {
+            0xFF => DeviceFunctionNumber::NotApplicable,
+            _ => DeviceFunctionNumber::Number {
+                device: raw & 0b11111000 >> 3,
+                function: raw & 0b00000111,
+            },
+        }
     }
 }
 

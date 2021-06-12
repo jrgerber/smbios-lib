@@ -64,8 +64,10 @@ impl<'a> SMBiosCoolingDevice<'a> {
     /// non-rotating, the field is set to 0x8000. This field is
     /// present in the structure only if the structure’s
     /// length is larger than 0Ch
-    pub fn nominal_speed(&self) -> Option<u16> {
-        self.parts.get_field_word(0x0C)
+    pub fn nominal_speed(&self) -> Option<RotationalSpeed> {
+        self.parts
+            .get_field_word(0x0C)
+            .map(|raw| RotationalSpeed::from(raw))
     }
 
     /// Additional descriptive information about the cooling device or its location
@@ -73,6 +75,24 @@ impl<'a> SMBiosCoolingDevice<'a> {
     /// structure’s length is 0Fh or larger.
     pub fn description(&self) -> Option<String> {
         self.parts.get_field_string(0x0E)
+    }
+}
+
+/// # Rotational Speed
+#[derive(Serialize, Debug)]
+pub enum RotationalSpeed {
+    /// Revolutions per minute (RPM)
+    Rpm(u16),
+    /// RPM is unknown
+    Unknown,
+}
+
+impl From<u16> for RotationalSpeed {
+    fn from(raw: u16) -> Self {
+        match raw {
+            0x8000 => RotationalSpeed::Unknown,
+            _ => RotationalSpeed::Rpm(raw),
+        }
     }
 }
 
@@ -253,7 +273,10 @@ mod tests {
         );
         assert_eq!(test_struct.cooling_unit_group(), Some(1));
         assert_eq!(test_struct.oem_defined(), Some(0));
-        assert_eq!(test_struct.nominal_speed(), Some(32768));
+        match test_struct.nominal_speed().unwrap() {
+            RotationalSpeed::Rpm(_) => panic!("expected unknown"),
+            RotationalSpeed::Unknown => (),
+        }
         assert_eq!(test_struct.description(), Some("Cooling Dev 1".to_string()));
     }
 }

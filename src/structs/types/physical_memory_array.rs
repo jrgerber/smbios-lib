@@ -1,4 +1,5 @@
-use crate::{SMBiosStruct, UndefinedStruct};
+use crate::core::{Handle, UndefinedStruct};
+use crate::SMBiosStruct;
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::{fmt, ops::Deref};
 /// # Physical Memory Array (Type 16)
@@ -68,8 +69,8 @@ impl<'a> SMBiosPhysicalMemoryArray<'a> {
     /// information structure, the field contains FFFEh;
     /// otherwise, the field contains either FFFFh (if no
     /// error was detected) or the handle of the errorinformation structure.
-    pub fn memory_error_information_handle(&self) -> Option<u16> {
-        self.parts.get_field_word(0x0B)
+    pub fn memory_error_information_handle(&self) -> Option<Handle> {
+        self.parts.get_field_handle(0x0B)
     }
 
     /// Number of slots or sockets available for [super::SMBiosMemoryDevice]s in this array
@@ -451,7 +452,10 @@ mod tests {
             MaximumMemoryCapacity::Kilobytes(kb) => assert_eq!(kb, 0x6000_0000),
             MaximumMemoryCapacity::SeeExtendedMaximumCapacity => panic!("expected kb"),
         }
-        assert_eq!(test_struct.memory_error_information_handle(), Some(65534));
+        assert_eq!(
+            test_struct.memory_error_information_handle(),
+            Some(Handle(65534))
+        );
         assert_eq!(test_struct.number_of_memory_devices(), Some(4));
         assert_eq!(test_struct.extended_maximum_capacity(), Some(0));
     }
