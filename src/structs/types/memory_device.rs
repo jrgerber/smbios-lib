@@ -158,10 +158,12 @@ impl<'a> SMBiosMemoryDevice<'a> {
         self.parts.get_field_byte(0x1B)
     }
 
-    /// Extended size of the memory device (complements
+    /// Extended size of the memory device in MB (complements
     /// the Size field at offset 0Ch)
-    pub fn extended_size(&self) -> Option<u32> {
-        self.parts.get_field_dword(0x1C)
+    pub fn extended_size(&self) -> Option<MemorySizeExtended> {
+        self.parts
+            .get_field_dword(0x1C)
+            .map(|raw| MemorySizeExtended::from(raw))
     }
 
     /// Identifies the configured speed of the memory
@@ -280,8 +282,10 @@ impl<'a> SMBiosMemoryDevice<'a> {
     /// (complements the Speed field at offset 15h).
     /// Identifies the maximum capable speed of the
     /// device, in megatransfers per second (MT/s).
-    pub fn extended_speed(&self) -> Option<u32> {
-        self.parts.get_field_dword(0x54)
+    pub fn extended_speed(&self) -> Option<MemorySpeedExtended> {
+        self.parts
+            .get_field_dword(0x54)
+            .map(|raw| MemorySpeedExtended::from(raw))
     }
 
     /// Extended configured memory speed of the memory
@@ -302,8 +306,10 @@ impl<'a> SMBiosMemoryDevice<'a> {
     ///
     /// Bit 31 is reserved for future use and must be set to 0
     /// Bits 30:0 represent the speed or configured memory speed of the device in MT/s.
-    pub fn extended_configured_memory_speed(&self) -> Option<u32> {
-        self.parts.get_field_dword(0x58)
+    pub fn extended_configured_memory_speed(&self) -> Option<MemorySpeedExtended> {
+        self.parts
+            .get_field_dword(0x58)
+            .map(|raw| MemorySpeedExtended::from(raw))
     }
 }
 
@@ -1044,6 +1050,31 @@ impl From<u16> for MemorySpeed {
     }
 }
 
+/// # Extended Speed of Memory
+#[derive(Serialize, Debug, PartialEq, Eq)]
+pub enum MemorySpeedExtended {
+    /// Speed of memory in megatransfers per second (MT/s)
+    MTs(u32),
+    /// See the _speed_ field.
+    ///
+    /// For compatibility with older SMBIOS parsers, memory devices slower than 65,535 MT/s should represent their speed
+    /// using the Speed and Configured Memory Speed fields, leaving the Extended Speed and
+    /// Extended Configured Memory Speed fields set to 0.
+    SeeSpeed,
+}
+
+/// Bit 31 is reserved for future use and must be set to 0
+/// Bits 30:0 represent the speed or configured memory speed of the device in MT/s.
+impl From<u32> for MemorySpeedExtended {
+    fn from(raw: u32) -> Self {
+        let bits_30_to_0 = raw & 0x7FFF_FFFF;
+        match bits_30_to_0 {
+            0 => MemorySpeedExtended::SeeSpeed,
+            _ => MemorySpeedExtended::MTs(bits_30_to_0),
+        }
+    }
+}
+
 /// # Size of Memory
 #[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum MemorySize {
@@ -1081,6 +1112,30 @@ impl From<u16> for MemorySize {
                 0x8000 => MemorySize::Kilobytes(raw & 0x7FFF),
                 _ => MemorySize::Megabytes(raw),
             },
+        }
+    }
+}
+
+/// # Extended Size of Memory
+#[derive(Serialize, Debug, PartialEq, Eq)]
+pub enum MemorySizeExtended {
+    /// Size of Memory (MB)
+    Megabytes(u32),
+    /// See the _size_ field.
+    ///
+    /// For compatibility with older SMBIOS parsers, memory devices smaller than (32 GB - 1 MB)
+    /// should be represented using their size in the Size field, leaving the Extended Size field set to 0.
+    SeeSize,
+}
+
+/// Bit 31 is reserved for future use and must be set to 0.
+/// Bits 30:0 represent the size of the memory device in megabytes.
+impl From<u32> for MemorySizeExtended {
+    fn from(raw: u32) -> Self {
+        let bits_30_to_0 = raw & 0x7FFF_FFFF;
+        match bits_30_to_0 {
+            0 => MemorySizeExtended::SeeSize,
+            _ => MemorySizeExtended::Megabytes(bits_30_to_0),
         }
     }
 }
@@ -1174,7 +1229,10 @@ mod tests {
             Some("HMA81GR7AFR8N-VK    ".to_string())
         );
         assert_eq!(test_struct.attributes(), Some(1));
-        assert_eq!(test_struct.extended_size(), Some(0));
+        assert_eq!(
+            test_struct.extended_size(),
+            Some(MemorySizeExtended::SeeSize)
+        );
         match test_struct.configured_memory_speed().unwrap() {
             MemorySpeed::MTs(speed) => assert_eq!(speed, 2666),
             MemorySpeed::Unknown => panic!("expected speed"),
@@ -1250,10 +1308,13 @@ mod tests {
             MemoryIndicatedSize::Unknown => (),
             MemoryIndicatedSize::Bytes(_) => panic!("expected unknown"),
         }
-        assert_eq!(test_struct.extended_speed(), Some(0x01020304));
+        assert_eq!(
+            test_struct.extended_speed(),
+            Some(MemorySpeedExtended::MTs(0x01020304))
+        );
         assert_eq!(
             test_struct.extended_configured_memory_speed(),
-            Some(0x05060708)
+            Some(MemorySpeedExtended::MTs(0x05060708))
         );
     }
 }
