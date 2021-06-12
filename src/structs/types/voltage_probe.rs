@@ -254,14 +254,6 @@ pub enum VoltageProbeLocation {
     PowerUnit,
     /// Add-in Card
     AddInCard,
-    /// Front Panel Board
-    FrontPanelBoard,
-    /// Back Panel Board
-    BackPanelBoard,
-    /// Power System Board
-    PowerSystemBoard,
-    /// Drive Back Plane
-    DriveBackPlane,
     /// A value unknown to this standard, check the raw value
     None,
 }
@@ -280,10 +272,6 @@ impl From<u8> for VoltageProbeLocation {
             0b0000_1001 => VoltageProbeLocation::ProcessorModule,
             0b0000_1010 => VoltageProbeLocation::PowerUnit,
             0b0000_1011 => VoltageProbeLocation::AddInCard,
-            0b0000_1100 => VoltageProbeLocation::FrontPanelBoard,
-            0b0000_1101 => VoltageProbeLocation::BackPanelBoard,
-            0b0000_1110 => VoltageProbeLocation::PowerSystemBoard,
-            0b0000_1111 => VoltageProbeLocation::DriveBackPlane,
             _ => VoltageProbeLocation::None,
         }
     }
