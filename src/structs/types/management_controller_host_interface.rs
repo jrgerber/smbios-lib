@@ -60,7 +60,7 @@ impl<'a> SMBiosManagementControllerHostInterface<'a> {
     /// If interface type = OEM, the first four bytes are the vendor ID (MSB first), as assigned by the Internet Assigned Numbers Authority (IANA).
     ///
     /// This format uses the "Enterprise Number" that is assigned and maintained by IANA (www.iana.org) as the means of identifying a particular vendor, company, or organization.
-    fn interface_type_specific_data(&self) -> Option<&[u8]> {
+    pub fn interface_type_specific_data(&self) -> Option<&[u8]> {
         self.interface_type_specific_data_length()
             .and_then(|length| {
                 self.parts().get_field_data(
