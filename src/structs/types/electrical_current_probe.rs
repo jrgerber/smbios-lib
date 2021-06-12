@@ -39,28 +39,38 @@ impl<'a> SMBiosElectricalCurrentProbe<'a> {
     }
 
     /// Maximum current level readable by this probe, in milliamps
-    pub fn maximum_value(&self) -> Option<u16> {
-        self.parts.get_field_word(0x06)
+    pub fn maximum_value(&self) -> Option<ProbeAmperage> {
+        self.parts
+            .get_field_word(0x06)
+            .map(|raw| ProbeAmperage::from(raw))
     }
 
-    /// Minimum temperature level readable by this probe, in milliamps
-    pub fn minimum_value(&self) -> Option<u16> {
-        self.parts.get_field_word(0x08)
+    /// Minimum current level readable by this probe, in milliamps
+    pub fn minimum_value(&self) -> Option<ProbeAmperage> {
+        self.parts
+            .get_field_word(0x08)
+            .map(|raw| ProbeAmperage::from(raw))
     }
 
     /// Resolution for the probe’s reading, in tenths of milliamps
-    pub fn resolution(&self) -> Option<u16> {
-        self.parts.get_field_word(0x0A)
+    pub fn resolution(&self) -> Option<CurrentProbeResolution> {
+        self.parts
+            .get_field_word(0x0A)
+            .map(|raw| CurrentProbeResolution::from(raw))
     }
 
     /// Tolerance for reading from this probe, in plus/minus milliamps
-    pub fn tolerance(&self) -> Option<u16> {
-        self.parts.get_field_word(0x0C)
+    pub fn tolerance(&self) -> Option<ProbeAmperage> {
+        self.parts
+            .get_field_word(0x0C)
+            .map(|raw| ProbeAmperage::from(raw))
     }
 
     /// Accuracy for reading from this probe, in plus/minus 1/100th of a percent
-    pub fn accuracy(&self) -> Option<u16> {
-        self.parts.get_field_word(0x0E)
+    pub fn accuracy(&self) -> Option<CurrentProbeAccuracy> {
+        self.parts
+            .get_field_word(0x0E)
+            .map(|raw| CurrentProbeAccuracy::from(raw))
     }
 
     /// OEM- or BIOS vendor-specific information.
@@ -69,8 +79,10 @@ impl<'a> SMBiosElectricalCurrentProbe<'a> {
     }
 
     /// Nominal value for the probe’s reading in milliamps
-    pub fn nominal_value(&self) -> Option<u16> {
-        self.parts.get_field_word(0x14)
+    pub fn nominal_value(&self) -> Option<ProbeAmperage> {
+        self.parts
+            .get_field_word(0x14)
+            .map(|raw| ProbeAmperage::from(raw))
     }
 }
 
@@ -229,6 +241,60 @@ impl From<u8> for CurrentProbeLocationAndStatus {
     }
 }
 
+/// # Probe Amperage
+#[derive(Serialize, Debug)]
+pub enum ProbeAmperage {
+    /// Amperage in milliamps
+    Milliamps(u16),
+    /// Amperage is unknown
+    Unknown,
+}
+
+impl From<u16> for ProbeAmperage {
+    fn from(raw: u16) -> Self {
+        match raw {
+            0x8000 => ProbeAmperage::Unknown,
+            _ => ProbeAmperage::Milliamps(raw),
+        }
+    }
+}
+
+/// # Current Probe Resolution
+#[derive(Serialize, Debug)]
+pub enum CurrentProbeResolution {
+    /// Resolution for the probe's reading in tenths of milliamps
+    TenthsOfMilliamps(u16),
+    /// Resolution is unknown
+    Unknown,
+}
+
+impl From<u16> for CurrentProbeResolution {
+    fn from(raw: u16) -> Self {
+        match raw {
+            0x8000 => CurrentProbeResolution::Unknown,
+            _ => CurrentProbeResolution::TenthsOfMilliamps(raw),
+        }
+    }
+}
+
+/// # Current Probe Accuracy
+#[derive(Serialize, Debug)]
+pub enum CurrentProbeAccuracy {
+    /// Accuracy for the probe's reading in 1/100th of a percent
+    OneOneHundredthPercent(u16),
+    /// Accuracy is unknown
+    Unknown,
+}
+
+impl From<u16> for CurrentProbeAccuracy {
+    fn from(raw: u16) -> Self {
+        match raw {
+            0x8000 => CurrentProbeAccuracy::Unknown,
+            _ => CurrentProbeAccuracy::OneOneHundredthPercent(raw),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -237,7 +303,7 @@ mod tests {
     fn unit_test() {
         let struct_type29 = vec![
             0x1D, 0x16, 0x33, 0x00, 0x01, 0x67, 0x00, 0x80, 0x00, 0x80, 0x00, 0x80, 0x00, 0x80,
-            0x00, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x41, 0x42, 0x43, 0x00, 0x00,
+            0x00, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, b'A', b'B', b'C', 0x00, 0x00,
         ];
 
         let parts = UndefinedStruct::new(&struct_type29);
@@ -254,12 +320,30 @@ mod tests {
             test_struct.location_and_status(),
             Some(CurrentProbeLocationAndStatus::from(103))
         );
-        assert_eq!(test_struct.maximum_value(), Some(32768));
-        assert_eq!(test_struct.minimum_value(), Some(32768));
-        assert_eq!(test_struct.resolution(), Some(32768));
-        assert_eq!(test_struct.tolerance(), Some(32768));
-        assert_eq!(test_struct.accuracy(), Some(32768));
+        match test_struct.maximum_value().unwrap() {
+            ProbeAmperage::Milliamps(_) => panic!("expected unknown"),
+            ProbeAmperage::Unknown => (),
+        }
+        match test_struct.minimum_value().unwrap() {
+            ProbeAmperage::Milliamps(_) => panic!("expected unknown"),
+            ProbeAmperage::Unknown => (),
+        }
+        match test_struct.resolution().unwrap() {
+            CurrentProbeResolution::TenthsOfMilliamps(_) => panic!("expected unknown"),
+            CurrentProbeResolution::Unknown => (),
+        }
+        match test_struct.tolerance().unwrap() {
+            ProbeAmperage::Milliamps(_) => panic!("expected unknown"),
+            ProbeAmperage::Unknown => (),
+        }
+        match test_struct.accuracy().unwrap() {
+            CurrentProbeAccuracy::OneOneHundredthPercent(_) => panic!("expected unknown"),
+            CurrentProbeAccuracy::Unknown => (),
+        }
         assert_eq!(test_struct.oem_defined(), Some(0));
-        assert_eq!(test_struct.nominal_value(), Some(32768));
+        match test_struct.nominal_value().unwrap() {
+            ProbeAmperage::Milliamps(_) => panic!("expected unknown"),
+            ProbeAmperage::Unknown => (),
+        }
     }
 }
