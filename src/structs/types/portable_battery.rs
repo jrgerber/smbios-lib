@@ -279,7 +279,7 @@ pub enum PortableBatteryDeviceChemistry {
     /// 'sbds_device_chemistry' field contains the information.
     Unknown,
     /// Lead Acid
-    LeadAcit,
+    LeadAcid,
     /// Nickel Cadmium
     NickelCadmium,
     /// Nickel metal hydride
@@ -300,7 +300,7 @@ impl From<u8> for PortableBatteryDeviceChemistryData {
             value: match raw {
                 0x01 => PortableBatteryDeviceChemistry::Other,
                 0x02 => PortableBatteryDeviceChemistry::Unknown,
-                0x03 => PortableBatteryDeviceChemistry::LeadAcit,
+                0x03 => PortableBatteryDeviceChemistry::LeadAcid,
                 0x04 => PortableBatteryDeviceChemistry::NickelCadmium,
                 0x05 => PortableBatteryDeviceChemistry::NickelMetalHydride,
                 0x06 => PortableBatteryDeviceChemistry::LithiumIon,
