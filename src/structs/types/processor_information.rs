@@ -1688,7 +1688,7 @@ impl Serialize for ProcessorSupportedVoltages {
 }
 
 /// External Clock Frequency in MHz
-#[derive(Serialize, Debug)]
+#[derive(Serialize)]
 pub enum ProcessorExternalClock {
     /// The value is unknown
     Unknown,
@@ -1705,8 +1705,18 @@ impl From<u16> for ProcessorExternalClock {
     }
 }
 
+impl fmt::Debug for ProcessorExternalClock {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        use ProcessorExternalClock::*;
+        match self {
+            Unknown => write!{fmt, "Unknown"},
+            MHz(n) => write!{fmt, "{} MHz", n}
+        }
+    }
+}
+
 /// Processor Speed in MHz
-#[derive(Serialize, Debug)]
+#[derive(Serialize)]
 pub enum ProcessorSpeed {
     /// The value is unknown
     Unknown,
@@ -1719,6 +1729,16 @@ impl From<u16> for ProcessorSpeed {
         match raw {
             0 => ProcessorSpeed::Unknown,
             _ => ProcessorSpeed::MHz(raw),
+        }
+    }
+}
+
+impl fmt::Debug for ProcessorSpeed {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        use ProcessorSpeed::*;
+        match self {
+            Unknown => write!{fmt, "Unknown"},
+            MHz(n) => write!{fmt, "{} MHz", n}
         }
     }
 }
