@@ -1,7 +1,8 @@
 use crate::core::{strings::*, Handle, UndefinedStruct};
 use crate::SMBiosStruct;
 use serde::{ser::SerializeStruct, Serialize, Serializer};
-use std::fmt;
+use core::{fmt, any};
+use alloc::string::String;
 
 /// # Cooling Device (Type 27)
 ///
@@ -98,7 +99,7 @@ impl From<u16> for RotationalSpeed {
 
 impl fmt::Debug for SMBiosCoolingDevice<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosCoolingDevice<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosCoolingDevice<'_>>())
             .field("header", &self.parts.header)
             .field("temperature_probe_handle", &self.temperature_probe_handle())
             .field("device_type_and_status", &self.device_type_and_status())
@@ -145,7 +146,7 @@ pub struct CoolingDeviceTypeAndStatus {
 
 impl fmt::Debug for CoolingDeviceTypeAndStatus {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<CoolingDeviceTypeAndStatus>())
+        fmt.debug_struct(any::type_name::<CoolingDeviceTypeAndStatus>())
             .field("raw", &self.raw)
             .field("device_status", &self.device_status)
             .field("device_type", &self.device_type)

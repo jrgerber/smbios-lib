@@ -1,7 +1,8 @@
 use crate::core::{strings::*, Handle, UndefinedStruct};
 use crate::SMBiosStruct;
 use serde::{ser::SerializeStruct, Serialize, Serializer};
-use std::fmt;
+use core::{fmt, any};
+use alloc::string::String;
 
 /// # Management Device Component (Type 35)
 ///
@@ -54,7 +55,7 @@ impl<'a> SMBiosManagementDeviceComponent<'a> {
 
 impl fmt::Debug for SMBiosManagementDeviceComponent<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosManagementDeviceComponent<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosManagementDeviceComponent<'_>>())
             .field("header", &self.parts.header)
             .field("description", &self.description())
             .field("management_device_handle", &self.management_device_handle())

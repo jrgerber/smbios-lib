@@ -1,8 +1,9 @@
 use crate::core::{strings::*, UndefinedStruct};
 use crate::SMBiosStruct;
 use serde::{ser::SerializeStruct, Serialize, Serializer};
-use std::fmt;
-use std::ops::Deref;
+use core::{fmt, any};
+use core::ops::Deref;
+use alloc::string::String;
 
 /// # Cache Information (Type 7)
 ///
@@ -115,7 +116,7 @@ impl<'a> SMBiosCacheInformation<'a> {
 
 impl fmt::Debug for SMBiosCacheInformation<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosCacheInformation<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosCacheInformation<'_>>())
             .field("header", &self.parts.header)
             .field("socket_designation", &self.socket_designation())
             .field("cache_configuration", &self.cache_configuration())
@@ -203,7 +204,7 @@ pub struct CacheAssociativityData {
 
 impl fmt::Debug for CacheAssociativityData {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<CacheAssociativityData>())
+        fmt.debug_struct(any::type_name::<CacheAssociativityData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()
@@ -305,7 +306,7 @@ pub struct SystemCacheTypeData {
 
 impl fmt::Debug for SystemCacheTypeData {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SystemCacheTypeData>())
+        fmt.debug_struct(any::type_name::<SystemCacheTypeData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()
@@ -389,7 +390,7 @@ pub struct ErrorCorrectionTypeData {
 
 impl fmt::Debug for ErrorCorrectionTypeData {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<ErrorCorrectionTypeData>())
+        fmt.debug_struct(any::type_name::<ErrorCorrectionTypeData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()
@@ -521,7 +522,7 @@ impl SramTypes {
 
 impl fmt::Debug for SramTypes {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SramTypes>())
+        fmt.debug_struct(any::type_name::<SramTypes>())
             .field("raw", &self.raw)
             .field("other", &self.other())
             .field("unknown", &self.unknown())
@@ -634,7 +635,7 @@ impl CacheConfiguaration {
 
 impl fmt::Debug for CacheConfiguaration {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<CacheConfiguaration>())
+        fmt.debug_struct(any::type_name::<CacheConfiguaration>())
             .field("raw", &self.raw)
             .field("cache_level", &self.cache_level())
             .field("cache_socketed", &self.cache_socketed())

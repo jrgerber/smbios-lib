@@ -1,7 +1,8 @@
 use crate::{strings::*, SMBiosStruct, UndefinedStruct};
 use serde::{ser::SerializeStruct, Serialize, Serializer};
-use std::fmt;
-use std::ops::Deref;
+use core::{fmt, any};
+use core::ops::Deref;
+use alloc::string::String;
 
 /// # BIOS Language Information (Type 13)
 ///
@@ -55,7 +56,7 @@ impl<'a> SMBiosBiosLanguageInformation<'a> {
 
 impl fmt::Debug for SMBiosBiosLanguageInformation<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosBiosLanguageInformation<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosBiosLanguageInformation<'_>>())
             .field("header", &self.parts.header)
             .field(
                 "number_of_installable_languages",
@@ -133,7 +134,7 @@ impl BiosLanguageFlags {
 
 impl fmt::Debug for BiosLanguageFlags {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<BiosLanguageFlags>())
+        fmt.debug_struct(any::type_name::<BiosLanguageFlags>())
             .field("raw", &self.raw)
             .field("language_format", &self.language_format())
             .finish()

@@ -1,7 +1,8 @@
 use crate::core::{strings::*, UndefinedStruct};
 use crate::SMBiosStruct;
 use serde::{ser::SerializeStruct, Serialize, Serializer};
-use std::fmt;
+use core::{fmt, any};
+use alloc::string::String;
 
 /// #  Voltage Probe (Type 26)
 ///
@@ -112,7 +113,7 @@ impl<'a> SMBiosVoltageProbe<'a> {
 
 impl fmt::Debug for SMBiosVoltageProbe<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosVoltageProbe<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosVoltageProbe<'_>>())
             .field("header", &self.parts.header)
             .field("description", &self.description())
             .field("location_and_status", &self.location_and_status())
@@ -174,7 +175,7 @@ impl VoltageProbeLocationAndStatus {
 
 impl fmt::Debug for VoltageProbeLocationAndStatus {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<VoltageProbeLocationAndStatus>())
+        fmt.debug_struct(any::type_name::<VoltageProbeLocationAndStatus>())
             .field("raw", &self.raw)
             .field("location", &self.location())
             .field("status", &self.status())

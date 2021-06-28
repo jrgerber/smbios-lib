@@ -1,7 +1,7 @@
 use crate::core::{Handle, UndefinedStruct};
 use crate::SMBiosStruct;
 use serde::{ser::SerializeStruct, Serialize, Serializer};
-use std::fmt;
+use core::{fmt, any};
 
 /// # Memory Array Mapped Address (Type 19)
 ///
@@ -99,7 +99,7 @@ impl<'a> SMBiosMemoryArrayMappedAddress<'a> {
 
 impl fmt::Debug for SMBiosMemoryArrayMappedAddress<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosMemoryArrayMappedAddress<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosMemoryArrayMappedAddress<'_>>())
             .field("header", &self.parts.header)
             .field("starting_address", &self.starting_address())
             .field("ending_address", &self.ending_address())

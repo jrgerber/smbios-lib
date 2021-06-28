@@ -31,7 +31,7 @@ impl<'a> SMBiosInactive<'a> {}
 
 impl fmt::Debug for SMBiosInactive<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosInactive<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosInactive<'_>>())
             .field("header", &self.parts.header)
             .finish()
     }

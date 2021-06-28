@@ -1,8 +1,9 @@
 use crate::core::{Handle, UndefinedStruct};
 use crate::SMBiosStruct;
 use serde::{ser::SerializeSeq, ser::SerializeStruct, Serialize, Serializer};
-use std::fmt;
-use std::ops::Deref;
+use core::{fmt, any};
+use core::ops::Deref;
+use alloc::vec::Vec;
 
 /// # Memory Channel (Type 37)
 ///
@@ -63,7 +64,7 @@ impl<'a> SMBiosMemoryChannel<'a> {
 
 impl fmt::Debug for SMBiosMemoryChannel<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosMemoryChannel<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosMemoryChannel<'_>>())
             .field("header", &self.parts.header)
             .field("channel_type", &self.channel_type())
             .field("maximum_channel_load", &self.maximum_channel_load())
@@ -109,7 +110,7 @@ pub struct MemoryChannelTypeData {
 
 impl fmt::Debug for MemoryChannelTypeData {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<MemoryChannelTypeData>())
+        fmt.debug_struct(any::type_name::<MemoryChannelTypeData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()
@@ -209,7 +210,7 @@ impl<'a> LoadHandlePair<'a> {
 
 impl fmt::Debug for LoadHandlePair<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<LoadHandlePair<'_>>())
+        fmt.debug_struct(any::type_name::<LoadHandlePair<'_>>())
             .field("load", &self.load())
             .field("handle", &self.handle())
             .finish()

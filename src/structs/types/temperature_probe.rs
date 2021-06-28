@@ -1,7 +1,8 @@
 use crate::core::{strings::*, UndefinedStruct};
 use crate::SMBiosStruct;
 use serde::{ser::SerializeStruct, Serialize, Serializer};
-use std::fmt;
+use core::{fmt, any};
+use alloc::string::String;
 
 /// # Temperature Probe (Type 28)
 ///
@@ -119,7 +120,7 @@ impl<'a> SMBiosTemperatureProbe<'a> {
 
 impl fmt::Debug for SMBiosTemperatureProbe<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosTemperatureProbe<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosTemperatureProbe<'_>>())
             .field("header", &self.parts.header)
             .field("description", &self.description())
             .field("location_and_status", &self.location_and_status())
@@ -181,7 +182,7 @@ impl TemperatureProbeLocationAndStatus {
 
 impl fmt::Debug for TemperatureProbeLocationAndStatus {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<TemperatureProbeLocationAndStatus>())
+        fmt.debug_struct(any::type_name::<TemperatureProbeLocationAndStatus>())
             .field("raw", &self.raw)
             .field("location", &self.location())
             .field("status", &self.status())

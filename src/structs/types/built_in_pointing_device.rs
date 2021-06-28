@@ -1,7 +1,7 @@
 use crate::{SMBiosStruct, UndefinedStruct};
 use serde::{ser::SerializeStruct, Serialize, Serializer};
-use std::fmt;
-use std::ops::Deref;
+use core::{fmt, any};
+use core::ops::Deref;
 
 /// # Built-in Pointing Device (Type 21)
 ///
@@ -53,7 +53,7 @@ impl<'a> SMBiosBuiltInPointingDevice<'a> {
 
 impl fmt::Debug for SMBiosBuiltInPointingDevice<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosBuiltInPointingDevice<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosBuiltInPointingDevice<'_>>())
             .field("header", &self.parts.header)
             .field("device_type", &self.device_type())
             .field("interface", &self.interface())
@@ -91,7 +91,7 @@ pub struct PointingDeviceTypeData {
 
 impl fmt::Debug for PointingDeviceTypeData {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<PointingDeviceTypeData>())
+        fmt.debug_struct(any::type_name::<PointingDeviceTypeData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()
@@ -187,7 +187,7 @@ pub struct PointingDeviceInterfaceData {
 
 impl fmt::Debug for PointingDeviceInterfaceData {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<PointingDeviceInterfaceData>())
+        fmt.debug_struct(any::type_name::<PointingDeviceInterfaceData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()

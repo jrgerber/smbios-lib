@@ -1,8 +1,9 @@
 use crate::core::{strings::*, UndefinedStruct};
 use crate::{BoardTypeData, SMBiosStruct, SMBiosType};
 use serde::{ser::SerializeSeq, ser::SerializeStruct, Serialize, Serializer};
-use std::fmt;
-use std::ops::Deref;
+use core::{fmt, any};
+use core::ops::Deref;
+use alloc::{vec::Vec, string::String};
 
 /// # System Enclosure or Chassis (Type 3)
 ///
@@ -187,7 +188,7 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
 
 impl fmt::Debug for SMBiosSystemChassisInformation<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosSystemChassisInformation<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosSystemChassisInformation<'_>>())
             .field("header", &self.parts.header)
             .field("manufacturer", &self.manufacturer())
             .field("chassis_type", &self.chassis_type())
@@ -308,7 +309,7 @@ pub struct ChassisTypeData {
 
 impl fmt::Debug for ChassisTypeData {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<ChassisTypeData>())
+        fmt.debug_struct(any::type_name::<ChassisTypeData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
             .field("lock_presence", &self.lock_presence)
@@ -492,7 +493,7 @@ pub struct ChassisStateData {
 
 impl fmt::Debug for ChassisStateData {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<ChassisStateData>())
+        fmt.debug_struct(any::type_name::<ChassisStateData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()
@@ -570,7 +571,7 @@ pub struct ChassisSecurityStatusData {
 
 impl fmt::Debug for ChassisSecurityStatusData {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<ChassisSecurityStatusData>())
+        fmt.debug_struct(any::type_name::<ChassisSecurityStatusData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()
@@ -666,7 +667,7 @@ impl<'a> ContainedElements<'a> {
 
 impl<'a> fmt::Debug for ContainedElements<'a> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<ContainedElements<'_>>())
+        fmt.debug_struct(any::type_name::<ContainedElements<'_>>())
             .field("records", &self.into_iter())
             .finish()
     }
@@ -724,7 +725,7 @@ impl<'a> ChassisElement<'a> {
 
 impl fmt::Debug for ChassisElement<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<ChassisElement<'_>>())
+        fmt.debug_struct(any::type_name::<ChassisElement<'_>>())
             .field("raw", &self.raw)
             .field("element_type", &self.element_type())
             .field("element_minimum", &self.element_minimum())

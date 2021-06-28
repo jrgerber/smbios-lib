@@ -1,8 +1,9 @@
 use crate::core::{strings::*, UndefinedStruct};
 use crate::SMBiosStruct;
 use serde::{ser::SerializeStruct, Serialize, Serializer};
-use std::fmt;
-use std::ops::Deref;
+use core::{fmt, any};
+use core::ops::Deref;
+use alloc::string::String;
 
 /// # Management Device (Type 34)
 ///
@@ -55,7 +56,7 @@ impl<'a> SMBiosManagementDevice<'a> {
 
 impl fmt::Debug for SMBiosManagementDevice<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosManagementDevice<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosManagementDevice<'_>>())
             .field("header", &self.parts.header)
             .field("description", &self.description())
             .field("device_type", &self.device_type())
@@ -95,7 +96,7 @@ pub struct ManagementDeviceTypeData {
 
 impl fmt::Debug for ManagementDeviceTypeData {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<ManagementDeviceTypeData>())
+        fmt.debug_struct(any::type_name::<ManagementDeviceTypeData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()
@@ -203,7 +204,7 @@ pub struct ManagementDeviceAddressTypeData {
 
 impl fmt::Debug for ManagementDeviceAddressTypeData {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<ManagementDeviceAddressTypeData>())
+        fmt.debug_struct(any::type_name::<ManagementDeviceAddressTypeData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()

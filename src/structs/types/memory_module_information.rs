@@ -77,7 +77,7 @@ impl<'a> SMBiosMemoryModuleInformation<'a> {
 
 impl fmt::Debug for SMBiosMemoryModuleInformation<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosMemoryModuleInformation<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosMemoryModuleInformation<'_>>())
             .field("header", &self.parts.header)
             .field("socket_designation", &self.socket_designation())
             .field("bank_connections", &self.bank_connections())

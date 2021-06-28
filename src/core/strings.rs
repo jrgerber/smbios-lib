@@ -69,7 +69,7 @@ impl SMBiosStringSet {
     }
 
     /// Iterates the raw bytes of the strings. The terminating 0 is not included in each string.
-    pub fn iter(&self) -> std::slice::Iter<'_, Vec<u8>> {
+    pub fn iter(&self) -> core::slice::Iter<'_, Vec<u8>> {
         self.strings.iter()
     }
 }

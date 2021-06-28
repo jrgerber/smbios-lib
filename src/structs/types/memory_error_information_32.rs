@@ -1,7 +1,7 @@
 use crate::{SMBiosStruct, UndefinedStruct};
 use serde::{ser::SerializeStruct, Serialize, Serializer};
-use std::fmt;
-use std::ops::Deref;
+use core::{fmt, any};
+use core::ops::Deref;
 
 /// # 32-Bit Memory Error Information (Type 18)
 ///
@@ -86,7 +86,7 @@ impl<'a> SMBiosMemoryErrorInformation32<'a> {
 
 impl fmt::Debug for SMBiosMemoryErrorInformation32<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosMemoryErrorInformation32<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosMemoryErrorInformation32<'_>>())
             .field("header", &self.parts.header)
             .field("error_type", &self.error_type())
             .field("error_granularity", &self.error_granularity())
@@ -138,7 +138,7 @@ pub struct MemoryErrorTypeData {
 
 impl fmt::Debug for MemoryErrorTypeData {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<MemoryErrorTypeData>())
+        fmt.debug_struct(any::type_name::<MemoryErrorTypeData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()
@@ -249,7 +249,7 @@ pub struct MemoryErrorGranularityData {
 
 impl fmt::Debug for MemoryErrorGranularityData {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<MemoryErrorGranularityData>())
+        fmt.debug_struct(any::type_name::<MemoryErrorGranularityData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()
@@ -321,7 +321,7 @@ pub struct MemoryErrorOperationData {
 
 impl fmt::Debug for MemoryErrorOperationData {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<MemoryErrorOperationData>())
+        fmt.debug_struct(any::type_name::<MemoryErrorOperationData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()

@@ -1,8 +1,9 @@
 use crate::core::{strings::*, Handle, UndefinedStruct};
 use crate::SMBiosStruct;
 use serde::{ser::SerializeSeq, ser::SerializeStruct, Serialize, Serializer};
-use std::fmt;
-use std::ops::Deref;
+use core::{fmt, any};
+use core::ops::Deref;
+use alloc::{string::String, vec::Vec};
 
 /// # Baseboard (or Module) Information (Type 2)
 ///
@@ -88,7 +89,7 @@ impl<'a> SMBiosBaseboardInformation<'a> {
 
 impl fmt::Debug for SMBiosBaseboardInformation<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosBaseboardInformation<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosBaseboardInformation<'_>>())
             .field("header", &self.parts.header)
             .field("manufacturer", &self.manufacturer())
             .field("product", &self.product())
@@ -154,7 +155,7 @@ pub struct BoardTypeData {
 
 impl fmt::Debug for BoardTypeData {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<BoardTypeData>())
+        fmt.debug_struct(any::type_name::<BoardTypeData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()
@@ -302,7 +303,7 @@ impl BaseboardFeatures {
 
 impl fmt::Debug for BaseboardFeatures {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<BaseboardFeatures>())
+        fmt.debug_struct(any::type_name::<BaseboardFeatures>())
             .field("raw", &self.raw)
             .field("hosting_board", &self.hosting_board())
             .field("requires_daughterboard", &self.requires_daughterboard())

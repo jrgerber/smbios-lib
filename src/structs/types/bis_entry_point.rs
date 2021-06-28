@@ -97,7 +97,7 @@ impl<'a> SMBiosBisEntryPoint<'a> {
 
 impl fmt::Debug for SMBiosBisEntryPoint<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosBisEntryPoint<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosBisEntryPoint<'_>>())
             .field("header", &self.parts.header)
             .field("checksum", &self.checksum())
             .field("bis_entry_16", &self.bis_entry_16())

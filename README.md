@@ -12,7 +12,7 @@ An SMBIOS Library created in Rust that reads and parses raw BIOS data
 * [Examples](#examples)
 
 ## General info
-This project reads raw [SMBIOS](https://en.wikipedia.org/wiki/BIOS) data from either a device or file and provides the data as an API.
+This project reads raw [SMBIOS](https://en.wikipedia.org/wiki/BIOS) data from either a device, a file or a byte slice and provides the data as an API.
 
 For an example project using this library take a look at [dmidecode-rs](https://github.com/jrgerber/dmidecode-rs).
 
@@ -22,6 +22,7 @@ Specification 3.5.0](https://www.dmtf.org/sites/default/files/standards/document
 * Linux
 * MacOS
 * Windows family
+* No-std environments (for hobby OS development)
 
 > SMBIOS 3.5.0 contains 49 defined structure types, all of which are covered by this library (types 0-46, 126, and 127).  Support via extensibility exists for types 128-255 (reserved for OEMs).  Extensibility also applies in the case when this library has not been updated for the latest specification version or a pre-released specification and a new type is introduced.
 

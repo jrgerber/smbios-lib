@@ -1,7 +1,8 @@
 use crate::core::{strings::*, Handle, UndefinedStruct};
 use crate::structs::SMBiosStruct;
 use serde::{ser::SerializeSeq, ser::SerializeStruct, Serialize, Serializer};
-use std::fmt;
+use core::{fmt, any};
+use alloc::{string::String, vec::Vec};
 
 /// # Additional Information Entry contained within [SMBiosAdditionalInformation]
 pub struct AdditionalInformationEntry<'a> {
@@ -73,7 +74,7 @@ impl<'a> AdditionalInformationEntry<'a> {
 
 impl fmt::Debug for AdditionalInformationEntry<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosAdditionalInformation<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosAdditionalInformation<'_>>())
             .field("entry_length", &self.entry_length())
             .field("referenced_handle", &self.referenced_handle())
             .field("referenced_offset", &self.referenced_offset())
@@ -239,7 +240,7 @@ impl<'a> SMBiosAdditionalInformation<'a> {
 
 impl fmt::Debug for SMBiosAdditionalInformation<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosAdditionalInformation<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosAdditionalInformation<'_>>())
             .field("header", &self.parts.header)
             .field("number_of_entries", &self.number_of_entries())
             .field("entry_iterator", &self.entry_iterator())

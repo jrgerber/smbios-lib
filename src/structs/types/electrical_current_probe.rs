@@ -1,7 +1,8 @@
 use crate::SMBiosStruct;
 use crate::{strings::*, UndefinedStruct};
 use serde::{ser::SerializeStruct, Serialize, Serializer};
-use std::fmt;
+use core::{fmt, any};
+use alloc::string::String;
 
 /// # Electrical Current Probe (Type 29)
 ///
@@ -89,7 +90,7 @@ impl<'a> SMBiosElectricalCurrentProbe<'a> {
 
 impl fmt::Debug for SMBiosElectricalCurrentProbe<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosElectricalCurrentProbe<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosElectricalCurrentProbe<'_>>())
             .field("header", &self.parts.header)
             .field("description", &self.description())
             .field("location_and_status", &self.location_and_status())
@@ -142,7 +143,7 @@ pub struct CurrentProbeLocationAndStatus {
 
 impl fmt::Debug for CurrentProbeLocationAndStatus {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<CurrentProbeLocationAndStatus>())
+        fmt.debug_struct(any::type_name::<CurrentProbeLocationAndStatus>())
             .field("raw", &self.raw)
             .field("status", &self.status)
             .field("location", &self.location)
