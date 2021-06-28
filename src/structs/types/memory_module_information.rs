@@ -1,6 +1,8 @@
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use crate::{MemoryTypes, SMBiosStruct, UndefinedStruct};
-use std::fmt;
+use core::{fmt, any};
+#[cfg(feature = "no_std")]
+use alloc::string::String;
 
 /// # Memory Module Information (Type 6, Obsolete)
 ///
@@ -76,7 +78,7 @@ impl<'a> SMBiosMemoryModuleInformation<'a> {
 
 impl fmt::Debug for SMBiosMemoryModuleInformation<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosMemoryModuleInformation<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosMemoryModuleInformation<'_>>())
             .field("header", &self.parts.header)
             .field("socket_designation", &self.socket_designation())
             .field("bank_connections", &self.bank_connections())

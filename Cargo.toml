@@ -9,7 +9,7 @@ homepage = "https://github.com/jrgerber/smbios-lib"
 repository = "https://github.com/jrgerber/smbios-lib"
 readme = "README.md"
 keywords = ["bios", "smbios", "dmtf"]
-categories = ["hardware-support"]
+categories = ["hardware-support", "no-std"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -20,11 +20,13 @@ path = "src/lib.rs"
 [[bin]]
 name = "smbiosdump"
 path = "src/main.rs"
+required-features = ["getopts", "serde_json"]
 
 [dependencies]
-getopts = "0.2.21"
-serde = { version = "1", features = ["derive"] }
-serde_json = "1.0"
+getopts = { version = "0.2.21", optional = true }
+serde = { version = "1", features = ["derive"], default-features = false }
+serde_json = { version = "1.0", optional = true }
+x86_64 = { version = "0.14.3", optional = true }
 
 [target.'cfg(windows)'.dependencies]
 libc = "0.2"
@@ -35,3 +37,7 @@ mach = "^0.3"
 core-foundation = "~0.6"
 core-foundation-sys = "~0.6"
 io-kit-sys = "0.1.0"
+
+[features]
+default = ["serde/std", "getopts", "serde_json"]
+no_std = ["serde/alloc"]

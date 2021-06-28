@@ -1,6 +1,6 @@
 use crate::{SMBiosStruct, UndefinedStruct};
 use serde::{ser::SerializeStruct, Serialize, Serializer};
-use std::fmt;
+use core::{fmt, any};
 
 /// # Hardware Security (Type 24)
 ///
@@ -36,7 +36,7 @@ impl<'a> SMBiosHardwareSecurity<'a> {
 
 impl fmt::Debug for SMBiosHardwareSecurity<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosHardwareSecurity<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosHardwareSecurity<'_>>())
             .field("header", &self.parts.header)
             .field(
                 "hardware_security_settings",
@@ -78,7 +78,7 @@ pub struct HardwareSecuritySettings {
 
 impl fmt::Debug for HardwareSecuritySettings {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<HardwareSecuritySettings>())
+        fmt.debug_struct(any::type_name::<HardwareSecuritySettings>())
             .field("raw", &self.raw)
             .field("power_on_password_status", &self.power_on_password_status)
             .field("keyboard_password_status", &self.keyboard_password_status)

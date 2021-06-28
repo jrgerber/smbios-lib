@@ -1,8 +1,8 @@
 use crate::core::{Handle, UndefinedStruct};
 use crate::SMBiosStruct;
 use serde::{ser::SerializeStruct, Serialize, Serializer};
-use std::fmt;
-use std::ops::Deref;
+use core::{fmt, any};
+use core::ops::Deref;
 
 /// # Processor Additional Information (Type 44)
 ///
@@ -54,7 +54,7 @@ impl<'a> SMBiosProcessorAdditionalInformation<'a> {
 
 impl fmt::Debug for SMBiosProcessorAdditionalInformation<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<
+        fmt.debug_struct(any::type_name::<
             SMBiosProcessorAdditionalInformation<'_>,
         >())
         .field("header", &self.parts.header)
@@ -131,7 +131,7 @@ impl<'a> ProcessorSpecificBlock<'a> {
 
 impl fmt::Debug for ProcessorSpecificBlock<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<ProcessorSpecificBlock<'_>>())
+        fmt.debug_struct(any::type_name::<ProcessorSpecificBlock<'_>>())
             .field("block_length", &self.block_length())
             .field("processor_type", &self.processor_type())
             .field("processor_specific_data", &self.processor_specific_data())
@@ -167,7 +167,7 @@ pub struct ProcessorArchitectureTypeData {
 
 impl fmt::Debug for ProcessorArchitectureTypeData {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<ProcessorArchitectureTypeData>())
+        fmt.debug_struct(any::type_name::<ProcessorArchitectureTypeData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()

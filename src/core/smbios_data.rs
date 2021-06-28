@@ -2,9 +2,12 @@ use super::header::Handle;
 use super::undefined_struct::{UndefinedStruct, UndefinedStructTable};
 use crate::structs::{DefinedStructTable, SMBiosStruct};
 use serde::{ser::SerializeStruct, Serialize, Serializer};
+#[cfg(not(feature = "no_std"))]
 use std::io::Error;
-use std::{cmp::Ordering, slice::Iter};
-use std::{fmt, fs::read};
+use core::{cmp::Ordering, slice::Iter, fmt, any};
+#[cfg(not(feature = "no_std"))]
+use std::fs::read;
+use alloc::vec::{Vec, IntoIter};
 
 /// # SMBIOS Data
 ///
@@ -36,6 +39,7 @@ impl<'a> SMBiosData {
     }
 
     /// Loads raw SMBios table data from a file
+    #[cfg(not(feature = "no_std"))]
     pub fn try_load_from_file(
         filename: &str,
         version: Option<SMBiosVersion>,
@@ -148,7 +152,7 @@ impl<'a> SMBiosData {
 
 impl IntoIterator for SMBiosData {
     type Item = UndefinedStruct;
-    type IntoIter = std::vec::IntoIter<Self::Item>;
+    type IntoIter = IntoIter<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.table.into_iter()
@@ -160,7 +164,7 @@ impl fmt::Debug for SMBiosData {
         // Convert to defined structures to see the structure fields
         let defined_table: DefinedStructTable<'_> = self.table.iter().collect();
 
-        fmt.debug_struct(std::any::type_name::<SMBiosData>())
+        fmt.debug_struct(any::type_name::<SMBiosData>())
             .field("version", &self.version)
             .field("table", &defined_table)
             .finish()

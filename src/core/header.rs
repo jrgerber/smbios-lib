@@ -1,5 +1,5 @@
 use serde::{ser::SerializeStruct, Serialize, Serializer};
-use std::{convert::TryInto, fmt, ops::Deref, str::FromStr};
+use core::{convert::TryInto, fmt, ops::Deref, str::FromStr, any};
 
 /// # Structure Handle
 ///
@@ -36,7 +36,7 @@ impl Deref for Handle {
 }
 
 impl FromStr for Handle {
-    type Err = std::num::ParseIntError;
+    type Err = core::num::ParseIntError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Handle(if s.starts_with("0x") && s.len() > 2 {
@@ -65,7 +65,7 @@ impl Deref for SMBiosType {
 
 impl fmt::Debug for SMBiosType {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosType>())
+        fmt.debug_struct(any::type_name::<SMBiosType>())
             .field("type", &self.0)
             .finish()
     }
@@ -78,7 +78,7 @@ pub struct Header([u8; 4]);
 
 impl fmt::Debug for Header {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<Header>())
+        fmt.debug_struct(any::type_name::<Header>())
             .field("struct_type", &self.struct_type())
             .field("length", &self.length())
             .field("handle", &self.handle())
@@ -143,7 +143,7 @@ impl Header {
     }
 
     /// Byte iterator of the header
-    pub fn iter(&self) -> std::slice::Iter<'_, u8> {
+    pub fn iter(&self) -> core::slice::Iter<'_, u8> {
         self.0.iter()
     }
 }

@@ -1,7 +1,8 @@
 use super::system_slot::{BusNumber, DeviceFunctionNumber, SegmentGroupNumber};
 use crate::{OnBoardDeviceType, SMBiosStruct, UndefinedStruct};
 use serde::{ser::SerializeStruct, Serialize, Serializer};
-use std::fmt;
+use core::{fmt, any};
+use alloc::string::String;
 
 /// # Onboard Devices Extended Information (Type 41)
 ///
@@ -76,7 +77,7 @@ impl<'a> SMBiosOnboardDevicesExtendedInformation<'a> {
 
 impl fmt::Debug for SMBiosOnboardDevicesExtendedInformation<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<
+        fmt.debug_struct(any::type_name::<
             SMBiosOnboardDevicesExtendedInformation<'_>,
         >())
         .field("header", &self.parts.header)

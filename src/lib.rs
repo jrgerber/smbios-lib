@@ -7,26 +7,40 @@
 
 #![warn(missing_docs)]
 #![deny(rust_2018_idioms)]
+#![cfg_attr(feature = "no_std", no_std)]
+
+extern crate alloc;
 
 mod core;
+#[cfg(not(feature = "no_std"))]
 mod file_io;
+#[cfg(not(feature = "no_std"))]
 mod macos;
 mod structs;
+#[cfg(not(feature = "no_std"))]
 mod unix;
+#[cfg(not(feature = "no_std"))]
 mod windows;
+#[cfg(all(feature = "x86_64", feature = "no_std"))]
+mod x86_64;
 
 pub use structs::*;
 
 pub use crate::core::*;
+#[cfg(not(feature = "no_std"))]
 pub use file_io::*;
 
-#[cfg(target_family = "windows")]
+#[cfg(all(target_family = "windows", not(feature = "no_std")))]
 pub use windows::{load_windows_smbios_data, raw_smbios_from_device, table_load_from_device};
 
+#[cfg(not(feature = "no_std"))]
 pub use windows::WinSMBiosData;
 
-#[cfg(any(target_os = "linux", target_os = "android", target_os = "freebsd"))]
+#[cfg(all(any(target_os = "linux", target_os = "android", target_os = "freebsd"), not(feature = "no_std")))]
 pub use unix::*;
 
-#[cfg(any(target_os = "macos", target_os = "ios"))]
+#[cfg(all(any(target_os = "macos", target_os = "ios"), not(feature = "no_std")))]
 pub use macos::*;
+
+#[cfg(all(feature = "x86_64", feature = "no_std"))]
+pub use crate::x86_64::*;

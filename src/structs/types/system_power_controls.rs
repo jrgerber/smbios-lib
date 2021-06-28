@@ -1,6 +1,6 @@
 use crate::{SMBiosStruct, UndefinedStruct};
 use serde::{ser::SerializeStruct, Serialize, Serializer};
-use std::fmt;
+use core::{fmt, any};
 
 /// # System Power Controls (Type 25)
 ///
@@ -75,7 +75,7 @@ impl<'a> SMBiosSystemPowerControls<'a> {
 
 impl fmt::Debug for SMBiosSystemPowerControls<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosSystemPowerControls<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosSystemPowerControls<'_>>())
             .field("header", &self.parts.header)
             .field(
                 "next_scheduled_power_on_month",

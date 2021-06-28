@@ -1,6 +1,6 @@
 use crate::{SMBiosStruct, UndefinedStruct};
 use serde::{ser::SerializeStruct, Serialize, Serializer};
-use std::fmt;
+use core::{fmt, any};
 
 /// # System Reset (Type 23)
 ///
@@ -87,7 +87,7 @@ impl<'a> SMBiosSystemReset<'a> {
 
 impl fmt::Debug for SMBiosSystemReset<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosSystemReset<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosSystemReset<'_>>())
             .field("header", &self.parts.header)
             .field("capabilities", &self.capabilities())
             .field("reset_count", &self.reset_count())
@@ -161,7 +161,7 @@ impl SystemResetCapabilities {
 
 impl fmt::Debug for SystemResetCapabilities {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SystemResetCapabilities>())
+        fmt.debug_struct(any::type_name::<SystemResetCapabilities>())
             .field("raw", &self.raw)
             .field("has_watchdog_timer", &self.has_watchdog_timer())
             .field("boot_option_on_limit", &self.boot_option_on_limit())

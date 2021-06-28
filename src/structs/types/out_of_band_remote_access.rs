@@ -1,6 +1,8 @@
 use crate::{SMBiosStruct, UndefinedStruct};
+
 use serde::{ser::SerializeStruct, Serialize, Serializer};
-use std::{fmt, ops::Deref};
+use core::{fmt, ops::Deref, any};
+use alloc::string::String;
 
 /// # Out-of-Band Remote Access (Type 30)
 ///
@@ -88,7 +90,7 @@ impl Connections {
 
 impl fmt::Debug for Connections {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<Connections>())
+        fmt.debug_struct(any::type_name::<Connections>())
             .field("raw", &self.raw)
             .field(
                 "inbound_connection_enabled",
@@ -123,7 +125,7 @@ impl Serialize for Connections {
 
 impl fmt::Debug for SMBiosOutOfBandRemoteAccess<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosOutOfBandRemoteAccess<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosOutOfBandRemoteAccess<'_>>())
             .field("header", &self.parts.header)
             .field("manufacturer_name", &self.manufacturer_name())
             .field("connections", &self.connections())
