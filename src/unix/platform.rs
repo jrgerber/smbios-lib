@@ -119,16 +119,6 @@ pub fn table_load_from_device() -> Result<SMBiosData, Error> {
         }
     }
 
-    if structure_table_address < RANGE_START || structure_table_address > RANGE_END {
-        return Err(Error::new(
-            ErrorKind::InvalidData,
-            format!(
-                "The entry point has given an out of range start address for the table: {}",
-                structure_table_address
-            ),
-        ));
-    }
-
     if structure_table_address + structure_table_length as u64 > RANGE_END {
         return Err(Error::new(
             ErrorKind::InvalidData,
@@ -271,16 +261,6 @@ mod tests {
                 );
                 println!("Table at: {:#010X}.", entry_point.structure_table_address());
             }
-        }
-
-        if structure_table_address < RANGE_START || structure_table_address > RANGE_END {
-            return Err(Error::new(
-                ErrorKind::InvalidData,
-                format!(
-                    "The entry point has given an out of range start address for the table: {}",
-                    structure_table_address
-                ),
-            ));
         }
 
         if structure_table_address + structure_table_length as u64 > RANGE_END {
