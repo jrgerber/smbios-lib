@@ -1099,7 +1099,7 @@ impl From<u8> for DeviceFunctionNumber {
         match raw {
             0xFF => DeviceFunctionNumber::NotApplicable,
             _ => DeviceFunctionNumber::Number {
-                device: raw & 0b11111000 >> 3,
+                device: (raw & 0b11111000) >> 3,
                 function: raw & 0b00000111,
             },
         }
