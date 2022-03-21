@@ -514,7 +514,7 @@ impl<'a> SMBiosEntryPoint64 {
     pub fn structure_table_address(&self) -> u64 {
         u64::from_le_bytes(
             self.raw
-                [Self::STRUCTURE_TABLE_ADDRESS_OFFSET..Self::STRUCTURE_TABLE_ADDRESS_OFFSET + 4]
+                [Self::STRUCTURE_TABLE_ADDRESS_OFFSET..Self::STRUCTURE_TABLE_ADDRESS_OFFSET + 8]
                 .try_into()
                 .expect("u64 is 8 bytes"),
         )
