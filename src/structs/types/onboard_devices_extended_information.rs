@@ -140,9 +140,12 @@ mod tests {
             BusNumber::Number(number) => assert_eq!(number, 0),
             BusNumber::NotApplicable => panic!("expected Number"),
         }
+
+        // At offset 0x0A is the value 0xFE which is the device/function value.
+        // The 8 bits are 0b11111 (0n31) and 0b110 (0n6)
         match test_struct.device_function_number().unwrap() {
             DeviceFunctionNumber::Number { device, function } => {
-                assert_eq!(device, 30);
+                assert_eq!(device, 31);
                 assert_eq!(function, 6);
             }
             _ => panic!("expected device and function values"),
