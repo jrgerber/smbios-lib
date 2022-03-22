@@ -1,6 +1,6 @@
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use crate::{SMBiosStruct, Strings, UndefinedStruct};
-use std::fmt;
+use core::{fmt, any};
 
 /// # OEM Strings (Type 11)
 ///
@@ -40,7 +40,7 @@ impl<'a> SMBiosOemStrings<'a> {
 
 impl fmt::Debug for SMBiosOemStrings<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosOemStrings<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosOemStrings<'_>>())
             .field("header", &self.parts.header)
             .field("count", &self.count())
             .field("oem_strings", &self.oem_strings())

@@ -1,6 +1,6 @@
 use crate::{SMBiosStruct, UndefinedStruct};
 use serde::{ser::SerializeStruct, Serialize, Serializer};
-use std::fmt;
+use core::{fmt, any};
 
 /// # Management Device Threshold Data (Type 36)
 ///
@@ -65,7 +65,7 @@ impl<'a> SMBiosManagementDeviceThresholdData<'a> {
 
 impl fmt::Debug for SMBiosManagementDeviceThresholdData<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosManagementDeviceThresholdData<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosManagementDeviceThresholdData<'_>>())
             .field("header", &self.parts.header)
             .field(
                 "lower_threshold_non_critical",

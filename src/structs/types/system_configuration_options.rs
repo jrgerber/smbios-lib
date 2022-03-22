@@ -1,6 +1,6 @@
 use crate::{SMBiosStruct, Strings, UndefinedStruct};
 use serde::{ser::SerializeStruct, Serialize, Serializer};
-use std::fmt;
+use core::{fmt, any};
 
 /// # System Configuration Options (Type 12)
 ///
@@ -43,7 +43,7 @@ impl<'a> SMBiosSystemConfigurationOptions<'a> {
 
 impl fmt::Debug for SMBiosSystemConfigurationOptions<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosSystemConfigurationOptions<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosSystemConfigurationOptions<'_>>())
             .field("header", &self.parts.header)
             .field("count", &self.count())
             .field("configuration_strings", &self.configuration_strings())

@@ -1,6 +1,7 @@
 use crate::{SMBiosStruct, UndefinedStruct};
 use serde::{ser::SerializeSeq, ser::SerializeStruct, Serialize, Serializer};
-use std::{convert::TryInto, fmt, ops::Deref};
+use core::{convert::TryInto, fmt, ops::Deref, any};
+use alloc::{vec::Vec, string::String};
 
 /// # System Slots (Type 9)
 ///
@@ -162,7 +163,7 @@ impl<'a> SMBiosSystemSlot<'a> {
 
 impl fmt::Debug for SMBiosSystemSlot<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosSystemSlot<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosSystemSlot<'_>>())
             .field("header", &self.parts.header)
             .field("slot_designation", &self.slot_designation())
             .field("system_slot_type", &self.system_slot_type())
@@ -366,7 +367,7 @@ impl From<u8> for SystemSlotTypeData {
 
 impl fmt::Debug for SystemSlotTypeData {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SystemSlotTypeData>())
+        fmt.debug_struct(any::type_name::<SystemSlotTypeData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()
@@ -598,7 +599,7 @@ impl From<u8> for SlotWidthData {
 
 impl fmt::Debug for SlotWidthData {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SlotWidthData>())
+        fmt.debug_struct(any::type_name::<SlotWidthData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()
@@ -691,7 +692,7 @@ impl From<u8> for SlotCurrentUsageData {
 
 impl fmt::Debug for SlotCurrentUsageData {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SlotCurrentUsageData>())
+        fmt.debug_struct(any::type_name::<SlotCurrentUsageData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()
@@ -768,7 +769,7 @@ impl From<u8> for SlotLengthData {
 
 impl fmt::Debug for SlotLengthData {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SlotLengthData>())
+        fmt.debug_struct(any::type_name::<SlotLengthData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()
@@ -873,7 +874,7 @@ impl SystemSlotCharacteristics1 {
 
 impl fmt::Debug for SystemSlotCharacteristics1 {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SystemSlotCharacteristics1>())
+        fmt.debug_struct(any::type_name::<SystemSlotCharacteristics1>())
             .field("raw", &self.raw)
             .field("unknown", &self.unknown())
             .field("provides5_volts", &self.provides5_volts())
@@ -983,7 +984,7 @@ impl SystemSlotCharacteristics2 {
 
 impl fmt::Debug for SystemSlotCharacteristics2 {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SystemSlotCharacteristics2>())
+        fmt.debug_struct(any::type_name::<SystemSlotCharacteristics2>())
             .field("raw", &self.raw)
             .field(
                 "supports_power_management_event",
@@ -1160,7 +1161,7 @@ impl<'a> SlotPeerGroup<'a> {
 
 impl fmt::Debug for SlotPeerGroup<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SlotPeerGroup<'_>>())
+        fmt.debug_struct(any::type_name::<SlotPeerGroup<'_>>())
             .field("segment_group_number", &self.segment_group_number())
             .field("bus_number", &self.bus_number())
             .field("device_function_number", &self.device_function_number())

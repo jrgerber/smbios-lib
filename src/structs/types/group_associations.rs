@@ -1,7 +1,8 @@
 use crate::core::{Handle, UndefinedStruct};
 use crate::SMBiosStruct;
 use serde::{ser::SerializeSeq, ser::SerializeStruct, Serialize, Serializer};
-use std::fmt;
+use core::{fmt, any};
+use alloc::{string::String, vec::Vec};
 
 /// # Group Associations (Type 14)
 ///
@@ -59,7 +60,7 @@ impl<'a> SMBiosGroupAssociations<'a> {
 
 impl fmt::Debug for SMBiosGroupAssociations<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosGroupAssociations<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosGroupAssociations<'_>>())
             .field("header", &self.parts.header)
             .field("group_name", &self.group_name())
             .field("number_of_items", &self.number_of_items())
@@ -120,7 +121,7 @@ impl<'a> GroupAssociationItem<'a> {
 
 impl fmt::Debug for GroupAssociationItem<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<GroupAssociationItem<'_>>())
+        fmt.debug_struct(any::type_name::<GroupAssociationItem<'_>>())
             .field("struct_type", &self.struct_type())
             .field("item_handle", &self.item_handle())
             .finish()

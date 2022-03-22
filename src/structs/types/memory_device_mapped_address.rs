@@ -1,7 +1,7 @@
 use crate::core::{Handle, UndefinedStruct};
 use crate::SMBiosStruct;
 use serde::{ser::SerializeStruct, Serialize, Serializer};
-use std::fmt;
+use core::{fmt, any};
 
 /// # Memory Device Mapped Address (Type 20)
 ///
@@ -135,7 +135,7 @@ impl<'a> SMBiosMemoryDeviceMappedAddress<'a> {
 
 impl fmt::Debug for SMBiosMemoryDeviceMappedAddress<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosMemoryDeviceMappedAddress<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosMemoryDeviceMappedAddress<'_>>())
             .field("header", &self.parts.header)
             .field("starting_address", &self.starting_address())
             .field("ending_address", &self.ending_address())

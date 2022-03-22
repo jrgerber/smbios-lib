@@ -2,13 +2,19 @@ use super::header::{Handle, Header};
 use super::strings::Strings;
 use crate::structs::{DefinedStruct, SMBiosEndOfTable, SMBiosStruct};
 use serde::{Serialize, Serializer};
-use std::fmt;
+#[cfg(not(feature = "no_std"))]
 use std::{
-    convert::TryInto,
     fs::File,
     io::{prelude::*, Error, ErrorKind, SeekFrom},
-    slice::Iter,
 };
+use core::{
+    convert::TryInto,
+    slice::Iter,
+    fmt,
+    any
+};
+use alloc::{vec::{Vec, IntoIter}, format, string::String};
+
 /// # Embodies the three basic parts of an SMBIOS structure
 ///
 /// Every SMBIOS structure contains three distinct sections:
@@ -171,7 +177,7 @@ impl<'a> UndefinedStruct {
 impl fmt::Debug for UndefinedStruct {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         let fields = &self.fields[Header::SIZE..];
-        fmt.debug_struct(std::any::type_name::<UndefinedStruct>())
+        fmt.debug_struct(any::type_name::<UndefinedStruct>())
             .field("header", &self.header)
             .field("fields", &fields)
             .field("strings", &self.strings)
@@ -317,6 +323,7 @@ impl<'a> UndefinedStructTable {
     }
 
     /// Load an [UndefinedStructTable] by seeking and reading the file offsets.
+    #[cfg(not(feature = "no_std"))]
     pub fn try_load_from_file_offset(
         file: &mut File,
         table_offset: u64,
@@ -394,7 +401,7 @@ impl From<Vec<u8>> for UndefinedStructTable {
 
 impl IntoIterator for UndefinedStructTable {
     type Item = UndefinedStruct;
-    type IntoIter = std::vec::IntoIter<Self::Item>;
+    type IntoIter = IntoIter<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.0.into_iter()

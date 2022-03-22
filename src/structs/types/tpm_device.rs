@@ -1,6 +1,7 @@
 use crate::{SMBiosStruct, UndefinedStruct};
 use serde::{ser::SerializeStruct, Serialize, Serializer};
-use std::{array::TryFromSliceError, convert::TryFrom, fmt, ops::Deref};
+use core::{array::TryFromSliceError, convert::TryFrom, fmt, ops::Deref, any};
+use alloc::string::String;
 
 /// # TPM Device (Type 43)
 pub struct SMBiosTpmDevice<'a> {
@@ -106,7 +107,7 @@ impl<'a> SMBiosTpmDevice<'a> {
 
 impl fmt::Debug for SMBiosTpmDevice<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosTpmDevice<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosTpmDevice<'_>>())
             .field("header", &self.parts.header)
             .field("vendor_id", &self.vendor_id())
             .field("major_spec_version", &self.major_spec_version())
@@ -162,7 +163,7 @@ impl<'a> TryFrom<&'a [u8]> for VendorId<'a> {
 
 impl<'a> fmt::Debug for VendorId<'a> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<VendorId<'_>>())
+        fmt.debug_struct(any::type_name::<VendorId<'_>>())
             .field("array", &self.array)
             .field("string", &String::from_utf8_lossy(self.array))
             .finish()
@@ -241,7 +242,7 @@ impl TpmDeviceCharacteristics {
 
 impl fmt::Debug for TpmDeviceCharacteristics {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<TpmDeviceCharacteristics>())
+        fmt.debug_struct(any::type_name::<TpmDeviceCharacteristics>())
             .field("raw", &self.raw)
             .field("reserved_0", &self.reserved_0())
             .field("reserved_1", &self.reserved_1())

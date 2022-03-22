@@ -1,8 +1,9 @@
 use crate::core::{Handle, UndefinedStruct};
 use crate::SMBiosStruct;
 use serde::{ser::SerializeSeq, ser::SerializeStruct, Serialize, Serializer};
-use std::fmt;
-use std::ops::Deref;
+use core::{fmt, any};
+use core::ops::Deref;
+use alloc::vec::Vec;
 
 /// # Memory Controller Information (Type 5, Obsolete)
 ///
@@ -108,7 +109,7 @@ impl<'a> SMBiosMemoryControllerInformation<'a> {
 
 impl fmt::Debug for SMBiosMemoryControllerInformation<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosMemoryControllerInformation<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosMemoryControllerInformation<'_>>())
             .field("header", &self.parts.header)
             .field("error_detecting_method", &self.error_detecting_method())
             .field(
@@ -192,7 +193,7 @@ pub struct ErrorDetectingMethodData {
 
 impl fmt::Debug for ErrorDetectingMethodData {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<ErrorDetectingMethodData>())
+        fmt.debug_struct(any::type_name::<ErrorDetectingMethodData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()
@@ -319,7 +320,7 @@ impl ErrorCorrectingCapabilities {
 
 impl fmt::Debug for ErrorCorrectingCapabilities {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<ErrorCorrectingCapabilities>())
+        fmt.debug_struct(any::type_name::<ErrorCorrectingCapabilities>())
             .field("raw", &self.raw)
             .field("other", &self.other())
             .field("unknown", &self.unknown())
@@ -375,7 +376,7 @@ pub struct InterleaveSupportData {
 
 impl fmt::Debug for InterleaveSupportData {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<InterleaveSupportData>())
+        fmt.debug_struct(any::type_name::<InterleaveSupportData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()
@@ -491,7 +492,7 @@ impl MemorySpeeds {
 
 impl fmt::Debug for MemorySpeeds {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<MemorySpeeds>())
+        fmt.debug_struct(any::type_name::<MemorySpeeds>())
             .field("raw", &self.raw)
             .field("other", &self.other())
             .field("unknown", &self.unknown())
@@ -598,7 +599,7 @@ impl MemoryTypes {
 
 impl fmt::Debug for MemoryTypes {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<MemoryTypes>())
+        fmt.debug_struct(any::type_name::<MemoryTypes>())
             .field("raw", &self.raw)
             .field("other", &self.other())
             .field("unknown", &self.unknown())
@@ -677,7 +678,7 @@ impl ModuleVoltage {
 
 impl fmt::Debug for ModuleVoltage {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<ModuleVoltage>())
+        fmt.debug_struct(any::type_name::<ModuleVoltage>())
             .field("raw", &self.raw)
             .field("volts_5", &self.volts_5())
             .field("volts_3_3", &self.volts_3_3())

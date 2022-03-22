@@ -1,7 +1,7 @@
 use crate::{SMBiosStruct, UndefinedStruct};
 use serde::{ser::SerializeStruct, Serialize, Serializer};
-use std::fmt;
-use std::ops::Deref;
+use core::{fmt, any};
+use core::ops::Deref;
 
 /// # IPMI Device Information (Type 38)
 ///
@@ -78,7 +78,7 @@ impl<'a> SMBiosIpmiDeviceInformation<'a> {
 
 impl fmt::Debug for SMBiosIpmiDeviceInformation<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosIpmiDeviceInformation<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosIpmiDeviceInformation<'_>>())
             .field("header", &self.parts.header)
             .field("interface_type", &self.interface_type())
             .field(
@@ -137,7 +137,7 @@ pub struct BaseAddressModifier {
 
 impl fmt::Debug for BaseAddressModifier {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<BaseAddressModifier>())
+        fmt.debug_struct(any::type_name::<BaseAddressModifier>())
             .field("raw", &self.raw)
             .field("register_spacing", &self.register_spacing)
             .field("ls_address_bit", &self.ls_address_bit)
@@ -282,7 +282,7 @@ pub struct IpmiInterfaceTypeData {
 
 impl fmt::Debug for IpmiInterfaceTypeData {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<IpmiInterfaceType>())
+        fmt.debug_struct(any::type_name::<IpmiInterfaceType>())
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()

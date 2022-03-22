@@ -1,7 +1,8 @@
 use crate::{SMBiosStruct, UndefinedStruct};
 use serde::{ser::SerializeSeq, ser::SerializeStruct, Serialize, Serializer};
-use std::fmt;
-use std::ops::Deref;
+use core::{fmt, any};
+use core::ops::Deref;
+use alloc::vec::Vec;
 
 /// # System Event Log (Type 15)
 ///
@@ -132,7 +133,7 @@ impl<'a> SMBiosSystemEventLog<'a> {
 
 impl fmt::Debug for SMBiosSystemEventLog<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosSystemEventLog<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosSystemEventLog<'_>>())
             .field("header", &self.parts.header)
             .field("log_area_length", &self.log_area_length())
             .field("log_header_start_offset", &self.log_header_start_offset())
@@ -198,7 +199,7 @@ pub struct LogTypeData {
 
 impl fmt::Debug for LogTypeData {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<LogTypeData>())
+        fmt.debug_struct(any::type_name::<LogTypeData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()
@@ -336,7 +337,7 @@ pub struct VariableDataFormatTypeData {
 
 impl fmt::Debug for VariableDataFormatTypeData {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<VariableDataFormatTypeData>())
+        fmt.debug_struct(any::type_name::<VariableDataFormatTypeData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()
@@ -426,7 +427,7 @@ pub struct AccessMethodData {
 
 impl fmt::Debug for AccessMethodData {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<AccessMethodData>())
+        fmt.debug_struct(any::type_name::<AccessMethodData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()
@@ -547,7 +548,7 @@ impl<'a> EventLogTypeDescriptor<'a> {
 
 impl<'a> fmt::Debug for EventLogTypeDescriptor<'a> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<EventLogTypeDescriptor<'_>>())
+        fmt.debug_struct(any::type_name::<EventLogTypeDescriptor<'_>>())
             .field("raw", &self.raw)
             .field("log_type", &self.log_type())
             .field(
@@ -610,7 +611,7 @@ impl<'a> TypeDescriptors<'a> {
 
 impl<'a> fmt::Debug for TypeDescriptors<'a> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<TypeDescriptors<'_>>())
+        fmt.debug_struct(any::type_name::<TypeDescriptors<'_>>())
             .field("descriptors", &self.into_iter())
             .finish()
     }
@@ -737,7 +738,7 @@ impl LogStatus {
 
 impl fmt::Debug for LogStatus {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<LogStatus>())
+        fmt.debug_struct(any::type_name::<LogStatus>())
             .field("raw", &self.raw)
             .field("log_area_valid", &self.log_area_valid())
             .field("log_area_full", &self.log_area_full())
@@ -773,7 +774,7 @@ pub struct HeaderFormatData {
 
 impl fmt::Debug for HeaderFormatData {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<HeaderFormatData>())
+        fmt.debug_struct(any::type_name::<HeaderFormatData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()

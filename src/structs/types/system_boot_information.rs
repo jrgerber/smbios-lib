@@ -1,6 +1,6 @@
 use crate::{SMBiosStruct, UndefinedStruct};
 use serde::{ser::SerializeStruct, Serialize, Serializer};
-use std::fmt;
+use core::{fmt, any};
 
 /// # System Boot Information (Type 32)
 ///
@@ -60,7 +60,7 @@ impl<'a> SMBiosSystemBootInformation<'a> {
 
 impl fmt::Debug for SMBiosSystemBootInformation<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosSystemBootInformation<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosSystemBootInformation<'_>>())
             .field("header", &self.parts.header)
             .field("boot_status_data", &self.boot_status_data())
             .finish()
@@ -106,7 +106,7 @@ impl<'a> SystemBootStatusData<'a> {
 
 impl fmt::Debug for SystemBootStatusData<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosSystemBootInformation<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosSystemBootInformation<'_>>())
             .field("system_boot_status", &self.system_boot_status())
             .finish()
     }

@@ -1,7 +1,8 @@
 use crate::{SMBiosStruct, UndefinedStruct};
 use serde::{ser::SerializeStruct, Serialize, Serializer};
-use std::fmt;
-use std::ops::Deref;
+use core::{fmt, any};
+use core::ops::Deref;
+use alloc::string::String;
 
 /// #  BIOS Information (Type 0)
 pub struct SMBiosInformation<'a> {
@@ -229,7 +230,7 @@ impl From<u16> for ExtendedRomSize {
 
 impl fmt::Debug for SMBiosInformation<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosInformation<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosInformation<'_>>())
             .field("header", &self.parts.header)
             .field("vendor", &self.vendor())
             .field("version", &self.version())
@@ -499,7 +500,7 @@ impl BiosCharacteristics {
 
 impl fmt::Debug for BiosCharacteristics {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<BiosCharacteristics>())
+        fmt.debug_struct(any::type_name::<BiosCharacteristics>())
             .field("raw", &self.raw)
             .field("unknown", &self.unknown())
             .field(
@@ -707,7 +708,7 @@ impl BiosCharacteristicsExtension0 {
 
 impl fmt::Debug for BiosCharacteristicsExtension0 {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<BiosCharacteristicsExtension0>())
+        fmt.debug_struct(any::type_name::<BiosCharacteristicsExtension0>())
             .field("raw", &self.raw)
             .field("acpi_is_supported", &self.acpi_is_supported())
             .field("usb_legacy_is_supported", &self.usb_legacy_is_supported())
@@ -814,7 +815,7 @@ impl BiosCharacteristicsExtension1 {
 
 impl fmt::Debug for BiosCharacteristicsExtension1 {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<BiosCharacteristicsExtension1>())
+        fmt.debug_struct(any::type_name::<BiosCharacteristicsExtension1>())
             .field("raw", &self.raw)
             .field(
                 "bios_boot_specification_is_supported",

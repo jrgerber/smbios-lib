@@ -2,7 +2,8 @@
 //! via into() and into_iter() trait functions for [UndefinedStruct].
 
 use serde::Serialize;
-use std::iter::FromIterator;
+use core::iter::FromIterator;
+use alloc::vec::{Vec, IntoIter};
 
 use crate::core::UndefinedStruct;
 
@@ -303,7 +304,7 @@ impl<'a> DefinedStructTable<'a> {
 
 impl<'a> IntoIterator for DefinedStructTable<'a> {
     type Item = DefinedStruct<'a>;
-    type IntoIter = std::vec::IntoIter<Self::Item>;
+    type IntoIter = IntoIter<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.0.into_iter()

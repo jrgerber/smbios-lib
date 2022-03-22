@@ -1,8 +1,9 @@
 use crate::core::{Handle, UndefinedStruct};
 use crate::SMBiosStruct;
 use serde::{ser::SerializeStruct, Serialize, Serializer};
-use std::fmt;
-use std::ops::Deref;
+use core::{fmt, any};
+use core::ops::Deref;
+use alloc::string::String;
 
 /// # Memory Device (Type 17)
 ///
@@ -315,7 +316,7 @@ impl<'a> SMBiosMemoryDevice<'a> {
 
 impl fmt::Debug for SMBiosMemoryDevice<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosMemoryDevice<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosMemoryDevice<'_>>())
             .field("header", &self.parts.header)
             .field(
                 "physical_memory_array_handle",
@@ -454,7 +455,7 @@ pub struct MemoryDeviceTypeData {
 
 impl fmt::Debug for MemoryDeviceTypeData {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<MemoryDeviceTypeData>())
+        fmt.debug_struct(any::type_name::<MemoryDeviceTypeData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()
@@ -619,7 +620,7 @@ pub struct MemoryFormFactorData {
 
 impl fmt::Debug for MemoryFormFactorData {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<MemoryFormFactorData>())
+        fmt.debug_struct(any::type_name::<MemoryFormFactorData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()
@@ -812,7 +813,7 @@ impl MemoryTypeDetails {
 
 impl fmt::Debug for MemoryTypeDetails {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<MemoryTypeDetails>())
+        fmt.debug_struct(any::type_name::<MemoryTypeDetails>())
             .field("raw", &self.raw)
             .field("other", &self.other())
             .field("unknown", &self.unknown())
@@ -874,7 +875,7 @@ pub struct MemoryDeviceTechnologyData {
 
 impl fmt::Debug for MemoryDeviceTechnologyData {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<MemoryDeviceTechnologyData>())
+        fmt.debug_struct(any::type_name::<MemoryDeviceTechnologyData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()
@@ -990,7 +991,7 @@ impl MemoryOperatingModeCapabilities {
 
 impl fmt::Debug for MemoryOperatingModeCapabilities {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<MemoryOperatingModeCapabilities>())
+        fmt.debug_struct(any::type_name::<MemoryOperatingModeCapabilities>())
             .field("raw", &self.raw)
             .field("other", &self.other())
             .field("unknown", &self.unknown())

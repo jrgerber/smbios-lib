@@ -1,14 +1,70 @@
 use serde::{ser::SerializeStruct, Serialize, Serializer};
+#[cfg(not(feature = "no_std"))]
 use std::{
+    fs::{read, File},
+    io::{prelude::*, Error, ErrorKind, SeekFrom},
+    path::Path,
+    ops::RangeBounds,
+};
+use core::{
     convert::TryFrom,
     convert::TryInto,
     fmt,
-    fs::{read, File},
-    io::{prelude::*, Error, ErrorKind, SeekFrom},
     num::Wrapping,
-    ops::RangeBounds,
-    path::Path,
+    any
 };
+use alloc::{vec::Vec, format};
+
+/// SMBiosEntryPoint32 structure parse errors
+pub enum SMBiosEntryPoint32Error {
+    /// Slice is smaller than SMBiosEntryPoint32::MINIMUM_SIZE
+    SliceTooSmall,
+    /// _SM_ anchor not found
+    SMNotFound,
+    /// Entry Point Structure checksum verification failed
+    EntryChecksumVerificationFailed,
+    /// The Entry Point Length field specified a value which exceeded the bounds of the Entry Point Structure
+    EntryPointLengthTooBig,
+    /// _DMI_ anchor not found
+    DMINotFound,
+    /// Intermediate entry point structure checksum verification failed
+    IntermediateChecksumVerificationFailed,
+    /// Entry Point not found
+    EntryPointNotFound,
+}
+
+#[cfg(not(feature = "no_std"))]
+impl SMBiosEntryPoint32Error {
+    fn into_io_error(&self) -> Error {
+        Error::new(ErrorKind::InvalidData, self.to_string())
+    }
+}
+
+impl fmt::Debug for SMBiosEntryPoint32Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_tuple("SMBiosEntryPoint32Error")
+            .field(&format!("{}", &self))
+            .finish()
+    }
+}
+
+impl fmt::Display for SMBiosEntryPoint32Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let message = match self {
+            SMBiosEntryPoint32Error::SliceTooSmall => "Slice is smaller than SMBiosEntryPoint32::MINIMUM_SIZE",
+            SMBiosEntryPoint32Error::SMNotFound => "_SM_ anchor not found",
+            SMBiosEntryPoint32Error::EntryChecksumVerificationFailed => "Entry Point Structure checksum verification failed",
+            SMBiosEntryPoint32Error::EntryPointLengthTooBig => "The Entry Point Length field specified a value which exceeded the bounds of the Entry Point Structure",
+            SMBiosEntryPoint32Error::DMINotFound => "_DMI_ anchor not found",
+            SMBiosEntryPoint32Error::IntermediateChecksumVerificationFailed => "Intermediate entry point structure checksum verification failed",
+            SMBiosEntryPoint32Error::EntryPointNotFound => "Entry Point not found"
+        };
+        f.write_str(message)
+    }
+}
+
+#[cfg(not(feature = "no_std"))]
+impl std::error::Error for SMBiosEntryPoint32Error {}
 
 /// # SMBIOS 2.1 (32 bit) Entry Point structure
 ///
@@ -233,12 +289,14 @@ impl<'a> SMBiosEntryPoint32 {
     }
 
     /// Load this structure from a file
+    #[cfg(not(feature = "no_std"))]
     pub fn try_load_from_file(filename: &Path) -> Result<Self, Error> {
-        read(filename)?.try_into()
+        read(filename)?.try_into().map_err(|e: SMBiosEntryPoint32Error| e.into_io_error())
     }
 
     /// Load this structure by scanning a file within the given offsets,
     /// looking for the [SMBiosEntryPoint32::SM_ANCHOR] string.
+    #[cfg(not(feature = "no_std"))]
     pub fn try_scan_from_file<T: Iterator<Item = u64>>(
         file: &mut File,
         range: T,
@@ -258,23 +316,39 @@ impl<'a> SMBiosEntryPoint32 {
                 entry_point_buffer.resize(struct_length, 0);
                 file.seek(SeekFrom::Start(offset))?;
                 file.read_exact(&mut entry_point_buffer)?;
-                let entry_point: Self = entry_point_buffer.try_into()?;
+                let entry_point: Self = entry_point_buffer.try_into()
+                    .map_err(|e: SMBiosEntryPoint32Error| e.into_io_error())?;
                 return Ok(entry_point);
             }
         }
         Err(Error::new(ErrorKind::UnexpectedEof, "Not found"))
     }
+
+    /// Load this structure by scanning given memory slice,
+    /// looking for the [SMBiosEntryPoint32::SM_ANCHOR] string.
+    #[cfg(feature = "no_std")]
+    pub fn try_scan_from_raw(data: &[u8]) -> Result<Self, SMBiosEntryPoint32Error> {
+        let range = 0..data.len();
+        for offset in range.step_by(0x10) {
+            let anchor = &data[offset..offset + 4];
+            if anchor == Self::SM_ANCHOR {
+                let length = &data[offset + 4..offset + 6];
+                let struct_length = length[1] as usize;
+                let entry_point_buffer = data[offset..offset + struct_length].to_vec();
+                let entry_point: Self = entry_point_buffer.try_into()?;
+                return Ok(entry_point);
+            }
+        }
+        Err(SMBiosEntryPoint32Error::EntryPointNotFound)
+    }
 }
 
 impl<'a> TryFrom<Vec<u8>> for SMBiosEntryPoint32 {
-    type Error = Error;
+    type Error = SMBiosEntryPoint32Error;
 
     fn try_from(raw: Vec<u8>) -> Result<Self, Self::Error> {
         if raw.len() < Self::MINIMUM_SIZE {
-            return Err(Error::new(
-                ErrorKind::InvalidData,
-                "Slice is smaller than SMBiosEntryPoint32::MINIMUM_SIZE",
-            ));
+            return Err(SMBiosEntryPoint32Error::SliceTooSmall);
         }
 
         if !raw
@@ -282,7 +356,7 @@ impl<'a> TryFrom<Vec<u8>> for SMBiosEntryPoint32 {
             .zip(Self::SM_ANCHOR.iter())
             .all(|pair| pair.0 == pair.1)
         {
-            return Err(Error::new(ErrorKind::InvalidData, "_SM_ anchor not found"));
+            return Err(SMBiosEntryPoint32Error::SMNotFound);
         }
 
         // Verify the EPS checksum
@@ -291,12 +365,10 @@ impl<'a> TryFrom<Vec<u8>> for SMBiosEntryPoint32 {
         match raw.get(0..entry_point_length) {
             Some(checked_bytes) => {
                 if !verify_checksum(checked_bytes) {
-                    return Err(Error::new(
-                ErrorKind::InvalidData,"Entry Point Structure checksum verification failed"));
+                    return Err(SMBiosEntryPoint32Error::EntryChecksumVerificationFailed);
                 }
             }
-            None => return Err(Error::new(
-                ErrorKind::InvalidData,"The Entry Point Length field specified a value which exceeded the bounds of the Entry Point Structure")),
+            None => return Err(SMBiosEntryPoint32Error::EntryPointLengthTooBig),
         }
 
         let intermediate_anchor: [u8; 5] = raw
@@ -309,7 +381,7 @@ impl<'a> TryFrom<Vec<u8>> for SMBiosEntryPoint32 {
             .zip(Self::DMI_ANCHOR.iter())
             .all(|pair| pair.0 == pair.1)
         {
-            return Err(Error::new(ErrorKind::InvalidData, "_DMI_ anchor not found"));
+            return Err(SMBiosEntryPoint32Error::DMINotFound);
         }
 
         // Verify the IEPS checksum
@@ -320,10 +392,7 @@ impl<'a> TryFrom<Vec<u8>> for SMBiosEntryPoint32 {
             .expect("0x0F bytes");
 
         if !verify_checksum(&intermediate_entry_point_structure) {
-            return Err(Error::new(
-                ErrorKind::InvalidData,
-                "Intermediate entry point structure checksum verification failed",
-            ));
+            return Err(SMBiosEntryPoint32Error::IntermediateChecksumVerificationFailed);
         }
 
         Ok(SMBiosEntryPoint32 { raw })
@@ -332,7 +401,7 @@ impl<'a> TryFrom<Vec<u8>> for SMBiosEntryPoint32 {
 
 impl fmt::Debug for SMBiosEntryPoint32 {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosEntryPoint32>())
+        fmt.debug_struct(any::type_name::<SMBiosEntryPoint32>())
             .field(
                 "entry_point_structure_checksum",
                 &self.entry_point_structure_checksum(),
@@ -384,6 +453,51 @@ impl Serialize for SMBiosEntryPoint32 {
         state.end()
     }
 }
+
+/// SMBiosEntryPoint64 structure parse errors
+pub enum SMBiosEntryPoint64Error {
+    /// Slice is smaller than SMBiosEntryPoint64::MINIMUM_SIZE
+    SliceTooSmall,
+    /// Entry Point Structure checksum verification failed
+    SM3NotFound,
+    /// The Entry Point Length field specified a value which exceeded the bounds of the Entry Point Structure
+    ChecksumVerificationFailed,
+    /// Expected _SM3_ identifier not found
+    EntryPointLengthTooBig,
+    /// Entry Point not found
+    EntryPointNotFound
+}
+
+#[cfg(not(feature = "no_std"))]
+impl SMBiosEntryPoint64Error {
+    fn into_io_error(&self) -> Error {
+        Error::new(ErrorKind::InvalidData, self.to_string())
+    }
+}
+
+impl fmt::Debug for SMBiosEntryPoint64Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_tuple("SMBiosEntryPoint64Error")
+            .field(&format!("{}", &self))
+            .finish()
+    }
+}
+
+impl fmt::Display for SMBiosEntryPoint64Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let message = match self {
+            SMBiosEntryPoint64Error::SliceTooSmall => "Slice is smaller than SMBiosEntryPoint64::MINIMUM_SIZE",
+            SMBiosEntryPoint64Error::ChecksumVerificationFailed => "Entry Point Structure checksum verification failed",
+            SMBiosEntryPoint64Error::EntryPointLengthTooBig => "The Entry Point Length field specified a value which exceeded the bounds of the Entry Point Structure",
+            SMBiosEntryPoint64Error::SM3NotFound => "Expected _SM3_ identifier not found",
+            SMBiosEntryPoint64Error::EntryPointNotFound => "Entry Point not found"
+        };
+        f.write_str(message)
+    }
+}
+
+#[cfg(not(feature = "no_std"))]
+impl std::error::Error for SMBiosEntryPoint64Error {}
 
 /// # SMBIOS 3.0 (64 bit) Entry Point structure
 ///
@@ -521,12 +635,14 @@ impl<'a> SMBiosEntryPoint64 {
     }
 
     /// Load this structure from a file
+    #[cfg(not(feature = "no_std"))]
     pub fn try_load_from_file(filename: &Path) -> Result<Self, Error> {
-        read(filename)?.try_into()
+        read(filename)?.try_into().map_err(|e: SMBiosEntryPoint64Error| e.into_io_error())
     }
 
     /// Load this structure by scanning a file within the given offsets,
     /// looking for the [SMBiosEntryPoint64::SM3_ANCHOR] string.
+    #[cfg(not(feature = "no_std"))]
     pub fn try_scan_from_file<T: Iterator<Item = u64>>(
         file: &mut File,
         range: T,
@@ -546,17 +662,36 @@ impl<'a> SMBiosEntryPoint64 {
                 entry_point_buffer.resize(struct_length, 0);
                 file.seek(SeekFrom::Start(offset))?;
                 file.read_exact(&mut entry_point_buffer)?;
-                let entry_point: Self = entry_point_buffer.try_into()?;
+                let entry_point: Self = entry_point_buffer.try_into()
+                    .map_err(|e: SMBiosEntryPoint64Error| e.into_io_error())?;
                 return Ok(entry_point);
             }
         }
         Err(Error::new(ErrorKind::UnexpectedEof, "Not found"))
     }
+
+    /// Load this structure by scanning given memory slice,
+    /// looking for the [SMBiosEntryPoint64::SM3_ANCHOR] string.
+    #[cfg(feature = "no_std")]
+    pub fn try_scan_from_raw(data: &[u8]) -> Result<Self, SMBiosEntryPoint64Error> {
+        let range = 0..data.len();
+        for offset in range.step_by(0x10) {
+            let anchor = &data[offset..offset + 5];
+            if anchor == Self::SM3_ANCHOR {
+                let length = &data[offset + 5..offset + 7];
+                let struct_length = length[1] as usize;
+                let entry_point_buffer = data[offset..offset + struct_length].to_vec();
+                let entry_point: Self = entry_point_buffer.try_into()?;
+                return Ok(entry_point);
+            }
+        }
+        Err(SMBiosEntryPoint64Error::EntryPointNotFound)
+    }
 }
 
 impl fmt::Debug for SMBiosEntryPoint64 {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosEntryPoint64>())
+        fmt.debug_struct(any::type_name::<SMBiosEntryPoint64>())
             .field(
                 "entry_point_structure_checksum",
                 &self.entry_point_structure_checksum(),
@@ -598,14 +733,11 @@ impl Serialize for SMBiosEntryPoint64 {
 }
 
 impl<'a> TryFrom<Vec<u8>> for SMBiosEntryPoint64 {
-    type Error = Error;
+    type Error = SMBiosEntryPoint64Error;
 
     fn try_from(raw: Vec<u8>) -> Result<Self, Self::Error> {
         if raw.len() < Self::MINIMUM_SIZE {
-            return Err(Error::new(
-                ErrorKind::InvalidData,
-                "Slice is smaller than SMBiosEntryPoint64::MINIMUM_SIZE",
-            ));
+            return Err(SMBiosEntryPoint64Error::SliceTooSmall);
         }
 
         if !raw
@@ -613,10 +745,7 @@ impl<'a> TryFrom<Vec<u8>> for SMBiosEntryPoint64 {
             .zip(Self::SM3_ANCHOR.iter())
             .all(|pair| pair.0 == pair.1)
         {
-            return Err(Error::new(
-                ErrorKind::InvalidData,
-                "Expected _SM3_ identifier not found",
-            ));
+            return Err(SMBiosEntryPoint64Error::SM3NotFound);
         }
 
         // Verify the checksum
@@ -625,10 +754,10 @@ impl<'a> TryFrom<Vec<u8>> for SMBiosEntryPoint64 {
         match raw.get(0..entry_point_length) {
             Some(checked_bytes) => {
                 if !verify_checksum(checked_bytes) {
-                    return Err(Error::new(ErrorKind::InvalidData,"Entry Point Structure checksum verification failed"));
+                    return Err(SMBiosEntryPoint64Error::ChecksumVerificationFailed);
                 }
             }
-            None => return Err(Error::new(ErrorKind::InvalidData,"The Entry Point Length field specified a value which exceeded the bounds of the Entry Point Structure")),
+            None => return Err(SMBiosEntryPoint64Error::EntryPointLengthTooBig),
         }
 
         Ok(SMBiosEntryPoint64 { raw })

@@ -3,7 +3,7 @@ use crate::{
     UndefinedStruct,
 };
 use serde::{ser::SerializeStruct, Serialize, Serializer};
-use std::fmt;
+use core::{fmt, any};
 
 /// # 64-Bit Memory Error Information (Type 33)
 ///
@@ -91,7 +91,7 @@ impl<'a> SMBiosMemoryErrorInformation64<'a> {
 
 impl fmt::Debug for SMBiosMemoryErrorInformation64<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosMemoryErrorInformation64<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosMemoryErrorInformation64<'_>>())
             .field("header", &self.parts.header)
             .field("error_type", &self.error_type())
             .field("error_granularity", &self.error_granularity())

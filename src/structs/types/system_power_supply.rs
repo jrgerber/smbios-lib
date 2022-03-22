@@ -1,6 +1,7 @@
 use crate::{Handle, SMBiosStruct, UndefinedStruct};
 use serde::{ser::SerializeStruct, Serialize, Serializer};
-use std::fmt;
+use core::{fmt, any};
+use alloc::string::String;
 
 /// # System Power Supply (Type 39)
 ///
@@ -154,7 +155,7 @@ impl<'a> SMBiosSystemPowerSupply<'a> {
 
 impl fmt::Debug for SMBiosSystemPowerSupply<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosSystemPowerSupply<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosSystemPowerSupply<'_>>())
             .field("header", &self.parts.header)
             .field("power_unit_group", &self.power_unit_group())
             .field("location", &self.location())
@@ -267,7 +268,7 @@ impl PowerSupplyCharacteristics {
 
 impl fmt::Debug for PowerSupplyCharacteristics {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<PowerSupplyCharacteristics>())
+        fmt.debug_struct(any::type_name::<PowerSupplyCharacteristics>())
             .field("raw", &self.raw)
             .field("power_supply_type", &self.power_supply_type())
             .field("power_supply_status", &self.power_supply_status())

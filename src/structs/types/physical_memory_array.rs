@@ -1,7 +1,7 @@
 use crate::core::{Handle, UndefinedStruct};
 use crate::SMBiosStruct;
 use serde::{ser::SerializeStruct, Serialize, Serializer};
-use std::{fmt, ops::Deref};
+use core::{fmt, ops::Deref, any};
 /// # Physical Memory Array (Type 16)
 ///
 /// This structure describes a collection of memory devices that operate together to form a memory address space.
@@ -97,7 +97,7 @@ impl<'a> SMBiosPhysicalMemoryArray<'a> {
 
 impl fmt::Debug for SMBiosPhysicalMemoryArray<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosPhysicalMemoryArray<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosPhysicalMemoryArray<'_>>())
             .field("header", &self.parts.header)
             .field("location", &self.location())
             .field("usage", &self.usage())
@@ -155,7 +155,7 @@ pub struct MemoryArrayLocationData {
 
 impl fmt::Debug for MemoryArrayLocationData {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<MemoryArrayLocationData>())
+        fmt.debug_struct(any::type_name::<MemoryArrayLocationData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()
@@ -260,7 +260,7 @@ pub struct MemoryArrayUseData {
 
 impl fmt::Debug for MemoryArrayUseData {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<MemoryArrayUseData>())
+        fmt.debug_struct(any::type_name::<MemoryArrayUseData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()
@@ -341,7 +341,7 @@ pub struct MemoryArrayErrorCorrectionData {
 
 impl fmt::Debug for MemoryArrayErrorCorrectionData {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<MemoryArrayErrorCorrectionData>())
+        fmt.debug_struct(any::type_name::<MemoryArrayErrorCorrectionData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()

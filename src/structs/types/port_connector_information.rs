@@ -1,6 +1,7 @@
 use crate::{SMBiosStruct, UndefinedStruct};
 use serde::{ser::SerializeStruct, Serialize, Serializer};
-use std::{fmt, ops::Deref};
+use core::{fmt, ops::Deref, any};
+use alloc::string::String;
 
 /// # Port Connector Information (Type 8)
 ///
@@ -68,7 +69,7 @@ impl<'a> SMBiosPortConnectorInformation<'a> {
 
 impl fmt::Debug for SMBiosPortConnectorInformation<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosPortConnectorInformation<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosPortConnectorInformation<'_>>())
             .field("header", &self.parts.header)
             .field(
                 "internal_reference_designator",
@@ -122,7 +123,7 @@ pub struct PortInformationConnectorTypeData {
 
 impl fmt::Debug for PortInformationConnectorTypeData {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<PortInformationConnectorTypeData>())
+        fmt.debug_struct(any::type_name::<PortInformationConnectorTypeData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()
@@ -317,7 +318,7 @@ pub struct PortInformationPortTypeData {
 
 impl fmt::Debug for PortInformationPortTypeData {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<PortInformationPortTypeData>())
+        fmt.debug_struct(any::type_name::<PortInformationPortTypeData>())
             .field("raw", &self.raw)
             .field("value", &self.value)
             .finish()

@@ -1,6 +1,7 @@
 use crate::{Header, SMBiosStruct, UndefinedStruct};
 use serde::{ser::SerializeSeq, ser::SerializeStruct, Serialize, Serializer};
-use std::fmt;
+use core::{fmt, any};
+use alloc::{string::String, vec::Vec};
 
 /// # On Board Devices Information (Type 10, Obsolete)
 ///
@@ -47,7 +48,7 @@ impl<'a> SMBiosOnBoardDeviceInformation<'a> {
 
 impl fmt::Debug for SMBiosOnBoardDeviceInformation<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<SMBiosOnBoardDeviceInformation<'_>>())
+        fmt.debug_struct(any::type_name::<SMBiosOnBoardDeviceInformation<'_>>())
             .field("header", &self.parts.header)
             .field("number_of_devices", &self.number_of_devices())
             .field("onboard_device_iterator", &self.onboard_device_iterator())
@@ -111,7 +112,7 @@ impl<'a> OnBoardDevice<'a> {
 
 impl fmt::Debug for OnBoardDevice<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<OnBoardDevice<'_>>())
+        fmt.debug_struct(any::type_name::<OnBoardDevice<'_>>())
             .field("device_type", &self.device_type())
             .field("description", &self.description())
             .finish()
@@ -173,7 +174,7 @@ impl From<u8> for OnBoardDeviceType {
 
 impl fmt::Debug for OnBoardDeviceType {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct(std::any::type_name::<OnBoardDevice<'_>>())
+        fmt.debug_struct(any::type_name::<OnBoardDevice<'_>>())
             .field("raw", &self.raw)
             .field("type_of_device", &self.type_of_device())
             .field("status", &self.status())
