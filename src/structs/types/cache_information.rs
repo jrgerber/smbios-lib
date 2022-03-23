@@ -43,13 +43,17 @@ impl<'a> SMBiosCacheInformation<'a> {
     }
 
     /// Maximum size that can be installed
-    pub fn maximum_cache_size(&self) -> Option<u16> {
-        self.parts.get_field_word(0x07)
+    pub fn maximum_cache_size(&self) -> Option<CacheMemorySize> {
+        self.parts
+            .get_field_word(0x07)
+            .map(|raw| CacheMemorySize::from(raw))
     }
 
     /// Same format as Max Cache Size field; set to 0 if no cache is installed
-    pub fn installed_size(&self) -> Option<u16> {
-        self.parts.get_field_word(0x09)
+    pub fn installed_size(&self) -> Option<CacheMemorySize> {
+        self.parts
+            .get_field_word(0x09)
+            .map(|raw| CacheMemorySize::from(raw))
     }
 
     /// Supported SRAM type
@@ -94,13 +98,17 @@ impl<'a> SMBiosCacheInformation<'a> {
     }
 
     /// Maximum cache size
-    pub fn maximum_cache_size_2(&self) -> Option<u32> {
-        self.parts.get_field_dword(0x13)
+    pub fn maximum_cache_size_2(&self) -> Option<CacheMemorySize> {
+        self.parts
+            .get_field_dword(0x13)
+            .map(|raw| CacheMemorySize::from(raw))
     }
 
     /// Installed cache size
-    pub fn installed_cache_size_2(&self) -> Option<u32> {
-        self.parts.get_field_dword(0x17)
+    pub fn installed_cache_size_2(&self) -> Option<CacheMemorySize> {
+        self.parts
+            .get_field_dword(0x17)
+            .map(|raw| CacheMemorySize::from(raw))
     }
 }
 
@@ -144,6 +152,37 @@ impl Serialize for SMBiosCacheInformation<'_> {
         state.serialize_field("maximum_cache_size_2", &self.maximum_cache_size_2())?;
         state.serialize_field("installed_cache_size_2", &self.installed_cache_size_2())?;
         state.end()
+    }
+}
+
+/// # Maximum memory capacity, in kilobytes, for this cache item
+#[derive(Serialize, Debug, PartialEq, Eq)]
+pub enum CacheMemorySize {
+    /// Maximum memory capacity in Kilobytes
+    Kilobytes(u64),
+    /// Use `maximum_cache_size_2` to retrieve the maximum capacity
+    SeeMaximumCacheSize2,
+}
+
+impl From<u16> for CacheMemorySize {
+    fn from(raw: u16) -> Self {
+        match raw {
+            0xFFFF => CacheMemorySize::SeeMaximumCacheSize2,
+            // When bit 15 is set, the size units of the remaining bits are 64k
+            _ if raw & 0x8000 == 0x8000 => CacheMemorySize::Kilobytes((raw & 0x7FFF) as u64 * 64),
+            _ => CacheMemorySize::Kilobytes(raw as u64),
+        }
+    }
+}
+
+impl From<u32> for CacheMemorySize {
+    fn from(raw: u32) -> Self {
+        match raw {
+            // When bit 31 is set, the size units of the remaining bits are 64k
+            _ if raw & 0x80000000 == 0x80000000 =>
+                CacheMemorySize::Kilobytes((raw & 0x7FFFFFFF) as u64 * 64),
+            _ => CacheMemorySize::Kilobytes(raw as u64),
+        }
     }
 }
 
@@ -670,6 +709,18 @@ mod tests {
             CacheOperationalMode::WriteBack
         );
 
+        let cache_size = test_struct.maximum_cache_size().unwrap();
+        assert_eq!(cache_size, CacheMemorySize::Kilobytes(384));
+
         println!("{:?}", test_struct);
+    }
+
+    #[test]
+    fn memory_size_parsing_test() {
+        assert_eq!(CacheMemorySize::from(0x8200u16),     CacheMemorySize::Kilobytes(32768));
+        assert_eq!(CacheMemorySize::from(0x00000200u32), CacheMemorySize::Kilobytes(512));
+        assert_eq!(CacheMemorySize::from(0x80000200u32), CacheMemorySize::Kilobytes(32768));
+        assert_eq!(CacheMemorySize::from(0xFFFFFFFFu32),
+            CacheMemorySize::Kilobytes(2u64.pow(37) - 64));
     }
 }
