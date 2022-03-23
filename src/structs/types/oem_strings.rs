@@ -1,5 +1,5 @@
-use serde::{ser::SerializeStruct, Serialize, Serializer};
 use crate::{SMBiosStruct, Strings, UndefinedStruct};
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 
 /// # OEM Strings (Type 11)
@@ -54,10 +54,10 @@ impl Serialize for SMBiosOemStrings<'_> {
         S: Serializer,
     {
         let mut state = serializer.serialize_struct("SMBiosOemStrings", 3)?;
-            state.serialize_field("header", &self.parts.header)?;
-            state.serialize_field("count", &self.count())?;
-            state.serialize_field("oem_strings", &self.oem_strings())?;
-            state.end()
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("count", &self.count())?;
+        state.serialize_field("oem_strings", &self.oem_strings())?;
+        state.end()
     }
 }
 

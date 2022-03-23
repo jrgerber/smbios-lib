@@ -160,14 +160,14 @@ impl Serialize for SMBiosCacheInformation<'_> {
 pub enum CacheMemorySize {
     /// Maximum memory capacity in Kilobytes
     Kilobytes(u64),
-    /// Use `maximum_cache_size_2` to retrieve the maximum capacity
-    SeeMaximumCacheSize2,
+    /// Use `maximum_cache_size_2` to retrieve the maximum capacity or `installed_cache_size_2` to retrieve the installed size.
+    SeeCacheSize2,
 }
 
 impl From<u16> for CacheMemorySize {
     fn from(raw: u16) -> Self {
         match raw {
-            0xFFFF => CacheMemorySize::SeeMaximumCacheSize2,
+            0xFFFF => CacheMemorySize::SeeCacheSize2,
             // When bit 15 is set, the size units of the remaining bits are 64k
             _ if raw & 0x8000 == 0x8000 => CacheMemorySize::Kilobytes((raw & 0x7FFF) as u64 * 64),
             _ => CacheMemorySize::Kilobytes(raw as u64),
@@ -179,8 +179,9 @@ impl From<u32> for CacheMemorySize {
     fn from(raw: u32) -> Self {
         match raw {
             // When bit 31 is set, the size units of the remaining bits are 64k
-            _ if raw & 0x80000000 == 0x80000000 =>
-                CacheMemorySize::Kilobytes((raw & 0x7FFFFFFF) as u64 * 64),
+            _ if raw & 0x80000000 == 0x80000000 => {
+                CacheMemorySize::Kilobytes((raw & 0x7FFFFFFF) as u64 * 64)
+            }
             _ => CacheMemorySize::Kilobytes(raw as u64),
         }
     }
@@ -717,10 +718,21 @@ mod tests {
 
     #[test]
     fn memory_size_parsing_test() {
-        assert_eq!(CacheMemorySize::from(0x8200u16),     CacheMemorySize::Kilobytes(32768));
-        assert_eq!(CacheMemorySize::from(0x00000200u32), CacheMemorySize::Kilobytes(512));
-        assert_eq!(CacheMemorySize::from(0x80000200u32), CacheMemorySize::Kilobytes(32768));
-        assert_eq!(CacheMemorySize::from(0xFFFFFFFFu32),
-            CacheMemorySize::Kilobytes(2u64.pow(37) - 64));
+        assert_eq!(
+            CacheMemorySize::from(0x8200u16),
+            CacheMemorySize::Kilobytes(32768)
+        );
+        assert_eq!(
+            CacheMemorySize::from(0x00000200u32),
+            CacheMemorySize::Kilobytes(512)
+        );
+        assert_eq!(
+            CacheMemorySize::from(0x80000200u32),
+            CacheMemorySize::Kilobytes(32768)
+        );
+        assert_eq!(
+            CacheMemorySize::from(0xFFFFFFFFu32),
+            CacheMemorySize::Kilobytes(2u64.pow(37) - 64)
+        );
     }
 }

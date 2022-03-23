@@ -1,5 +1,5 @@
-use serde::{ser::SerializeStruct, Serialize, Serializer};
 use crate::{SMBiosStruct, UndefinedStruct};
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 
 // The BIS (Boot Integrity Services) Entry Point structure is not defined in the SMBIOS DMTF document.
@@ -112,10 +112,10 @@ impl Serialize for SMBiosBisEntryPoint<'_> {
         S: Serializer,
     {
         let mut state = serializer.serialize_struct("SMBiosBisEntryPoint", 4)?;
-            state.serialize_field("header", &self.parts.header)?;
-            state.serialize_field("checksum", &self.checksum())?;
-            state.serialize_field("bis_entry_16", &self.bis_entry_16())?;
-            state.serialize_field("bis_entry_32", &self.bis_entry_32())?;
-            state.end()
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("checksum", &self.checksum())?;
+        state.serialize_field("bis_entry_16", &self.bis_entry_16())?;
+        state.serialize_field("bis_entry_32", &self.bis_entry_32())?;
+        state.end()
     }
 }

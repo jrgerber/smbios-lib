@@ -4,8 +4,11 @@
 //! raw data and then load it into the structures.
 use crate::core::SMBiosData;
 use crate::windows::WinSMBiosData;
-use std::{fs::{read, read_dir, File}, path::Path};
 use std::io::{BufWriter, Error, Write};
+use std::{
+    fs::{read, read_dir, File},
+    path::Path,
+};
 
 /// Loads raw smbios data from a file and returns [SMBiosData] or [std::io::Error] on error.
 ///
