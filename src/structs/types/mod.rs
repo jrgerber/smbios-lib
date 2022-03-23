@@ -146,3 +146,6 @@ pub use tpm_device::*;
 
 mod voltage_probe;
 pub use voltage_probe::*;
+
+mod firmware_inventory_information;
+pub use firmware_inventory_information::*;
