@@ -1709,8 +1709,8 @@ impl fmt::Debug for ProcessorExternalClock {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         use ProcessorExternalClock::*;
         match self {
-            Unknown => write!{fmt, "Unknown"},
-            MHz(n) => write!{fmt, "{} MHz", n}
+            Unknown => write! {fmt, "Unknown"},
+            MHz(n) => write! {fmt, "{} MHz", n},
         }
     }
 }
@@ -1737,8 +1737,8 @@ impl fmt::Debug for ProcessorSpeed {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         use ProcessorSpeed::*;
         match self {
-            Unknown => write!{fmt, "Unknown"},
-            MHz(n) => write!{fmt, "{} MHz", n}
+            Unknown => write! {fmt, "Unknown"},
+            MHz(n) => write! {fmt, "{} MHz", n},
         }
     }
 }

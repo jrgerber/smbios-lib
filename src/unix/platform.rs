@@ -1,16 +1,16 @@
 use crate::*;
 use std::{io::Error, io::ErrorKind};
 
-    #[cfg(any(target_os = "linux"))]
-    /// Full path to smbios_entry_point file on Linux (contains entry point data)
-    pub const SYS_ENTRY_FILE: &'static str = "/sys/firmware/dmi/tables/smbios_entry_point";
+#[cfg(any(target_os = "linux"))]
+/// Full path to smbios_entry_point file on Linux (contains entry point data)
+pub const SYS_ENTRY_FILE: &'static str = "/sys/firmware/dmi/tables/smbios_entry_point";
 
-    #[cfg(any(target_os = "linux"))]
-    /// Full path to the DMI file on Linux (contains BIOS table data)
-    pub const SYS_TABLE_FILE: &'static str = "/sys/firmware/dmi/tables/DMI";
+#[cfg(any(target_os = "linux"))]
+/// Full path to the DMI file on Linux (contains BIOS table data)
+pub const SYS_TABLE_FILE: &'static str = "/sys/firmware/dmi/tables/DMI";
 
-    /// Full path to the memory device (contains BIOS entry point and table data on *nix platforms)
-    pub const DEV_MEM_FILE: &'static str = "/dev/mem";
+/// Full path to the memory device (contains BIOS entry point and table data on *nix platforms)
+pub const DEV_MEM_FILE: &'static str = "/dev/mem";
 
 // Example of Linux structure:
 /*
@@ -59,18 +59,16 @@ pub fn table_load_from_device() -> Result<SMBiosData, Error> {
             }
         }
         Err(err) => match err.kind() {
-            ErrorKind::InvalidData => {
-                match SMBiosEntryPoint32::try_load_from_file(entry_path) {
-                    Ok(entry_point) => {
-                        version = SMBiosVersion {
-                            major: entry_point.major_version(),
-                            minor: entry_point.minor_version(),
-                            revision: 0,
-                        }
+            ErrorKind::InvalidData => match SMBiosEntryPoint32::try_load_from_file(entry_path) {
+                Ok(entry_point) => {
+                    version = SMBiosVersion {
+                        major: entry_point.major_version(),
+                        minor: entry_point.minor_version(),
+                        revision: 0,
                     }
-                    Err(err) => return Err(err),
                 }
-            }
+                Err(err) => return Err(err),
+            },
             _ => return Err(err),
         },
     }
@@ -94,7 +92,7 @@ pub fn table_load_from_device() -> Result<SMBiosData, Error> {
             structure_table_address = entry_point.structure_table_address() as u64;
             structure_table_length = entry_point.structure_table_length() as u32;
 
-           version = SMBiosVersion {
+            version = SMBiosVersion {
                 major: entry_point.major_version(),
                 minor: entry_point.minor_version(),
                 revision: 0,
@@ -111,7 +109,7 @@ pub fn table_load_from_device() -> Result<SMBiosData, Error> {
             structure_table_address = entry_point.structure_table_address();
             structure_table_length = entry_point.structure_table_maximum_size();
 
-           version = SMBiosVersion {
+            version = SMBiosVersion {
                 major: entry_point.major_version(),
                 minor: entry_point.minor_version(),
                 revision: entry_point.docrev(),
@@ -134,7 +132,7 @@ pub fn table_load_from_device() -> Result<SMBiosData, Error> {
         structure_table_address,
         structure_table_length as usize,
     )?;
-    
+
     Ok(SMBiosData::new(table, Some(version)))
 }
 

@@ -1,5 +1,5 @@
-use serde::{ser::SerializeStruct, Serialize, Serializer};
 use crate::{MemoryTypes, SMBiosStruct, UndefinedStruct};
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 
 /// # Memory Module Information (Type 6, Obsolete)
@@ -95,15 +95,15 @@ impl Serialize for SMBiosMemoryModuleInformation<'_> {
         S: Serializer,
     {
         let mut state = serializer.serialize_struct("SMBiosMemoryModuleInformation", 8)?;
-            state.serialize_field("header", &self.parts.header)?;
-            state.serialize_field("socket_designation", &self.socket_designation())?;
-            state.serialize_field("bank_connections", &self.bank_connections())?;
-            state.serialize_field("current_speed", &self.current_speed())?;
-            state.serialize_field("current_memory_type", &self.current_memory_type())?;
-            state.serialize_field("installed_size", &self.installed_size())?;
-            state.serialize_field("enabled_size", &self.enabled_size())?;
-            state.serialize_field("error_status", &self.error_status())?;
-            state.end()
+        state.serialize_field("header", &self.parts.header)?;
+        state.serialize_field("socket_designation", &self.socket_designation())?;
+        state.serialize_field("bank_connections", &self.bank_connections())?;
+        state.serialize_field("current_speed", &self.current_speed())?;
+        state.serialize_field("current_memory_type", &self.current_memory_type())?;
+        state.serialize_field("installed_size", &self.installed_size())?;
+        state.serialize_field("enabled_size", &self.enabled_size())?;
+        state.serialize_field("error_status", &self.error_status())?;
+        state.end()
     }
 }
 

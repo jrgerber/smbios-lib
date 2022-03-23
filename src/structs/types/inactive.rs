@@ -1,5 +1,5 @@
-use serde::{ser::SerializeStruct, Serialize, Serializer};
 use crate::{SMBiosStruct, UndefinedStruct};
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 
 /// # Inactive (Type 126)
@@ -43,7 +43,7 @@ impl Serialize for SMBiosInactive<'_> {
         S: Serializer,
     {
         let mut state = serializer.serialize_struct("SMBiosInactive", 1)?;
-            state.serialize_field("header", &self.parts.header)?;
-            state.end()
+        state.serialize_field("header", &self.parts.header)?;
+        state.end()
     }
 }
