@@ -1401,6 +1401,8 @@ pub enum ProcessorUpgrade {
     SocketLGA4189,
     /// Socket LGA1200
     SocketLGA1200,
+    /// Socket LGA4677
+    SocketLGA4677,
     /// A value unknown to this standard, check the raw value
     None,
 }
@@ -1471,6 +1473,7 @@ impl From<u8> for ProcessorUpgradeData {
                 0x3C => ProcessorUpgrade::SocketBGA1528,
                 0x3D => ProcessorUpgrade::SocketLGA4189,
                 0x3E => ProcessorUpgrade::SocketLGA1200,
+                0x3F => ProcessorUpgrade::SocketLGA4677,
                 _ => ProcessorUpgrade::None,
             },
             raw,
