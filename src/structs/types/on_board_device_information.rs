@@ -13,8 +13,8 @@ use std::fmt;
 /// both types to allow existing SMBIOS browsers to properly display the system’s onboard devices information.
 ///
 /// Compliant with:
-/// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
-/// Document Date: 2020-07-17
+/// DMTF SMBIOS Reference Specification 3.5.0 (DSP0134)
+/// Document Date: 2021-09-15
 pub struct SMBiosOnBoardDeviceInformation<'a> {
     parts: &'a UndefinedStruct,
 }
@@ -151,6 +151,12 @@ impl OnBoardDeviceType {
             0x08 => TypeOfDevice::PataController,
             0x09 => TypeOfDevice::SataController,
             0x0A => TypeOfDevice::SasController,
+            0x0B => TypeOfDevice::WirelessLan,
+            0x0C => TypeOfDevice::Bluetooth,
+            0x0D => TypeOfDevice::Wwan,
+            0x0E => TypeOfDevice::Emmc,
+            0x0F => TypeOfDevice::NvmeController,
+            0x10 => TypeOfDevice::UfsController,
             _ => TypeOfDevice::None,
         }
     }
@@ -217,6 +223,18 @@ pub enum TypeOfDevice {
     SataController,
     /// SAS Controller
     SasController,
+    /// Wireless LAN
+    WirelessLan,
+    /// Bluetooth
+    Bluetooth,
+    /// WWAN
+    Wwan,
+    /// eMMC (embedded Milti-Media Controller)
+    Emmc,
+    /// NVMe Controller
+    NvmeController,
+    /// UFS Controller
+    UfsController,
     /// A value unknown to this standard, check the raw value
     None,
 }

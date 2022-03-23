@@ -4,6 +4,10 @@ use std::fmt;
 use std::ops::Deref;
 
 /// #  BIOS Information (Type 0)
+///
+/// Compliant with:
+/// DMTF SMBIOS Reference Specification 3.5.0 (DSP0134)
+/// Document Date: 2021-09-15
 pub struct SMBiosInformation<'a> {
     parts: &'a UndefinedStruct,
 }

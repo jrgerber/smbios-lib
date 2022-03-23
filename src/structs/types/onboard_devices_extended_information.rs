@@ -11,13 +11,16 @@ use std::fmt;
 /// In general, an entry in this table implies that the BIOS has some level of control over the enablement of
 /// the associated device for use by the system.
 ///
+/// To describe multi-function devices, use one type 41 structure per function, and one type 14 (Group
+/// Association) structure referencing all the function handles.
+///
 /// NOTE: This structure replaces Onboard Device Information (Type 10) starting with version 2.6 of this specification.
 /// BIOS providers can choose to implement both types to allow existing SMBIOS browsers to properly display
 /// the system’s onboard devices information.
-///  
+///
 /// Compliant with:
-/// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
-/// Document Date: 2020-07-17
+/// DMTF SMBIOS Reference Specification 3.5.0 (DSP0134)
+/// Document Date: 2021-09-15
 pub struct SMBiosOnboardDevicesExtendedInformation<'a> {
     parts: &'a UndefinedStruct,
 }

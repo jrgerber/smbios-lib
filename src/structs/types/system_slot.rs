@@ -6,6 +6,10 @@ use std::{convert::TryInto, fmt, ops::Deref};
 ///
 /// The information in this structure defines the attributes of a system slot. One
 /// structure is provided for each slot in the system.
+///
+/// Compliant with:
+/// DMTF SMBIOS Reference Specification 3.5.0 (DSP0134)
+/// Document Date: 2021-09-15
 pub struct SMBiosSystemSlot<'a> {
     parts: &'a UndefinedStruct,
 }
