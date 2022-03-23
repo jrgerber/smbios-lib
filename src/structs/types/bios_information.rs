@@ -39,6 +39,9 @@ impl<'a> SMBiosInformation<'a> {
     /// Segment location of BIOS starting address
     /// (for example, 0E800h).
     ///
+    /// When not applicable, such as on UEFI-based systems,
+    /// this value is set to 0000h.
+    ///
     /// NOTE: The size of the runtime BIOS image can
     /// be computed by subtracting the Starting
     /// Address Segment from 10000h and
@@ -683,42 +686,42 @@ impl From<u8> for BiosCharacteristicsExtension0 {
 impl BiosCharacteristicsExtension0 {
     /// ACPI is supported.
     pub fn acpi_is_supported(&self) -> bool {
-        self.raw & 0x01 == 0x01
+        self.raw & 0b0000_0001 == 0b0000_0001
     }
 
     /// USB Legacy is supported.
     pub fn usb_legacy_is_supported(&self) -> bool {
-        self.raw & 0x02 == 0x02
+        self.raw & 0b0000_0010 == 0b0000_0010
     }
 
     /// AGP is supported.
     pub fn agp_is_supported(&self) -> bool {
-        self.raw & 0x04 == 0x04
+        self.raw & 0b0000_0100 == 0b0000_0100
     }
 
     /// I2O boot is supported.
     pub fn i2oboot_is_supported(&self) -> bool {
-        self.raw & 0x08 == 0x08
+        self.raw & 0b0000_1000 == 0b0000_1000
     }
 
     /// LS-120 SuperDisk boot is supported.
     pub fn ls120super_disk_boot_is_supported(&self) -> bool {
-        self.raw & 0x10 == 0x10
+        self.raw & 0b0001_0000 == 0b0001_0000
     }
 
     /// ATAPI ZIP drive boot is supported.
     pub fn atapi_zip_drive_boot_is_supported(&self) -> bool {
-        self.raw & 0x20 == 0x20
+        self.raw & 0b0010_0000 == 0b0010_0000
     }
 
     /// 1394 boot is supported.
     pub fn boot_1394is_supported(&self) -> bool {
-        self.raw & 0x40 == 0x40
+        self.raw & 0b0100_0000 == 0b0100_0000
     }
 
     /// Smart battery is supported.
     pub fn smart_battery_is_supported(&self) -> bool {
-        self.raw & 0x80 == 0x80
+        self.raw & 0b1000_0000 == 0b1000_0000
     }
 }
 
@@ -798,34 +801,60 @@ impl From<u8> for BiosCharacteristicsExtension1 {
 
 impl BiosCharacteristicsExtension1 {
     /// BIOS Boot Specification is supported.
+    ///
+    /// Available version 2.3.0 and later.
     pub fn bios_boot_specification_is_supported(&self) -> bool {
-        self.raw & 0x01 == 0x01
+        self.raw & 0b0000_0001 == 0b0000_0001
     }
 
     /// Function key-initiated network service boot is supported. When function key-uninitiated
     /// network service boot is not supported, a network adapter option ROM may choose to offer
     /// this functionality on its own, thus offering this capability to legacy systems. When the
-    /// function is supported, the network adapter option ROM shall not offer this capability.
+    /// function is supported, the network adapter option ROM shall not offer this capability.'
+    ///
+    /// Available version 2.3.1 and later.
     pub fn fkey_initiated_network_boot_is_supported(&self) -> bool {
-        self.raw & 0x02 == 0x02
+        self.raw & 0b0000_0010 == 0b0000_0010
     }
 
     /// Enable targeted content distribution. The manufacturer has ensured that the SMBIOS data
     /// is useful in identifying the computer for targeted delivery of model-specific software and
     /// firmware content through third-party content distribution services.
+    ///
+    /// Available version 2.4 and later.
     pub fn targeted_content_distribution_is_supported(&self) -> bool {
-        self.raw & 0x04 == 0x04
+        self.raw & 0b0000_0100 == 0b0000_0100
     }
 
     /// UEFI Specification is supported.
+    ///
+    /// Available version 2.7 and later.
     pub fn uefi_specification_is_supported(&self) -> bool {
-        self.raw & 0x08 == 0x08
+        self.raw & 0b0000_1000 == 0b0000_1000
     }
 
     /// SMBIOS table describes a virtual machine. (If this bit is not set, no inference can be made
     /// about the virtuality of the system.)
+    ///
+    /// Available version 2.7 and later.
     pub fn smbios_table_describes_avirtual_machine(&self) -> bool {
-        self.raw & 0x10 == 0x10
+        self.raw & 0b0001_0000 == 0b0001_0000
+    }
+
+    /// Manufacturing mode is supported. (Manufacturing mode is a special boot mode, not normally
+    /// available to end users, that modifies BIOS features and settings for use while the computer is being
+    /// manufactured and tested.)
+    ///
+    /// Available version 3.5 and later.
+    pub fn manufacturing_mode_is_supported(&self) -> bool {
+        self.raw & 0b0010_0000 == 0b0010_0000
+    }
+
+    /// Manufacturing mode is enabled.
+    ///
+    /// Available version 3.5 and later.
+    pub fn manufacturing_mode_is_enabled(&self) -> bool {
+        self.raw & 0b0100_0000 == 0b0100_0000
     }
 }
 
@@ -852,6 +881,14 @@ impl fmt::Debug for BiosCharacteristicsExtension1 {
             .field(
                 "smbios_table_describes_avirtual_machine",
                 &self.smbios_table_describes_avirtual_machine(),
+            )
+            .field(
+                "manufacturing_mode_is_supported",
+                &self.manufacturing_mode_is_supported(),
+            )
+            .field(
+                "manufacturing_mode_is_enabled",
+                &self.manufacturing_mode_is_enabled(),
             )
             .finish()
     }
@@ -883,6 +920,14 @@ impl Serialize for BiosCharacteristicsExtension1 {
         state.serialize_field(
             "smbios_table_describes_avirtual_machine",
             &self.smbios_table_describes_avirtual_machine(),
+        )?;
+        state.serialize_field(
+            "manufacturing_mode_is_supported",
+            &self.manufacturing_mode_is_supported(),
+        )?;
+        state.serialize_field(
+            "manufacturing_mode_is_enabled",
+            &self.manufacturing_mode_is_enabled(),
         )?;
         state.end()
     }
