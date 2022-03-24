@@ -224,11 +224,17 @@ impl<'a> From<&'a [u8; 0x10]> for SystemUuid {
 impl fmt::Display for SystemUuid {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // Example output:
-        // "00360FE7-D4D5-11E5-9C43-BC0000F00000"
+        // "00360fe7-d4d5-11e5-9c43-bc0000f00000"
         // <TimeLow>-<TimeMid>-<TimeHiAndVersion>-<ClockSeqHiAndReserved><ClockSeqLow>-<Node[6]>
+
+        // Format is described in RFC4122, but the actual field contents are opaque and not
+        // significant to the SMBIOS specification, which is only concerned with the byte order.
+        // http://www.ietf.org/rfc/rfc4122.txt
+        // RFC4122: The hexadecimal values "a" through "f" are output as
+        // lower case characters and are case insensitive on input.
         write!(
             f,
-            "{:08X}-{:04X}-{:04X}-{:02X}{:02X}-",
+            "{:08x}-{:04x}-{:04x}-{:02x}{:02x}-",
             self.time_low(),
             self.time_mid(),
             self.time_high_and_version(),
