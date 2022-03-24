@@ -43,6 +43,16 @@ impl Strings {
             return None;
         }
 
+        // TODO: Temporary comments for this Pull Request to draw attention to this and make a decision how to proceed.
+        //
+        // As of 3.5.0 DMTF has decided to make UTF-8 the standard for how to interpret strings.
+        // The below needs to change to interpret the byte array as UTF-8.
+        //
+        // 6.1.3 "Strings must be encoded as UTF-8 with no byte order mark (BOM). For compatibility with older SMBIOS
+        // parsers, US-ASCII characters should be used."
+        //
+        // What is confusing about the statement is that in UTF-8 the first 128 characters *are* US-ASCII.
+
         // Create an ISO-8859-1 String.  Each `u8 as char` operation maps a u8
         // value (0xNN) to a Unicode code point (0x00NN).
         //
