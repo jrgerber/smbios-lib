@@ -384,7 +384,7 @@ mod tests {
         assert_eq!(test_struct.serial_number(), Some("MN06PQRS".to_string()));
         assert_eq!(
             format!("{:?}", test_struct.uuid()),
-            "Some(Uuid(3E2501D2-E648-E811-BAD3-7020840F9D47))".to_string()
+            "Some(Uuid(3e2501d2-e648-e811-bad3-7020840f9d47))".to_string()
         );
         assert_eq!(
             *test_struct.wakeup_type().unwrap(),

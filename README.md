@@ -67,7 +67,7 @@ fn retrieve_system_uuid() {
 Output:
 ```
 running 1 test
-System Information UUID == Uuid(4EE6523F-D56A-F3EA-8E2A-891CF96286EA)
+System Information UUID == Uuid(4ee6523f-d56a-f3ea-8e2a-891cf96286ea)
 test retrieve_system_uuid ... ok
 ```
 
