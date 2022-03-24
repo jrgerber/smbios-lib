@@ -149,3 +149,6 @@ pub use voltage_probe::*;
 
 mod firmware_inventory_information;
 pub use firmware_inventory_information::*;
+
+mod string_property;
+pub use string_property::*;
