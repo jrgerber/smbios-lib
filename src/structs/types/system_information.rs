@@ -243,7 +243,7 @@ impl fmt::Display for SystemUuid {
         )?;
 
         self.node().iter().fold(Ok(()), |result, node_byte| {
-            result.and_then(|_| write!(f, "{:02X}", node_byte))
+            result.and_then(|_| write!(f, "{:02x}", node_byte))
         })
     }
 }
