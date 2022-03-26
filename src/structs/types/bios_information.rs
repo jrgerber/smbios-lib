@@ -813,7 +813,7 @@ impl BiosCharacteristicsExtension1 {
     /// Function key-initiated network service boot is supported. When function key-uninitiated
     /// network service boot is not supported, a network adapter option ROM may choose to offer
     /// this functionality on its own, thus offering this capability to legacy systems. When the
-    /// function is supported, the network adapter option ROM shall not offer this capability.'
+    /// function is supported, the network adapter option ROM shall not offer this capability.
     ///
     /// Available version 2.3.1 and later.
     pub fn fkey_initiated_network_boot_is_supported(&self) -> bool {
