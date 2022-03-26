@@ -1,4 +1,5 @@
-use crate::{SMBiosStruct, UndefinedStruct};
+use crate::core::{SMBiosStringError, UndefinedStruct};
+use crate::SMBiosStruct;
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 use std::ops::Deref;
@@ -31,7 +32,7 @@ impl<'a> SMBiosStruct<'a> for SMBiosCacheInformation<'a> {
 
 impl<'a> SMBiosCacheInformation<'a> {
     /// String number for reference designation
-    pub fn socket_designation(&self) -> Option<String> {
+    pub fn socket_designation(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x04)
     }
 

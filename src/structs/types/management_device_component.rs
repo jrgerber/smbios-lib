@@ -1,4 +1,4 @@
-use crate::core::{Handle, UndefinedStruct};
+use crate::core::{Handle, SMBiosStringError, UndefinedStruct};
 use crate::SMBiosStruct;
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
@@ -29,7 +29,7 @@ impl<'a> SMBiosStruct<'a> for SMBiosManagementDeviceComponent<'a> {
 
 impl<'a> SMBiosManagementDeviceComponent<'a> {
     /// Number of the string that contains additional descriptive information about the component
-    pub fn description(&self) -> Option<String> {
+    pub fn description(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x04)
     }
 
@@ -94,8 +94,8 @@ mod tests {
         let test_struct = SMBiosManagementDeviceComponent::new(&parts);
 
         assert_eq!(
-            test_struct.description(),
-            Some("Default string".to_string())
+            test_struct.description().unwrap(),
+            "Default string".to_string()
         );
         assert_eq!(*test_struct.management_device_handle().unwrap(), 38);
         assert_eq!(*test_struct.component_handle().unwrap(), 39);

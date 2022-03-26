@@ -1,4 +1,5 @@
-use crate::{SMBiosStruct, UndefinedStruct};
+use crate::core::{SMBiosStringError, UndefinedStruct};
+use crate::SMBiosStruct;
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 use std::ops::Deref;
@@ -26,7 +27,7 @@ impl<'a> SMBiosStruct<'a> for SMBiosInformation<'a> {
 
 impl<'a> SMBiosInformation<'a> {
     /// BIOS vendor's name
-    pub fn vendor(&self) -> Option<String> {
+    pub fn vendor(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x4)
     }
 
@@ -34,7 +35,7 @@ impl<'a> SMBiosInformation<'a> {
     ///
     /// This value is a free-form string that may contain
     /// Core and OEM version information.
-    pub fn version(&self) -> Option<String> {
+    pub fn version(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x5)
     }
 
@@ -63,7 +64,7 @@ impl<'a> SMBiosInformation<'a> {
     ///
     /// NOTE: The mm/dd/yyyy format is required for
     /// SMBIOS version 2.3 and later.
-    pub fn release_date(&self) -> Option<String> {
+    pub fn release_date(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x8)
     }
 
@@ -76,9 +77,7 @@ impl<'a> SMBiosInformation<'a> {
     /// FFh - size is 16MB or greater, see Extended
     /// BIOS ROM Size for actual size
     pub fn rom_size(&self) -> Option<RomSize> {
-        self.parts
-            .get_field_byte(0x9)
-            .map(|raw| RomSize::from(raw))
+        self.parts.get_field_byte(0x9).map(|raw| RomSize::from(raw))
     }
 
     /// BIOS characteristics
@@ -978,10 +977,13 @@ mod tests {
         let parts = UndefinedStruct::new(&struct_type0);
         let test_struct = SMBiosInformation::new(&parts);
 
-        assert_eq!(test_struct.vendor(), Some("LENOVO".to_string()));
-        assert_eq!(test_struct.version(), Some("S03KT33A".to_string()));
+        assert_eq!(test_struct.vendor().unwrap(), "LENOVO".to_string());
+        assert_eq!(test_struct.version().unwrap(), "S03KT33A".to_string());
         assert_eq!(test_struct.starting_address_segment(), Some(61440));
-        assert_eq!(test_struct.release_date(), Some("08/06/2019".to_string()));
+        assert_eq!(
+            test_struct.release_date().unwrap(),
+            "08/06/2019".to_string()
+        );
         assert_eq!(test_struct.rom_size(), Some(RomSize::SeeExtendedRomSize));
         assert_eq!(
             test_struct.characteristics(),

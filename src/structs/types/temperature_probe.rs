@@ -1,4 +1,5 @@
-use crate::{SMBiosStruct, UndefinedStruct};
+use crate::core::{SMBiosStringError, UndefinedStruct};
+use crate::SMBiosStruct;
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 
@@ -28,7 +29,7 @@ impl<'a> SMBiosTemperatureProbe<'a> {
     /// Description
     ///
     /// additional descriptive information about the probe or its location
-    pub fn description(&self) -> Option<String> {
+    pub fn description(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x04)
     }
 
@@ -365,7 +366,7 @@ mod tests {
         let parts = UndefinedStruct::new(&struct_type28);
         let test_struct = SMBiosTemperatureProbe::new(&parts);
 
-        assert_eq!(test_struct.description(), Some("LM78A".to_string()));
+        assert_eq!(test_struct.description().unwrap(), "LM78A".to_string());
         assert_eq!(
             test_struct.location_and_status(),
             Some(TemperatureProbeLocationAndStatus::from(103))

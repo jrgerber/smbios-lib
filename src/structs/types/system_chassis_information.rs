@@ -1,4 +1,4 @@
-use crate::core::UndefinedStruct;
+use crate::core::{SMBiosStringError, UndefinedStruct};
 use crate::{BoardTypeData, SMBiosStruct, SMBiosType};
 use serde::{ser::SerializeSeq, ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
@@ -35,7 +35,7 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
     const CONTAINED_ELEMENTS_OFFSET: usize = 0x15usize;
 
     /// Manufacturer
-    pub fn manufacturer(&self) -> Option<String> {
+    pub fn manufacturer(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x04)
     }
 
@@ -52,17 +52,17 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
     }
 
     /// Version
-    pub fn version(&self) -> Option<String> {
+    pub fn version(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x06)
     }
 
     /// Serial number
-    pub fn serial_number(&self) -> Option<String> {
+    pub fn serial_number(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x07)
     }
 
     /// Asset tag number
-    pub fn asset_tag_number(&self) -> Option<String> {
+    pub fn asset_tag_number(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x08)
     }
 
@@ -175,11 +175,13 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
     /// SKU number
     ///
     /// Chassis or enclosure SKU number
-    pub fn sku_number(&self) -> Option<String> {
-        self.contained_elements_size().and_then(|size| {
-            self.parts
-                .get_field_string(Self::CONTAINED_ELEMENTS_OFFSET + size)
-        })
+    pub fn sku_number(&self) -> Result<String, SMBiosStringError> {
+        match self.contained_elements_size() {
+            Some(size) => self
+                .parts
+                .get_field_string(Self::CONTAINED_ELEMENTS_OFFSET + size),
+            None => Err(SMBiosStringError::FieldOutOfBounds),
+        }
     }
 }
 
@@ -906,11 +908,14 @@ mod tests {
         let parts = UndefinedStruct::new(&struct_type3);
         let test_struct = SMBiosSystemChassisInformation::new(&parts);
 
-        assert_eq!(test_struct.manufacturer(), Some("LENOVO".to_string()));
+        assert_eq!(test_struct.manufacturer().unwrap(), "LENOVO".to_string());
         assert_eq!(*test_struct.chassis_type().unwrap(), ChassisType::Desktop);
-        assert_eq!(test_struct.version(), Some("None".to_string()));
-        assert_eq!(test_struct.serial_number(), Some("MJ06URDZ".to_string()));
-        assert_eq!(test_struct.asset_tag_number(), Some("4089985".to_string()));
+        assert_eq!(test_struct.version().unwrap(), "None".to_string());
+        assert_eq!(test_struct.serial_number().unwrap(), "MJ06URDZ".to_string());
+        assert_eq!(
+            test_struct.asset_tag_number().unwrap(),
+            "4089985".to_string()
+        );
         assert_eq!(*test_struct.bootup_state().unwrap(), ChassisState::Safe);
         assert_eq!(
             *test_struct.power_supply_state().unwrap(),
@@ -948,6 +953,9 @@ mod tests {
             }
             _ => panic!("expected baseboard type"),
         }
-        assert_eq!(test_struct.sku_number(), Some("Default string".to_string()));
+        assert_eq!(
+            test_struct.sku_number().unwrap(),
+            "Default string".to_string()
+        );
     }
 }

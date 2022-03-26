@@ -1,4 +1,4 @@
-use crate::core::{Handle, UndefinedStruct};
+use crate::core::{Handle, SMBiosStringError, UndefinedStruct};
 use crate::SMBiosStruct;
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::convert::TryInto;
@@ -40,7 +40,7 @@ impl<'a> SMBiosProcessorInformation<'a> {
     /// Socket reference designation
     ///
     /// EXAMPLE: "J202"
-    pub fn socket_designation(&self) -> Option<String> {
+    pub fn socket_designation(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x04)
     }
 
@@ -59,7 +59,7 @@ impl<'a> SMBiosProcessorInformation<'a> {
     }
 
     /// Processor manufacturer
-    pub fn processor_manufacturer(&self) -> Option<String> {
+    pub fn processor_manufacturer(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x07)
     }
 
@@ -76,7 +76,7 @@ impl<'a> SMBiosProcessorInformation<'a> {
     }
 
     /// Processor version
-    pub fn processor_version(&self) -> Option<String> {
+    pub fn processor_version(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x10)
     }
 
@@ -179,12 +179,12 @@ impl<'a> SMBiosProcessorInformation<'a> {
     ///
     /// This value is set by the manufacturer and
     /// normally not changeable.
-    pub fn serial_number(&self) -> Option<String> {
+    pub fn serial_number(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x20)
     }
 
     /// The asset tag of this processor
-    pub fn asset_tag(&self) -> Option<String> {
+    pub fn asset_tag(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x21)
     }
 
@@ -192,7 +192,7 @@ impl<'a> SMBiosProcessorInformation<'a> {
     ///
     /// This value is set by the manufacturer and
     /// normally not changeable.
-    pub fn part_number(&self) -> Option<String> {
+    pub fn part_number(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x22)
     }
 
@@ -1985,7 +1985,10 @@ mod tests {
         let parts = UndefinedStruct::new(&struct_type4);
         let test_struct = SMBiosProcessorInformation::new(&parts);
 
-        assert_eq!(test_struct.socket_designation(), Some("CPU0".to_string()));
+        assert_eq!(
+            test_struct.socket_designation().unwrap(),
+            "CPU0".to_string()
+        );
         assert_eq!(
             *test_struct.processor_type().unwrap(),
             ProcessorType::CentralProcessor
@@ -1995,16 +1998,16 @@ mod tests {
             ProcessorFamily::IntelXeonProcessor
         );
         assert_eq!(
-            test_struct.processor_manufacturer(),
-            Some("Intel(R) Corporation".to_string())
+            test_struct.processor_manufacturer().unwrap(),
+            "Intel(R) Corporation".to_string()
         );
         assert_eq!(
             test_struct.processor_id(),
             Some(&[0x54u8, 0x06, 0x05, 0x00, 0xFF, 0xFB, 0xEB, 0xBF])
         );
         assert_eq!(
-            test_struct.processor_version(),
-            Some("Intel(R) Xeon(R) W-2133 CPU @ 3.60GHz".to_string())
+            test_struct.processor_version().unwrap(),
+            "Intel(R) Xeon(R) W-2133 CPU @ 3.60GHz".to_string()
         );
         match test_struct.voltage().unwrap() {
             ProcessorVoltage::CurrentVolts(volts) => assert_eq!(volts, 1.6),
@@ -2032,9 +2035,9 @@ mod tests {
         assert_eq!(*test_struct.l1cache_handle().unwrap(), 83);
         assert_eq!(*test_struct.l2cache_handle().unwrap(), 84);
         assert_eq!(*test_struct.l3cache_handle().unwrap(), 85);
-        assert_eq!(test_struct.serial_number(), None);
-        assert_eq!(test_struct.asset_tag(), Some("UNKNOWN".to_string()));
-        assert_eq!(test_struct.part_number(), None);
+        assert_eq!(test_struct.serial_number().unwrap(), "".to_string());
+        assert_eq!(test_struct.asset_tag().unwrap(), "UNKNOWN".to_string());
+        assert_eq!(test_struct.part_number().unwrap(), "".to_string());
         match test_struct.core_count().unwrap() {
             CoreCount::Count(number) => assert_eq!(number, 6),
             CoreCount::Unknown => panic!("expected number"),

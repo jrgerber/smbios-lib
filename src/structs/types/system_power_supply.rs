@@ -1,4 +1,5 @@
-use crate::{Handle, SMBiosStruct, UndefinedStruct};
+use crate::core::{Handle, SMBiosStringError, UndefinedStruct};
+use crate::SMBiosStruct;
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 
@@ -51,7 +52,7 @@ impl<'a> SMBiosSystemPowerSupply<'a> {
     ///
     /// EXAMPLES: "in the back, on the left-hand side" or
     /// "Left Supply Bay"
-    pub fn location(&self) -> Option<String> {
+    pub fn location(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x05)
     }
 
@@ -60,33 +61,33 @@ impl<'a> SMBiosSystemPowerSupply<'a> {
     /// Number of the string that names the power supply device
     ///
     /// EXAMPLE: "DR-36"
-    pub fn device_name(&self) -> Option<String> {
+    pub fn device_name(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x06)
     }
 
     /// Manufacturer
     ///
     /// Names the company that manufactured the supply
-    pub fn manufacturer(&self) -> Option<String> {
+    pub fn manufacturer(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x07)
     }
 
     /// Serial number
     ///
     /// The serial number for the power supply
-    pub fn serial_number(&self) -> Option<String> {
+    pub fn serial_number(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x08)
     }
 
     /// Asset tag number
-    pub fn asset_tag_number(&self) -> Option<String> {
+    pub fn asset_tag_number(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x09)
     }
 
     /// Model part number
     ///
     /// The OEM part order number
-    pub fn model_part_number(&self) -> Option<String> {
+    pub fn model_part_number(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x0A)
     }
 
@@ -95,7 +96,7 @@ impl<'a> SMBiosSystemPowerSupply<'a> {
     /// Power supply revision string
     ///
     /// EXAMPLE: "2.30"
-    pub fn revision_level(&self) -> Option<String> {
+    pub fn revision_level(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x0B)
     }
 
@@ -454,32 +455,32 @@ mod tests {
         println!("{:?}", test_struct);
         assert_eq!(test_struct.power_unit_group(), Some(1));
         assert_eq!(
-            test_struct.location(),
-            Some("To Be Filled By O.E.M.".to_string())
+            test_struct.location().unwrap(),
+            "To Be Filled By O.E.M.".to_string()
         );
         assert_eq!(
-            test_struct.device_name(),
-            Some("To Be Filled By O.E.M.".to_string())
+            test_struct.device_name().unwrap(),
+            "To Be Filled By O.E.M.".to_string()
         );
         assert_eq!(
-            test_struct.manufacturer(),
-            Some("To Be Filled By O.E.M.".to_string())
+            test_struct.manufacturer().unwrap(),
+            "To Be Filled By O.E.M.".to_string()
         );
         assert_eq!(
-            test_struct.serial_number(),
-            Some("To Be Filled By O.E.M.".to_string())
+            test_struct.serial_number().unwrap(),
+            "To Be Filled By O.E.M.".to_string()
         );
         assert_eq!(
-            test_struct.asset_tag_number(),
-            Some("To Be Filled By O.E.M.".to_string())
+            test_struct.asset_tag_number().unwrap(),
+            "To Be Filled By O.E.M.".to_string()
         );
         assert_eq!(
-            test_struct.model_part_number(),
-            Some("To Be Filled By O.E.M.".to_string())
+            test_struct.model_part_number().unwrap(),
+            "To Be Filled By O.E.M.".to_string()
         );
         assert_eq!(
-            test_struct.revision_level(),
-            Some("To Be Filled By O.E.M.".to_string())
+            test_struct.revision_level().unwrap(),
+            "To Be Filled By O.E.M.".to_string()
         );
         assert_eq!(
             test_struct.max_power_capacity(),

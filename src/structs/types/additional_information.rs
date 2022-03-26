@@ -1,4 +1,4 @@
-use crate::core::{Handle, UndefinedStruct};
+use crate::core::{Handle, SMBiosStringError, UndefinedStruct};
 use crate::structs::SMBiosStruct;
 use serde::{ser::SerializeSeq, ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
@@ -43,7 +43,7 @@ impl<'a> AdditionalInformationEntry<'a> {
     }
 
     /// Number of the optional string to be associated with the field referenced by the _Referenced Offset_
-    pub fn string(&self) -> Option<String> {
+    pub fn string(&self) -> Result<String, SMBiosStringError> {
         self.additional_information
             .parts()
             .get_field_string(self.entry_offset + 4)

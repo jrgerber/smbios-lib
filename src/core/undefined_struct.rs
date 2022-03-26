@@ -1,5 +1,5 @@
 use super::header::{Handle, Header};
-use super::strings::Strings;
+use super::strings::{SMBiosStringError, Strings};
 use crate::structs::{DefinedStruct, SMBiosEndOfTable, SMBiosStruct};
 use serde::{Serialize, Serializer};
 use std::fmt;
@@ -128,10 +128,10 @@ impl<'a> UndefinedStruct {
     /// contains a byte whose value is a 1 based index into the strings section.
     /// The string is thus retrieved from the strings section based on the
     /// byte value at the given offset.
-    pub fn get_field_string(&self, offset: usize) -> Option<String> {
+    pub fn get_field_string(&self, offset: usize) -> Result<String, SMBiosStringError> {
         match self.get_field_byte(offset) {
             Some(val) => self.strings.get_string(val),
-            None => None,
+            None => Err(SMBiosStringError::FieldOutOfBounds),
         }
     }
 

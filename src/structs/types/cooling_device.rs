@@ -1,4 +1,4 @@
-use crate::core::{Handle, UndefinedStruct};
+use crate::core::{Handle, SMBiosStringError, UndefinedStruct};
 use crate::SMBiosStruct;
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
@@ -73,7 +73,7 @@ impl<'a> SMBiosCoolingDevice<'a> {
     /// Additional descriptive information about the cooling device or its location
     /// This field is present in the structure only if the
     /// structure’s length is 0Fh or larger.
-    pub fn description(&self) -> Option<String> {
+    pub fn description(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x0E)
     }
 }
@@ -277,6 +277,9 @@ mod tests {
             RotationalSpeed::Rpm(_) => panic!("expected unknown"),
             RotationalSpeed::Unknown => (),
         }
-        assert_eq!(test_struct.description(), Some("Cooling Dev 1".to_string()));
+        assert_eq!(
+            test_struct.description().unwrap(),
+            "Cooling Dev 1".to_string()
+        );
     }
 }

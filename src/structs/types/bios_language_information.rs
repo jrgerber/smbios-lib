@@ -1,4 +1,4 @@
-use crate::{SMBiosStruct, Strings, UndefinedStruct};
+use crate::{SMBiosStringError, SMBiosStruct, Strings, UndefinedStruct};
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 use std::ops::Deref;
@@ -43,7 +43,7 @@ impl<'a> SMBiosBiosLanguageInformation<'a> {
     }
 
     /// The currently installed language.
-    pub fn current_language(&self) -> Option<String> {
+    pub fn current_language(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x15)
     }
 

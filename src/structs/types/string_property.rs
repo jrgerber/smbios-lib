@@ -1,5 +1,5 @@
-use crate::core::Handle;
-use crate::{SMBiosStruct, UndefinedStruct};
+use crate::core::{Handle, SMBiosStringError, UndefinedStruct};
+use crate::SMBiosStruct;
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 use std::ops::Deref;
@@ -40,7 +40,7 @@ impl<'a> SMBiosStringProperty<'a> {
     }
 
     /// String Property Value
-    pub fn string_property_value(&self) -> Option<String> {
+    pub fn string_property_value(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x06)
     }
 

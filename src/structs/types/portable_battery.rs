@@ -1,4 +1,5 @@
-use crate::{SMBiosStruct, UndefinedStruct};
+use crate::core::{SMBiosStringError, UndefinedStruct};
+use crate::SMBiosStruct;
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 use std::ops::Deref;
@@ -29,12 +30,12 @@ impl<'a> SMBiosStruct<'a> for SMBiosPortableBattery<'a> {
 
 impl<'a> SMBiosPortableBattery<'a> {
     /// Identifies the location of the battery
-    pub fn location(&self) -> Option<String> {
+    pub fn location(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x04)
     }
 
     /// Names the company that manufactured the battery
-    pub fn manufacturer(&self) -> Option<String> {
+    pub fn manufacturer(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x05)
     }
 
@@ -44,7 +45,7 @@ impl<'a> SMBiosPortableBattery<'a> {
     /// Battery set this field to 0 (no string) to indicate
     /// that the SBDS Manufacture Date field contains
     /// the information.
-    pub fn manufacture_date(&self) -> Option<String> {
+    pub fn manufacture_date(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x06)
     }
 
@@ -54,14 +55,14 @@ impl<'a> SMBiosPortableBattery<'a> {
     /// Battery set this field to 0 (no string) to indicate
     /// that the SBDS Serial Number field contains the
     /// information.
-    pub fn serial_number(&self) -> Option<String> {
+    pub fn serial_number(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x07)
     }
 
     /// Names the battery device
     ///
     /// EXAMPLE: "DR-36"
-    pub fn device_name(&self) -> Option<String> {
+    pub fn device_name(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x08)
     }
 
@@ -104,7 +105,7 @@ impl<'a> SMBiosPortableBattery<'a> {
     ///
     /// If the battery does not support the function, no
     /// string is supplied.
-    pub fn sbds_version_number(&self) -> Option<String> {
+    pub fn sbds_version_number(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x0E)
     }
 
@@ -141,7 +142,7 @@ impl<'a> SMBiosPortableBattery<'a> {
     /// chemistry (for example, “PbAc”)
     /// The Device Chemistry field must be set to 02h
     /// (Unknown) for this field to be valid.
-    pub fn sbds_device_chemistry(&self) -> Option<String> {
+    pub fn sbds_device_chemistry(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x14)
     }
 
@@ -369,11 +370,11 @@ mod tests {
         let parts = UndefinedStruct::new(&struct_type22);
         let test_struct = SMBiosPortableBattery::new(&parts);
 
-        assert_eq!(test_struct.location(), Some("Rear".to_string()));
-        assert_eq!(test_struct.manufacturer(), Some("SMP".to_string()));
-        assert_eq!(test_struct.manufacture_date(), None);
-        assert_eq!(test_struct.serial_number(), None);
-        assert_eq!(test_struct.device_name(), Some("45N1071".to_string()));
+        assert_eq!(test_struct.location().unwrap(), "Rear".to_string());
+        assert_eq!(test_struct.manufacturer().unwrap(), "SMP".to_string());
+        assert_eq!(test_struct.manufacture_date().unwrap(), "".to_string());
+        assert_eq!(test_struct.serial_number().unwrap(), "".to_string());
+        assert_eq!(test_struct.device_name().unwrap(), "45N1071".to_string());
         assert_eq!(
             *test_struct.device_chemistry().unwrap(),
             PortableBatteryDeviceChemistry::Unknown
@@ -386,11 +387,17 @@ mod tests {
             PortableBatteryDesignVoltage::MilliVolts(mv) => assert_eq!(mv, 14800),
             PortableBatteryDesignVoltage::Unknown => panic!("expected a value in mWH"),
         }
-        assert_eq!(test_struct.sbds_version_number(), Some("03.01".to_string()));
+        assert_eq!(
+            test_struct.sbds_version_number().unwrap(),
+            "03.01".to_string()
+        );
         assert_eq!(test_struct.maximum_error_in_battery_data(), Some(255));
         assert_eq!(test_struct.sbds_serial_number(), Some(711));
         assert_eq!(test_struct.sbds_manufacture_date(), Some(17018));
-        assert_eq!(test_struct.sbds_device_chemistry(), Some("LiP".to_string()));
+        assert_eq!(
+            test_struct.sbds_device_chemistry().unwrap(),
+            "LiP".to_string()
+        );
         assert_eq!(test_struct.design_capacity_multiplier(), Some(10));
         assert_eq!(test_struct.oem_specific(), Some(0));
     }

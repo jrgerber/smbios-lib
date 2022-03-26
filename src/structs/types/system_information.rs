@@ -1,4 +1,5 @@
-use crate::{SMBiosStruct, UndefinedStruct};
+use crate::core::{SMBiosStringError, UndefinedStruct};
+use crate::SMBiosStruct;
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::{
     array::TryFromSliceError,
@@ -34,22 +35,22 @@ impl<'a> SMBiosStruct<'a> for SMBiosSystemInformation<'a> {
 
 impl<'a> SMBiosSystemInformation<'a> {
     /// Manufacturer
-    pub fn manufacturer(&self) -> Option<String> {
+    pub fn manufacturer(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x04)
     }
 
     /// Product name
-    pub fn product_name(&self) -> Option<String> {
+    pub fn product_name(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x05)
     }
 
     /// Version
-    pub fn version(&self) -> Option<String> {
+    pub fn version(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x06)
     }
 
     /// Serial number
-    pub fn serial_number(&self) -> Option<String> {
+    pub fn serial_number(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x07)
     }
 
@@ -80,7 +81,7 @@ impl<'a> SMBiosSystemInformation<'a> {
     /// given OEM, there are tens of unique
     /// processor, memory, hard drive, and optical
     /// drive configurations.
-    pub fn sku_number(&self) -> Option<String> {
+    pub fn sku_number(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x19)
     }
 
@@ -95,7 +96,7 @@ impl<'a> SMBiosSystemInformation<'a> {
     /// different configurations and pricing points.
     /// Computers in the same family often have
     /// similar branding and cosmetic features.
-    pub fn family(&self) -> Option<String> {
+    pub fn family(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x1A)
     }
 }
@@ -378,10 +379,16 @@ mod tests {
         let parts = UndefinedStruct::new(&struct_type1);
         let test_struct = SMBiosSystemInformation::new(&parts);
 
-        assert_eq!(test_struct.manufacturer(), Some("LENOVO".to_string()));
-        assert_eq!(test_struct.product_name(), Some("30BFS07500".to_string()));
-        assert_eq!(test_struct.version(), Some("ThinkStation P520".to_string()));
-        assert_eq!(test_struct.serial_number(), Some("MN06PQRS".to_string()));
+        assert_eq!(test_struct.manufacturer().unwrap(), "LENOVO".to_string());
+        assert_eq!(
+            test_struct.product_name().unwrap(),
+            "30BFS07500".to_string()
+        );
+        assert_eq!(
+            test_struct.version().unwrap(),
+            "ThinkStation P520".to_string()
+        );
+        assert_eq!(test_struct.serial_number().unwrap(), "MN06PQRS".to_string());
         assert_eq!(
             format!("{:?}", test_struct.uuid()),
             "Some(Uuid(3e2501d2-e648-e811-bad3-7020840f9d47))".to_string()
@@ -391,9 +398,12 @@ mod tests {
             SystemWakeUpType::PowerSwitch
         );
         assert_eq!(
-            test_struct.sku_number(),
-            Some("LENOVO_MT_30BF_BU_Think_FM_ThinkStation P520".to_string())
+            test_struct.sku_number().unwrap(),
+            "LENOVO_MT_30BF_BU_Think_FM_ThinkStation P520".to_string()
         );
-        assert_eq!(test_struct.family(), Some("ThinkStation P520".to_string()));
+        assert_eq!(
+            test_struct.family().unwrap(),
+            "ThinkStation P520".to_string()
+        );
     }
 }

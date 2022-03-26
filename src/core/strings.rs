@@ -1,5 +1,6 @@
 use serde::{ser::SerializeSeq, Serialize, Serializer};
-use std::fmt;
+use std::error;
+use std::{fmt, string::FromUtf8Error};
 
 /// # SMBIOS Strings
 ///
@@ -32,45 +33,36 @@ impl Strings {
         self.current_string_index = 0;
     }
 
-    /// Returns a [String] at the given `index`
+    /// Returns a UTF-8 [String] at the given 1 based `index`
     ///
-    /// BIOS strings are 1 based indexing
-    pub fn get_string(&self, index: u8) -> Option<String> {
+    /// If the index is 0 an empty string "" is returned.
+    /// If SMBiosStringError::InvalidStringNumber is returned, either the field value is corrupt or the string-set is corrupt.
+    /// If SMBiosStringError::Utf8 is returned, the string is corrupt.
+    pub fn get_string(&self, index: u8) -> Result<String, SMBiosStringError> {
         let index_usize = index as usize;
 
-        if index_usize == 0 || index_usize > self.strings.len() {
-            // BIOS strings are 1 based indexing, ignore bad input
-            return None;
-        }
-
-        // TODO: Temporary comments for this Pull Request to draw attention to this and make a decision how to proceed.
-        //
         // As of 3.5.0 DMTF has decided to make UTF-8 the standard for how to interpret strings.
-        // The below needs to change to interpret the byte array as UTF-8.
         //
-        // 6.1.3 "Strings must be encoded as UTF-8 with no byte order mark (BOM). For compatibility with older SMBIOS
-        // parsers, US-ASCII characters should be used."
+        // section 6.1.3:
+        // "Strings must be encoded as UTF-8 with no byte order mark (BOM). For compatibility
+        // with older SMBIOS parsers, US-ASCII characters should be used.
         //
-        // What is confusing about the statement is that in UTF-8 the first 128 characters *are* US-ASCII.
+        // When the formatted portion of an SMBIOS structure references a string, it does so by specifying
+        // a non-zero string number within the structure's string-set.
+        //
+        // If a string field references no string, a null (0) is placed in that string field."
 
-        // Create an ISO-8859-1 String.  Each `u8 as char` operation maps a u8
-        // value (0xNN) to a Unicode code point (0x00NN).
-        //
-        // SMBIOS specification does not state that a BIOS string is ISO-8859-1 or
-        // ASCII (or anything else).  The reason it is important to use ISO-8859-1
-        // is that every u8 value (0-255) is represented and mapped 1:1 with a Unicode
-        // value.  Therefore, it is possible to reverse the process, starting from a
-        // Rust String or str and produce the original u8 array of values.
-        //
-        // Presently there is no need to convert back to a u8 array. If there were,
-        // the Rust char functions len_utf8() and encode_utf8() can be used.  If len_utf8()
-        // == 2 then the original u8 can be arrived at by combining bits from the two bytes.
-        Some(
-            self.strings[index_usize - 1]
-                .iter()
-                .map(|x| *x as char)
-                .collect(),
-        )
+        // Referential transparency:
+        // In rust we can return the empty string ("") when index is 0. This is idempotent because
+        // the structure's string-set, by design, is incapable of producing an empty string.
+
+        match index_usize == 0 {
+            true => Ok(String::new()),
+            false => match index_usize <= self.strings.len() {
+                true => Ok(String::from_utf8(self.strings[index_usize - 1].clone())?),
+                false => Err(SMBiosStringError::InvalidStringNumber(index)),
+            },
+        }
     }
 
     /// Iterates the raw bytes of the strings. The terminating 0 is not included in each string.
@@ -128,5 +120,71 @@ impl Serialize for Strings {
             seq.serialize_element(&e)?;
         }
         seq.end()
+    }
+}
+
+/// # SMBiosStringError
+///
+/// An SMBIOS String retrival error
+#[derive(Serialize, Debug)]
+pub enum SMBiosStringError {
+    /// The structure's field is out of bounds of the formatted portion of the SMBIOS structure
+    FieldOutOfBounds,
+    /// The given string number was outside the range of the SMBIOS structure's string-set
+    InvalidStringNumber(u8),
+    /// UTF8 parsing error
+    #[serde(serialize_with = "ser_from_utf8_error")]
+    Utf8(FromUtf8Error),
+}
+
+fn ser_from_utf8_error<S>(data: &FromUtf8Error, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    serializer.serialize_str(format!("{}", data).as_str())
+}
+
+impl fmt::Display for SMBiosStringError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match *self {
+            SMBiosStringError::FieldOutOfBounds => {
+                write!(
+                    f,
+                    "TThe structure's field is out of bounds of the formatted portion of the SMBIOS structure"
+                )
+            }
+            SMBiosStringError::InvalidStringNumber(_) => {
+                write!(
+                    f,
+                    "The given string number was outside the range of the SMBIOS structure's string-set"
+                )
+            }
+            // The wrapped error contains additional information and is available
+            // via the source() method.
+            SMBiosStringError::Utf8(..) => {
+                write!(f, "UTF8 parsing error")
+            }
+        }
+    }
+}
+
+impl error::Error for SMBiosStringError {
+    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+        match *self {
+            // The cause is the underlying implementation error type. Is implicitly
+            // cast to the trait object `&error::Error`. This works because the
+            // underlying type already implements the `Error` trait.
+            SMBiosStringError::Utf8(ref e) => Some(e),
+            _ => None,
+        }
+    }
+}
+
+// Implement the conversion from `FromUtf8Error` to `SMBiosStringError`.
+// This will be automatically called by `?` if a `FromUtf8Error`
+// needs to be converted into a `SMBiosStringError`.
+impl From<FromUtf8Error> for SMBiosStringError {
+    fn from(err: FromUtf8Error) -> SMBiosStringError {
+        SMBiosStringError::Utf8(err)
     }
 }

@@ -1,4 +1,4 @@
-use crate::core::{Handle, UndefinedStruct};
+use crate::core::{Handle, SMBiosStringError, UndefinedStruct};
 use crate::SMBiosStruct;
 use serde::{ser::SerializeSeq, ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
@@ -40,14 +40,14 @@ impl<'a> SMBiosFirmwareInventoryInformation<'a> {
     /// Firmware Component Name
     ///
     /// EXAMPLE: 'BMC Firmware',0
-    pub fn firmware_component_name(&self) -> Option<String> {
+    pub fn firmware_component_name(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x04)
     }
 
     /// Firmware Version
     ///
     /// The format of this value is defined by _version_format_
-    pub fn firmware_version(&self) -> Option<String> {
+    pub fn firmware_version(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x05)
     }
 
@@ -61,7 +61,7 @@ impl<'a> SMBiosFirmwareInventoryInformation<'a> {
     /// Firmware ID
     ///
     /// The format of this value is defined by _firmware_id_format_
-    pub fn firmware_id(&self) -> Option<String> {
+    pub fn firmware_id(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x07)
     }
 
@@ -73,17 +73,19 @@ impl<'a> SMBiosFirmwareInventoryInformation<'a> {
     }
 
     /// Release Date
-    pub fn release_date(&self) -> Option<String> {
+    pub fn release_date(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x09)
     }
 
     /// Manufacturer
-    pub fn manufacturer(&self) -> Option<String> {
+    pub fn manufacturer(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x0A)
     }
 
     /// Lowest Supported Firmware Version
-    pub fn lowest_supported_firmware_version(&self) -> Option<String> {
+    ///
+    /// The format of this value is defined by _version_format_
+    pub fn lowest_supported_firmware_version(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x0B)
     }
 

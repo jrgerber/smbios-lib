@@ -1,4 +1,5 @@
-use crate::{SMBiosStruct, UndefinedStruct};
+use crate::core::{SMBiosStringError, UndefinedStruct};
+use crate::SMBiosStruct;
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::{array::TryFromSliceError, convert::TryFrom, fmt, ops::Deref};
 
@@ -83,7 +84,7 @@ impl<'a> SMBiosTpmDevice<'a> {
     /// Description
     ///
     /// Descriptive information of the TPM device.
-    pub fn description(&self) -> Option<String> {
+    pub fn description(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x12)
     }
 
@@ -313,7 +314,7 @@ mod tests {
         assert_eq!(test_struct.minor_spec_version(), Some(0));
         assert_eq!(test_struct.firmware_version_1(), Some(327742));
         assert_eq!(test_struct.firmware_version_2(), Some(800256));
-        assert_eq!(test_struct.description(), Some("INFINEON".to_string()));
+        assert_eq!(test_struct.description().unwrap(), "INFINEON".to_string());
         assert_eq!(
             test_struct.characteristics(),
             Some(TpmDeviceCharacteristics::from(16))

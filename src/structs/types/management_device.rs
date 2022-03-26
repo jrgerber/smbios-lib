@@ -1,4 +1,5 @@
-use crate::{SMBiosStruct, UndefinedStruct};
+use crate::core::{SMBiosStringError, UndefinedStruct};
+use crate::SMBiosStruct;
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 use std::ops::Deref;
@@ -28,7 +29,7 @@ impl<'a> SMBiosStruct<'a> for SMBiosManagementDevice<'a> {
 
 impl<'a> SMBiosManagementDevice<'a> {
     /// Additional descriptive information about the device or its location
-    pub fn description(&self) -> Option<String> {
+    pub fn description(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x04)
     }
 
@@ -285,7 +286,7 @@ mod tests {
         let parts = UndefinedStruct::new(&struct_type34);
         let test_struct = SMBiosManagementDevice::new(&parts);
 
-        assert_eq!(test_struct.description(), Some("LM78-1".to_string()));
+        assert_eq!(test_struct.description().unwrap(), "LM78-1".to_string());
         assert_eq!(
             *test_struct.device_type().unwrap(),
             ManagementDeviceType::NationalSemiconductorLM78

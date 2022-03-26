@@ -1,4 +1,4 @@
-use crate::core::{Handle, UndefinedStruct};
+use crate::core::{Handle, SMBiosStringError, UndefinedStruct};
 use crate::SMBiosStruct;
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
@@ -95,13 +95,13 @@ impl<'a> SMBiosMemoryDevice<'a> {
     /// Identifies the physically-labeled socket or board position where
     /// the memory device is located
     /// EXAMPLE: “SIMM 3”
-    pub fn device_locator(&self) -> Option<String> {
+    pub fn device_locator(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x10)
     }
 
     /// Identifies the physically labeled bank where the memory device is located
     /// EXAMPLE: “Bank 0” or “A”
-    pub fn bank_locator(&self) -> Option<String> {
+    pub fn bank_locator(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x11)
     }
 
@@ -128,26 +128,26 @@ impl<'a> SMBiosMemoryDevice<'a> {
     }
 
     /// The manufacturer of this memory device
-    pub fn manufacturer(&self) -> Option<String> {
+    pub fn manufacturer(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x17)
     }
 
     /// The serial number of this memory device.
     /// This value is set by the manufacturer and normally
     /// is not changeable.
-    pub fn serial_number(&self) -> Option<String> {
+    pub fn serial_number(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x18)
     }
 
     /// The asset tag of this memory device
-    pub fn asset_tag(&self) -> Option<String> {
+    pub fn asset_tag(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x19)
     }
 
     /// The part number of this memory device.
     /// This value is set by the manufacturer and normally
     /// is not changeable.
-    pub fn part_number(&self) -> Option<String> {
+    pub fn part_number(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x1A)
     }
 
@@ -214,7 +214,7 @@ impl<'a> SMBiosMemoryDevice<'a> {
     }
 
     /// The firmware version of this memory device.
-    pub fn firmware_version(&self) -> Option<String> {
+    pub fn firmware_version(&self) -> Result<String, SMBiosStringError> {
         self.parts.get_field_string(0x2B)
     }
 
@@ -1204,10 +1204,10 @@ mod tests {
         assert_eq!(*test_struct.form_factor().unwrap(), MemoryFormFactor::Dimm);
         assert_eq!(test_struct.device_set(), Some(0));
         assert_eq!(
-            test_struct.device_locator(),
-            Some("CPU1_DIMM_1".to_string())
+            test_struct.device_locator().unwrap(),
+            "CPU1_DIMM_1".to_string()
         );
-        assert_eq!(test_struct.bank_locator(), Some("NODE 1".to_string()));
+        assert_eq!(test_struct.bank_locator().unwrap(), "NODE 1".to_string());
         assert_eq!(
             test_struct.memory_type(),
             Some(MemoryDeviceTypeData::from(26))
@@ -1221,12 +1221,12 @@ mod tests {
             MemorySpeed::Unknown => panic!("expected speed"),
             MemorySpeed::SeeExtendedSpeed => panic!("expected speed"),
         }
-        assert_eq!(test_struct.manufacturer(), Some("Hynix".to_string()));
-        assert_eq!(test_struct.serial_number(), Some("72091003".to_string()));
-        assert_eq!(test_struct.asset_tag(), Some(" ".to_string()));
+        assert_eq!(test_struct.manufacturer().unwrap(), "Hynix".to_string());
+        assert_eq!(test_struct.serial_number().unwrap(), "72091003".to_string());
+        assert_eq!(test_struct.asset_tag().unwrap(), " ".to_string());
         assert_eq!(
-            test_struct.part_number(),
-            Some("HMA81GR7AFR8N-VK    ".to_string())
+            test_struct.part_number().unwrap(),
+            "HMA81GR7AFR8N-VK    ".to_string()
         );
         assert_eq!(test_struct.attributes(), Some(1));
         assert_eq!(
@@ -1281,7 +1281,7 @@ mod tests {
             .memory_operating_mode_capability()
             .unwrap()
             .block_accessible_persistent_memory());
-        assert_eq!(test_struct.firmware_version(), Some("8".to_string()));
+        assert_eq!(test_struct.firmware_version().unwrap(), "8".to_string());
         assert_eq!(test_struct.module_manufacturer_id(), Some(0));
         assert_eq!(test_struct.module_product_id(), Some(0));
         assert_eq!(
