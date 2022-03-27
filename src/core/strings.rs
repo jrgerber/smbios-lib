@@ -2,18 +2,18 @@ use serde::{ser::SerializeSeq, Serialize, Serializer};
 use std::error;
 use std::{fmt, string::FromUtf8Error};
 
-/// # SMBIOS Strings
+/// # SMBIOS String-Set
 ///
-/// The strings part/section of a structure
-pub struct Strings {
+/// The string-set part/section of an SMBIOS structure
+pub struct SMBiosStringSet {
     strings: Vec<Vec<u8>>,
     current_string_index: usize,
 }
 
-impl Strings {
-    /// Creates a new strings section of a structure
-    pub fn new(string_area: Vec<u8>) -> Strings {
-        Strings {
+impl SMBiosStringSet {
+    /// Creates a new string-set section of a structure
+    pub fn new(string_area: Vec<u8>) -> SMBiosStringSet {
+        SMBiosStringSet {
             strings: {
                 if string_area == &[] {
                     vec![]
@@ -71,7 +71,7 @@ impl Strings {
     }
 }
 
-impl Iterator for Strings {
+impl Iterator for SMBiosStringSet {
     type Item = Result<String, FromUtf8Error>;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -88,25 +88,25 @@ impl Iterator for Strings {
     }
 }
 
-impl IntoIterator for &Strings {
+impl IntoIterator for &SMBiosStringSet {
     type Item = Result<String, FromUtf8Error>;
-    type IntoIter = Strings;
+    type IntoIter = SMBiosStringSet;
 
     fn into_iter(self) -> Self::IntoIter {
-        Strings {
+        SMBiosStringSet {
             strings: self.strings.clone(),
             current_string_index: 0,
         }
     }
 }
 
-impl fmt::Debug for Strings {
+impl fmt::Debug for SMBiosStringSet {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_list().entries(self.into_iter()).finish()
     }
 }
 
-impl Serialize for Strings {
+impl Serialize for SMBiosStringSet {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -189,6 +189,86 @@ impl From<FromUtf8Error> for SMBiosStringError {
     }
 }
 
+impl From<SMBiosString> for Option<String> {
+    fn from(data: SMBiosString) -> Self {
+        data.to_utf8_lossy()
+    }
+}
+
+impl From<Result<String, SMBiosStringError>> for SMBiosString {
+    fn from(data: Result<String, SMBiosStringError>) -> Self {
+        SMBiosString { value: data }
+    }
+}
+
+/// # SMBiosString
+///
+/// Contains the retrival result for an SMBIOS string field.
+pub struct SMBiosString {
+    value: Result<String, SMBiosStringError>,
+}
+
+impl SMBiosString {
+    /// Produces a UTF-8 which includes invalid UTF-8 characters; otherwise, returns
+    /// Option::None for all other conditions.
+    pub fn to_utf8_lossy(&self) -> Option<String> {
+        match &self.value {
+            Ok(val) => Some(val.to_string()),
+            Err(err) => match err {
+                SMBiosStringError::Utf8(utf8) => {
+                    Some(String::from_utf8_lossy(utf8.as_bytes()).to_string())
+                }
+                _ => None,
+            },
+        }
+    }
+
+    /// Produces an ASCII (ISO-8859-1 specifically) string; otherwise returns Option::None
+    /// for all other conditions.
+    ///
+    /// Note: In DMTF SMBIOS standard 3.5.0 the format of BIOS strings was first specified to
+    /// be UTF-8.  Prior to that time the assumption was ASCII, though undetermined what the values
+    /// 128-255 represent.  Therefore, ISO-8859-1 is applied for these values.
+    pub fn to_ascii(self) -> Option<String> {
+        match self.value {
+            Ok(val) => Some(val.to_string()),
+            Err(err) => match err {
+                SMBiosStringError::Utf8(utf8) => {
+                    Some(utf8.into_bytes().iter().map(|x| *x as char).collect())
+                }
+                _ => None,
+            },
+        }
+    }
+}
+
+impl fmt::Display for SMBiosString {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.value {
+            Ok(val) => write!(f, "{}", val),
+            Err(err) => write!(f, "{}", err),
+        }
+    }
+}
+
+impl fmt::Debug for SMBiosString {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.value {
+            Ok(val) => write!(f, "{}", val),
+            Err(err) => write!(f, "{}", err),
+        }
+    }
+}
+
+impl Serialize for SMBiosString {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(format!("{}", &self).as_str())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -205,7 +285,7 @@ mod tests {
             0x6A, 0x61, 0x7C, 0x4A, 0x50, 0x7C, 0x75, 0x6E, 0x69, 0x63, 0x6F, 0x64, 0x65,
         ];
 
-        let string_set = Strings::new(string_set_bytes);
+        let string_set = SMBiosStringSet::new(string_set_bytes);
 
         let mut string_iterator = string_set.into_iter();
 

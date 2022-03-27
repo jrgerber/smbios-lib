@@ -1,4 +1,4 @@
-use crate::{SMBiosStruct, Strings, UndefinedStruct};
+use crate::{SMBiosStringSet, SMBiosStruct, UndefinedStruct};
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 
@@ -36,7 +36,7 @@ impl<'a> SMBiosSystemConfigurationOptions<'a> {
     /// EXAMPLES:
     /// "JP2: 1-2 Cache Size is 256K, 2-3 Cache Size is 512K"
     /// "SW1-1: Close to Disable On Board Video"
-    pub fn configuration_strings(&self) -> &Strings {
+    pub fn configuration_strings(&self) -> &SMBiosStringSet {
         &self.parts.strings
     }
 }

@@ -1,5 +1,5 @@
 use crate::SMBiosStruct;
-use crate::{SMBiosStringError, UndefinedStruct};
+use crate::{strings::*, UndefinedStruct};
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 
@@ -28,7 +28,7 @@ impl<'a> SMBiosStruct<'a> for SMBiosElectricalCurrentProbe<'a> {
 
 impl<'a> SMBiosElectricalCurrentProbe<'a> {
     ///  A string that contains additional descriptive information about the probe or its location
-    pub fn description(&self) -> Result<String, SMBiosStringError> {
+    pub fn description(&self) -> SMBiosString {
         self.parts.get_field_string(0x04)
     }
 
@@ -310,7 +310,7 @@ mod tests {
         let parts = UndefinedStruct::new(&struct_type29);
         let test_struct = SMBiosElectricalCurrentProbe::new(&parts);
 
-        assert_eq!(test_struct.description().unwrap(), "ABC".to_string());
+        assert_eq!(test_struct.description().to_string(), "ABC".to_string());
         let location_and_status = test_struct.location_and_status().unwrap();
         assert_eq!(location_and_status.status, CurrentProbeStatus::OK);
         assert_eq!(

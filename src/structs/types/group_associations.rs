@@ -1,4 +1,4 @@
-use crate::core::{Handle, SMBiosStringError, UndefinedStruct};
+use crate::core::{strings::*, Handle, UndefinedStruct};
 use crate::SMBiosStruct;
 use serde::{ser::SerializeSeq, ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
@@ -30,7 +30,7 @@ impl<'a> SMBiosStruct<'a> for SMBiosGroupAssociations<'a> {
 
 impl<'a> SMBiosGroupAssociations<'a> {
     /// A string describing the group
-    pub fn group_name(&self) -> Result<String, SMBiosStringError> {
+    pub fn group_name(&self) -> SMBiosString {
         self.parts.get_field_string(0x4)
     }
 
@@ -246,7 +246,7 @@ mod tests {
         println!("{:?}", test_struct);
 
         assert_eq!(
-            test_struct.group_name().unwrap(),
+            test_struct.group_name().to_string(),
             "Firmware Version Info".to_string()
         );
         let mut iterator = test_struct.item_iterator().into_iter();

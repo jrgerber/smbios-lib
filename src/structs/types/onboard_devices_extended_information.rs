@@ -1,5 +1,5 @@
 use super::system_slot::{BusNumber, DeviceFunctionNumber, SegmentGroupNumber};
-use crate::core::{SMBiosStringError, UndefinedStruct};
+use crate::core::{strings::*, UndefinedStruct};
 use crate::{OnBoardDeviceType, SMBiosStruct};
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
@@ -40,7 +40,7 @@ impl<'a> SMBiosStruct<'a> for SMBiosOnboardDevicesExtendedInformation<'a> {
 
 impl<'a> SMBiosOnboardDevicesExtendedInformation<'a> {
     /// The onboard device reference designation
-    pub fn reference_designation(&self) -> Result<String, SMBiosStringError> {
+    pub fn reference_designation(&self) -> SMBiosString {
         self.parts.get_field_string(0x4)
     }
 
@@ -128,7 +128,7 @@ mod tests {
         let test_struct = SMBiosOnboardDevicesExtendedInformation::new(&parts);
 
         assert_eq!(
-            test_struct.reference_designation().unwrap(),
+            test_struct.reference_designation().to_string(),
             "i219".to_string()
         );
         let device_type = test_struct.device_type().unwrap();

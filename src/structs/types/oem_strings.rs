@@ -1,4 +1,4 @@
-use crate::{SMBiosStruct, Strings, UndefinedStruct};
+use crate::{SMBiosStringSet, SMBiosStruct, UndefinedStruct};
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 
@@ -33,7 +33,7 @@ impl<'a> SMBiosOemStrings<'a> {
     }
 
     /// Iterable collection of OEM strings
-    pub fn oem_strings(&self) -> &Strings {
+    pub fn oem_strings(&self) -> &SMBiosStringSet {
         &self.parts.strings
     }
 }

@@ -1,4 +1,4 @@
-use crate::core::{Handle, SMBiosStringError, UndefinedStruct};
+use crate::core::{strings::*, Handle, UndefinedStruct};
 use crate::SMBiosStruct;
 use serde::{ser::SerializeSeq, ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
@@ -27,27 +27,27 @@ impl<'a> SMBiosStruct<'a> for SMBiosBaseboardInformation<'a> {
 
 impl<'a> SMBiosBaseboardInformation<'a> {
     ///Baseboard manufacturer
-    pub fn manufacturer(&self) -> Result<String, SMBiosStringError> {
+    pub fn manufacturer(&self) -> SMBiosString {
         self.parts.get_field_string(0x04)
     }
 
     /// Baseboard product
-    pub fn product(&self) -> Result<String, SMBiosStringError> {
+    pub fn product(&self) -> SMBiosString {
         self.parts.get_field_string(0x05)
     }
 
     /// Baseboard version
-    pub fn version(&self) -> Result<String, SMBiosStringError> {
+    pub fn version(&self) -> SMBiosString {
         self.parts.get_field_string(0x06)
     }
 
     /// Baseboard serial number
-    pub fn serial_number(&self) -> Result<String, SMBiosStringError> {
+    pub fn serial_number(&self) -> SMBiosString {
         self.parts.get_field_string(0x07)
     }
 
     /// Baseboard asset tag
-    pub fn asset_tag(&self) -> Result<String, SMBiosStringError> {
+    pub fn asset_tag(&self) -> SMBiosString {
         self.parts.get_field_string(0x08)
     }
 
@@ -59,7 +59,7 @@ impl<'a> SMBiosBaseboardInformation<'a> {
     }
 
     /// This baseboard's location within the chassis (chassis is referenced by ChassisHandle).
-    pub fn location_in_chassis(&self) -> Result<String, SMBiosStringError> {
+    pub fn location_in_chassis(&self) -> SMBiosString {
         self.parts.get_field_string(0x0A)
     }
 
@@ -454,25 +454,28 @@ mod tests {
 
         // basic field tests
         assert_eq!(
-            baseboard_information.manufacturer().unwrap(),
+            baseboard_information.manufacturer().to_string(),
             "Microsoft Corporation".to_string()
         );
         assert_eq!(
-            baseboard_information.product().unwrap(),
+            baseboard_information.product().to_string(),
             "Surface Laptop 3".to_string()
         );
-        assert_eq!(baseboard_information.version().unwrap(), "".to_string());
+        assert_eq!(baseboard_information.version().to_string(), "".to_string());
         assert_eq!(
-            baseboard_information.serial_number().unwrap(),
+            baseboard_information.serial_number().to_string(),
             "B009250100J1939B".to_string()
         );
-        assert_eq!(baseboard_information.asset_tag().unwrap(), "".to_string());
+        assert_eq!(
+            baseboard_information.asset_tag().to_string(),
+            "".to_string()
+        );
         assert_eq!(
             baseboard_information.feature_flags().unwrap(),
             BaseboardFeatures::from(1)
         );
         assert_eq!(
-            baseboard_information.location_in_chassis().unwrap(),
+            baseboard_information.location_in_chassis().to_string(),
             "".to_string()
         );
         assert_eq!(*baseboard_information.chassis_handle().unwrap(), 0x0F);

@@ -1,4 +1,4 @@
-use crate::core::{SMBiosStringError, UndefinedStruct};
+use crate::core::{strings::*, UndefinedStruct};
 use crate::SMBiosStruct;
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
@@ -27,7 +27,7 @@ impl<'a> SMBiosStruct<'a> for SMBiosInformation<'a> {
 
 impl<'a> SMBiosInformation<'a> {
     /// BIOS vendor's name
-    pub fn vendor(&self) -> Result<String, SMBiosStringError> {
+    pub fn vendor(&self) -> SMBiosString {
         self.parts.get_field_string(0x4)
     }
 
@@ -35,7 +35,7 @@ impl<'a> SMBiosInformation<'a> {
     ///
     /// This value is a free-form string that may contain
     /// Core and OEM version information.
-    pub fn version(&self) -> Result<String, SMBiosStringError> {
+    pub fn version(&self) -> SMBiosString {
         self.parts.get_field_string(0x5)
     }
 
@@ -64,7 +64,7 @@ impl<'a> SMBiosInformation<'a> {
     ///
     /// NOTE: The mm/dd/yyyy format is required for
     /// SMBIOS version 2.3 and later.
-    pub fn release_date(&self) -> Result<String, SMBiosStringError> {
+    pub fn release_date(&self) -> SMBiosString {
         self.parts.get_field_string(0x8)
     }
 
@@ -977,11 +977,11 @@ mod tests {
         let parts = UndefinedStruct::new(&struct_type0);
         let test_struct = SMBiosInformation::new(&parts);
 
-        assert_eq!(test_struct.vendor().unwrap(), "LENOVO".to_string());
-        assert_eq!(test_struct.version().unwrap(), "S03KT33A".to_string());
+        assert_eq!(test_struct.vendor().to_string(), "LENOVO".to_string());
+        assert_eq!(test_struct.version().to_string(), "S03KT33A".to_string());
         assert_eq!(test_struct.starting_address_segment(), Some(61440));
         assert_eq!(
-            test_struct.release_date().unwrap(),
+            test_struct.release_date().to_string(),
             "08/06/2019".to_string()
         );
         assert_eq!(test_struct.rom_size(), Some(RomSize::SeeExtendedRomSize));

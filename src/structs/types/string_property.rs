@@ -1,4 +1,4 @@
-use crate::core::{Handle, SMBiosStringError, UndefinedStruct};
+use crate::core::{strings::*, Handle, UndefinedStruct};
 use crate::SMBiosStruct;
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
@@ -40,7 +40,7 @@ impl<'a> SMBiosStringProperty<'a> {
     }
 
     /// String Property Value
-    pub fn string_property_value(&self) -> Result<String, SMBiosStringError> {
+    pub fn string_property_value(&self) -> SMBiosString {
         self.parts.get_field_string(0x06)
     }
 
@@ -186,7 +186,7 @@ mod tests {
             StringPropertyId::UefiDevicePath
         );
 
-        assert_eq!(test_struct.string_property_value().unwrap(), "Abcd");
+        assert_eq!(test_struct.string_property_value().to_string(), "Abcd");
 
         assert_eq!(*test_struct.parent_handle().unwrap(), 8u16);
     }

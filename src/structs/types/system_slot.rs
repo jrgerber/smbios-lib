@@ -1,4 +1,4 @@
-use crate::core::{SMBiosStringError, UndefinedStruct};
+use crate::core::{strings::*, UndefinedStruct};
 use crate::SMBiosStruct;
 use serde::{ser::SerializeSeq, ser::SerializeStruct, Serialize, Serializer};
 use std::{convert::TryInto, fmt, ops::Deref};
@@ -29,7 +29,7 @@ impl<'a> SMBiosStruct<'a> for SMBiosSystemSlot<'a> {
 
 impl<'a> SMBiosSystemSlot<'a> {
     /// Slot Designation
-    pub fn slot_designation(&self) -> Result<String, SMBiosStringError> {
+    pub fn slot_designation(&self) -> SMBiosString {
         self.parts.get_field_string(0x04)
     }
 
@@ -1386,7 +1386,10 @@ mod tests {
         let parts = UndefinedStruct::new(&struct_type9);
         let test_struct = SMBiosSystemSlot::new(&parts);
 
-        assert_eq!(test_struct.slot_designation().unwrap(), "J6B2".to_string());
+        assert_eq!(
+            test_struct.slot_designation().to_string(),
+            "J6B2".to_string()
+        );
 
         assert_eq!(
             *test_struct.system_slot_type().unwrap(),

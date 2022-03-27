@@ -1,4 +1,4 @@
-use crate::core::{Handle, SMBiosStringError, UndefinedStruct};
+use crate::core::{strings::*, Handle, UndefinedStruct};
 use crate::SMBiosStruct;
 use serde::{ser::SerializeSeq, ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
@@ -40,14 +40,14 @@ impl<'a> SMBiosFirmwareInventoryInformation<'a> {
     /// Firmware Component Name
     ///
     /// EXAMPLE: 'BMC Firmware',0
-    pub fn firmware_component_name(&self) -> Result<String, SMBiosStringError> {
+    pub fn firmware_component_name(&self) -> SMBiosString {
         self.parts.get_field_string(0x04)
     }
 
     /// Firmware Version
     ///
     /// The format of this value is defined by _version_format_
-    pub fn firmware_version(&self) -> Result<String, SMBiosStringError> {
+    pub fn firmware_version(&self) -> SMBiosString {
         self.parts.get_field_string(0x05)
     }
 
@@ -61,7 +61,7 @@ impl<'a> SMBiosFirmwareInventoryInformation<'a> {
     /// Firmware ID
     ///
     /// The format of this value is defined by _firmware_id_format_
-    pub fn firmware_id(&self) -> Result<String, SMBiosStringError> {
+    pub fn firmware_id(&self) -> SMBiosString {
         self.parts.get_field_string(0x07)
     }
 
@@ -73,19 +73,19 @@ impl<'a> SMBiosFirmwareInventoryInformation<'a> {
     }
 
     /// Release Date
-    pub fn release_date(&self) -> Result<String, SMBiosStringError> {
+    pub fn release_date(&self) -> SMBiosString {
         self.parts.get_field_string(0x09)
     }
 
     /// Manufacturer
-    pub fn manufacturer(&self) -> Result<String, SMBiosStringError> {
+    pub fn manufacturer(&self) -> SMBiosString {
         self.parts.get_field_string(0x0A)
     }
 
     /// Lowest Supported Firmware Version
     ///
     /// The format of this value is defined by _version_format_
-    pub fn lowest_supported_firmware_version(&self) -> Result<String, SMBiosStringError> {
+    pub fn lowest_supported_firmware_version(&self) -> SMBiosString {
         self.parts.get_field_string(0x0B)
     }
 
@@ -694,11 +694,13 @@ mod tests {
         assert_eq!(
             firmware_inventory_information
                 .firmware_component_name()
-                .unwrap(),
+                .to_string(),
             "BMC Firmware".to_string()
         );
         assert_eq!(
-            firmware_inventory_information.firmware_version().unwrap(),
+            firmware_inventory_information
+                .firmware_version()
+                .to_string(),
             "1.45.455b66-rev4".to_string()
         );
         assert_eq!(
@@ -709,7 +711,7 @@ mod tests {
             VersionFormat::FreeForm
         );
         assert_eq!(
-            firmware_inventory_information.firmware_id().unwrap(),
+            firmware_inventory_information.firmware_id().to_string(),
             "35EQP72B".to_string()
         );
         assert_eq!(
@@ -720,17 +722,17 @@ mod tests {
             FirmwareIdFormat::FreeForm
         );
         assert_eq!(
-            firmware_inventory_information.release_date().unwrap(),
+            firmware_inventory_information.release_date().to_string(),
             "2021-05-15T04:14:33+06:00".to_string()
         );
         assert_eq!(
-            firmware_inventory_information.manufacturer().unwrap(),
+            firmware_inventory_information.manufacturer().to_string(),
             "Apple".to_string()
         );
         assert_eq!(
             firmware_inventory_information
                 .lowest_supported_firmware_version()
-                .unwrap(),
+                .to_string(),
             "1.23.456b78-rev9".to_string()
         );
         match firmware_inventory_information.image_size().unwrap() {

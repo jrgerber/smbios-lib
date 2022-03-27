@@ -1,4 +1,4 @@
-use crate::core::{Header, SMBiosStringError, UndefinedStruct};
+use crate::core::{strings::*, Header, UndefinedStruct};
 use crate::SMBiosStruct;
 use serde::{ser::SerializeSeq, ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
@@ -103,7 +103,7 @@ impl<'a> OnBoardDevice<'a> {
     }
 
     /// Device description
-    pub fn description(&self) -> Result<String, SMBiosStringError> {
+    pub fn description(&self) -> SMBiosString {
         self.onboard_device_information
             .parts()
             .get_field_string(self.entry_offset + 1)
@@ -362,7 +362,7 @@ mod tests {
         let item = iterator.next().unwrap();
 
         assert_eq!(
-            item.description().unwrap(),
+            item.description().to_string(),
             "   To Be Filled By O.E.M.".to_string()
         );
 

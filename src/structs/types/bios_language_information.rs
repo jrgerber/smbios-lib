@@ -1,4 +1,4 @@
-use crate::{SMBiosStringError, SMBiosStruct, Strings, UndefinedStruct};
+use crate::{strings::*, SMBiosStruct, UndefinedStruct};
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 use std::ops::Deref;
@@ -43,12 +43,12 @@ impl<'a> SMBiosBiosLanguageInformation<'a> {
     }
 
     /// The currently installed language.
-    pub fn current_language(&self) -> Result<String, SMBiosStringError> {
+    pub fn current_language(&self) -> SMBiosString {
         self.parts.get_field_string(0x15)
     }
 
     /// Iterable collection of the installable languages.
-    pub fn installable_langauges(&self) -> &Strings {
+    pub fn installable_langauges(&self) -> &SMBiosStringSet {
         &self.parts.strings
     }
 }
@@ -181,9 +181,7 @@ mod tests {
 
         // basic field tests
         assert_eq!(
-            bios_language_information
-                .current_language()
-                .expect("current_language field exists"),
+            bios_language_information.current_language().to_string(),
             "en|US|iso8859-1".to_string()
         );
         assert_eq!(

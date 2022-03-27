@@ -49,42 +49,15 @@ impl Display for BiosParseError {
 
 fn string_keyword(keyword: String, data: &SMBiosData) -> Result<String, BiosParseError> {
     match keyword.to_lowercase().as_str() {
-        "bios-vendor" => match data.first::<SMBiosInformation>() {
-            Some(bios_info) => match bios_info.vendor() {
-                Ok(vendor) => Ok(vendor),
-                Err(err) => match err {
-                    SMBiosStringError::Utf8(utf8) => {
-                        Ok(String::from_utf8_lossy(utf8.as_bytes()).to_string())
-                    }
-                    _ => Err(BiosParseError::BiosVendorNotFound),
-                },
-            },
-            None => Err(BiosParseError::BiosVendorNotFound),
-        },
-        "bios-version" => match data.first::<SMBiosInformation>() {
-            Some(bios_info) => match bios_info.version() {
-                Ok(version) => Ok(version),
-                Err(err) => match err {
-                    SMBiosStringError::Utf8(utf8) => {
-                        Ok(String::from_utf8_lossy(utf8.as_bytes()).to_string())
-                    }
-                    _ => Err(BiosParseError::BiosVersionNotFound),
-                },
-            },
-            None => Err(BiosParseError::BiosVersionNotFound),
-        },
-        "bios-release-date" => match data.first::<SMBiosInformation>() {
-            Some(bios_info) => match bios_info.release_date() {
-                Ok(release_date) => Ok(release_date),
-                Err(err) => match err {
-                    SMBiosStringError::Utf8(utf8) => {
-                        Ok(String::from_utf8_lossy(utf8.as_bytes()).to_string())
-                    }
-                    _ => Err(BiosParseError::BiosReleaseDateNotFound),
-                },
-            },
-            None => Err(BiosParseError::BiosReleaseDateNotFound),
-        },
+        "bios-vendor" => data
+            .find_map(|bios_info: SMBiosInformation| bios_info.vendor().to_utf8_lossy())
+            .ok_or(BiosParseError::BiosVendorNotFound),
+        "bios-version" => data
+            .find_map(|bios_info: SMBiosInformation| bios_info.version().to_utf8_lossy())
+            .ok_or(BiosParseError::BiosVersionNotFound),
+        "bios-release-date" => data
+            .find_map(|bios_info: SMBiosInformation| bios_info.release_date().to_utf8_lossy())
+            .ok_or(BiosParseError::BiosReleaseDateNotFound),
         "bios-revision" => data
             .find_map(|bios_info: SMBiosInformation| {
                 match (
@@ -107,54 +80,24 @@ fn string_keyword(keyword: String, data: &SMBiosData) -> Result<String, BiosPars
                 }
             })
             .ok_or(BiosParseError::FirmewareRevisionNotFound),
-        "system-manufacturer" => match data.first::<SMBiosSystemInformation>() {
-            Some(system_info) => match system_info.manufacturer() {
-                Ok(manufacturer) => Ok(manufacturer),
-                Err(err) => match err {
-                    SMBiosStringError::Utf8(utf8) => {
-                        Ok(String::from_utf8_lossy(utf8.as_bytes()).to_string())
-                    }
-                    _ => Err(BiosParseError::SystemManufacturerNotFound),
-                },
-            },
-            None => Err(BiosParseError::SystemManufacturerNotFound),
-        },
-        "system-product-name" => match data.first::<SMBiosSystemInformation>() {
-            Some(system_info) => match system_info.product_name() {
-                Ok(system_product_name) => Ok(system_product_name),
-                Err(err) => match err {
-                    SMBiosStringError::Utf8(utf8) => {
-                        Ok(String::from_utf8_lossy(utf8.as_bytes()).to_string())
-                    }
-                    _ => Err(BiosParseError::SystemProductNameNotFound),
-                },
-            },
-            None => Err(BiosParseError::SystemProductNameNotFound),
-        },
-        "system-version" => match data.first::<SMBiosSystemInformation>() {
-            Some(system_info) => match system_info.version() {
-                Ok(version) => Ok(version),
-                Err(err) => match err {
-                    SMBiosStringError::Utf8(utf8) => {
-                        Ok(String::from_utf8_lossy(utf8.as_bytes()).to_string())
-                    }
-                    _ => Err(BiosParseError::SystemVersionNotFound),
-                },
-            },
-            None => Err(BiosParseError::SystemVersionNotFound),
-        },
-        "system-serial-number" => match data.first::<SMBiosSystemInformation>() {
-            Some(system_info) => match system_info.serial_number() {
-                Ok(serial_number) => Ok(serial_number),
-                Err(err) => match err {
-                    SMBiosStringError::Utf8(utf8) => {
-                        Ok(String::from_utf8_lossy(utf8.as_bytes()).to_string())
-                    }
-                    _ => Err(BiosParseError::SystemSerialNumberNotFound),
-                },
-            },
-            None => Err(BiosParseError::SystemSerialNumberNotFound),
-        },
+        "system-manufacturer" => data
+            .find_map(|system_info: SMBiosSystemInformation| {
+                system_info.manufacturer().to_utf8_lossy()
+            })
+            .ok_or(BiosParseError::SystemManufacturerNotFound),
+        "system-product-name" => data
+            .find_map(|system_info: SMBiosSystemInformation| {
+                system_info.product_name().to_utf8_lossy()
+            })
+            .ok_or(BiosParseError::SystemProductNameNotFound),
+        "system-version" => data
+            .find_map(|system_info: SMBiosSystemInformation| system_info.version().to_utf8_lossy())
+            .ok_or(BiosParseError::SystemVersionNotFound),
+        "system-serial-number" => data
+            .find_map(|system_info: SMBiosSystemInformation| {
+                system_info.serial_number().to_utf8_lossy()
+            })
+            .ok_or(BiosParseError::SystemSerialNumberNotFound),
         "system-uuid" => {
             match data.find_map(|system_info: SMBiosSystemInformation| system_info.uuid()) {
                 // SystemUuidData is an enum that can be broken down further if desired
@@ -162,144 +105,65 @@ fn string_keyword(keyword: String, data: &SMBiosData) -> Result<String, BiosPars
                 None => Err(BiosParseError::SystemUuidNotFound),
             }
         }
-        "system-sku-number" => match data.first::<SMBiosSystemInformation>() {
-            Some(system_info) => match system_info.sku_number() {
-                Ok(sku_number) => Ok(sku_number),
-                Err(err) => match err {
-                    SMBiosStringError::Utf8(utf8) => {
-                        Ok(String::from_utf8_lossy(utf8.as_bytes()).to_string())
-                    }
-                    _ => Err(BiosParseError::SystemSkuNumberNotFound),
-                },
-            },
-            None => Err(BiosParseError::SystemSkuNumberNotFound),
-        },
-        "system-family" => match data.first::<SMBiosSystemInformation>() {
-            Some(system_info) => match system_info.family() {
-                Ok(family) => Ok(family),
-                Err(err) => match err {
-                    SMBiosStringError::Utf8(utf8) => {
-                        Ok(String::from_utf8_lossy(utf8.as_bytes()).to_string())
-                    }
-                    _ => Err(BiosParseError::SystemFamilyNotFound),
-                },
-            },
-            None => Err(BiosParseError::SystemFamilyNotFound),
-        },
-        "baseboard-manufacturer" => match data.first::<SMBiosBaseboardInformation>() {
-            Some(baseboard_info) => match baseboard_info.manufacturer() {
-                Ok(manufacturer) => Ok(manufacturer),
-                Err(err) => match err {
-                    SMBiosStringError::Utf8(utf8) => {
-                        Ok(String::from_utf8_lossy(utf8.as_bytes()).to_string())
-                    }
-                    _ => Err(BiosParseError::BaseboardManufacturerNotFound),
-                },
-            },
-            None => Err(BiosParseError::BaseboardManufacturerNotFound),
-        },
-        "baseboard-product-name" => match data.first::<SMBiosBaseboardInformation>() {
-            Some(baseboard_info) => match baseboard_info.product() {
-                Ok(product) => Ok(product),
-                Err(err) => match err {
-                    SMBiosStringError::Utf8(utf8) => {
-                        Ok(String::from_utf8_lossy(utf8.as_bytes()).to_string())
-                    }
-                    _ => Err(BiosParseError::BaseboardProductNameNotFound),
-                },
-            },
-            None => Err(BiosParseError::BaseboardProductNameNotFound),
-        },
-        "baseboard-version" => match data.first::<SMBiosBaseboardInformation>() {
-            Some(baseboard_info) => match baseboard_info.version() {
-                Ok(version) => Ok(version),
-                Err(err) => match err {
-                    SMBiosStringError::Utf8(utf8) => {
-                        Ok(String::from_utf8_lossy(utf8.as_bytes()).to_string())
-                    }
-                    _ => Err(BiosParseError::BaseboardVersionNotFound),
-                },
-            },
-            None => Err(BiosParseError::BaseboardVersionNotFound),
-        },
-        "baseboard-serial-number" => match data.first::<SMBiosBaseboardInformation>() {
-            Some(baseboard_info) => match baseboard_info.serial_number() {
-                Ok(serial_number) => Ok(serial_number),
-                Err(err) => match err {
-                    SMBiosStringError::Utf8(utf8) => {
-                        Ok(String::from_utf8_lossy(utf8.as_bytes()).to_string())
-                    }
-                    _ => Err(BiosParseError::BaseboardSerialNumberNotFound),
-                },
-            },
-            None => Err(BiosParseError::BaseboardSerialNumberNotFound),
-        },
-        "baseboard-asset-tag" => match data.first::<SMBiosBaseboardInformation>() {
-            Some(baseboard_info) => match baseboard_info.asset_tag() {
-                Ok(asset_tag) => Ok(asset_tag),
-                Err(err) => match err {
-                    SMBiosStringError::Utf8(utf8) => {
-                        Ok(String::from_utf8_lossy(utf8.as_bytes()).to_string())
-                    }
-                    _ => Err(BiosParseError::BaseboardAssetTagNotFound),
-                },
-            },
-            None => Err(BiosParseError::BaseboardAssetTagNotFound),
-        },
-        "chassis-manufacturer" => match data.first::<SMBiosSystemChassisInformation>() {
-            Some(chassis_info) => match chassis_info.manufacturer() {
-                Ok(manufacturer) => Ok(manufacturer),
-                Err(err) => match err {
-                    SMBiosStringError::Utf8(utf8) => {
-                        Ok(String::from_utf8_lossy(utf8.as_bytes()).to_string())
-                    }
-                    _ => Err(BiosParseError::ChassisManufacturerNotFound),
-                },
-            },
-            None => Err(BiosParseError::ChassisManufacturerNotFound),
-        },
+        "system-sku-number" => data
+            .find_map(|system_info: SMBiosSystemInformation| {
+                system_info.sku_number().to_utf8_lossy()
+            })
+            .ok_or(BiosParseError::SystemSkuNumberNotFound),
+        "system-family" => data
+            .find_map(|system_info: SMBiosSystemInformation| system_info.family().to_utf8_lossy())
+            .ok_or(BiosParseError::SystemFamilyNotFound),
+        "baseboard-manufacturer" => data
+            .find_map(|baseboard_info: SMBiosBaseboardInformation| {
+                baseboard_info.manufacturer().to_utf8_lossy()
+            })
+            .ok_or(BiosParseError::BaseboardManufacturerNotFound),
+        "baseboard-product-name" => data
+            .find_map(|baseboard_info: SMBiosBaseboardInformation| {
+                baseboard_info.product().to_utf8_lossy()
+            })
+            .ok_or(BiosParseError::BaseboardProductNameNotFound),
+        "baseboard-version" => data
+            .find_map(|baseboard_info: SMBiosBaseboardInformation| {
+                baseboard_info.version().to_utf8_lossy()
+            })
+            .ok_or(BiosParseError::BaseboardVersionNotFound),
+        "baseboard-serial-number" => data
+            .find_map(|baseboard_info: SMBiosBaseboardInformation| {
+                baseboard_info.serial_number().to_utf8_lossy()
+            })
+            .ok_or(BiosParseError::BaseboardSerialNumberNotFound),
+        "baseboard-asset-tag" => data
+            .find_map(|baseboard_info: SMBiosBaseboardInformation| {
+                baseboard_info.asset_tag().to_utf8_lossy()
+            })
+            .ok_or(BiosParseError::BaseboardAssetTagNotFound),
+        "chassis-manufacturer" => data
+            .find_map(|chassis_info: SMBiosSystemChassisInformation| {
+                chassis_info.manufacturer().to_utf8_lossy()
+            })
+            .ok_or(BiosParseError::ChassisManufacturerNotFound),
         "chassis-type" => match data
             .find_map(|chassis_info: SMBiosSystemChassisInformation| chassis_info.chassis_type())
         {
             Some(chassis_type) => Ok(format!("{}", chassis_type)),
             None => Err(BiosParseError::ChassisTypeNotFound),
         },
-        "chassis-version" => match data.first::<SMBiosSystemChassisInformation>() {
-            Some(chassis_info) => match chassis_info.version() {
-                Ok(version) => Ok(version),
-                Err(err) => match err {
-                    SMBiosStringError::Utf8(utf8) => {
-                        Ok(String::from_utf8_lossy(utf8.as_bytes()).to_string())
-                    }
-                    _ => Err(BiosParseError::ChassisVersionNotFound),
-                },
-            },
-            None => Err(BiosParseError::ChassisVersionNotFound),
-        },
-        "chassis-serial-number" => match data.first::<SMBiosSystemChassisInformation>() {
-            Some(chassis_info) => match chassis_info.serial_number() {
-                Ok(serial_number) => Ok(serial_number),
-                Err(err) => match err {
-                    SMBiosStringError::Utf8(utf8) => {
-                        Ok(String::from_utf8_lossy(utf8.as_bytes()).to_string())
-                    }
-                    _ => Err(BiosParseError::ChassisSerialNumberNotFound),
-                },
-            },
-            None => Err(BiosParseError::ChassisSerialNumberNotFound),
-        },
-        "chassis-asset-tag" => match data.first::<SMBiosSystemChassisInformation>() {
-            Some(chassis_info) => match chassis_info.asset_tag_number() {
-                Ok(asset_tag_number) => Ok(asset_tag_number),
-                Err(err) => match err {
-                    SMBiosStringError::Utf8(utf8) => {
-                        Ok(String::from_utf8_lossy(utf8.as_bytes()).to_string())
-                    }
-                    _ => Err(BiosParseError::ChassisAssetTagNotFound),
-                },
-            },
-            None => Err(BiosParseError::ChassisAssetTagNotFound),
-        },
+        "chassis-version" => data
+            .find_map(|chassis_info: SMBiosSystemChassisInformation| {
+                chassis_info.version().to_utf8_lossy()
+            })
+            .ok_or(BiosParseError::ChassisVersionNotFound),
+        "chassis-serial-number" => data
+            .find_map(|chassis_info: SMBiosSystemChassisInformation| {
+                chassis_info.serial_number().to_utf8_lossy()
+            })
+            .ok_or(BiosParseError::ChassisSerialNumberNotFound),
+        "chassis-asset-tag" => data
+            .find_map(|chassis_info: SMBiosSystemChassisInformation| {
+                chassis_info.asset_tag_number().to_utf8_lossy()
+            })
+            .ok_or(BiosParseError::ChassisAssetTagNotFound),
         "processor-family" => match data.first::<SMBiosProcessorInformation>() {
             Some(processor_info) => match processor_info.processor_family() {
                 Some(family) => match family.value {
@@ -315,30 +179,16 @@ fn string_keyword(keyword: String, data: &SMBiosData) -> Result<String, BiosPars
             },
             None => Err(BiosParseError::ProcessorFamilyNotFound),
         },
-        "processor-manufacturer" => match data.first::<SMBiosProcessorInformation>() {
-            Some(processor_info) => match processor_info.processor_manufacturer() {
-                Ok(processor_manufacturer) => Ok(processor_manufacturer),
-                Err(err) => match err {
-                    SMBiosStringError::Utf8(utf8) => {
-                        Ok(String::from_utf8_lossy(utf8.as_bytes()).to_string())
-                    }
-                    _ => Err(BiosParseError::ProcessorManufacturerNotFound),
-                },
-            },
-            None => Err(BiosParseError::ProcessorManufacturerNotFound),
-        },
-        "processor-version" => match data.first::<SMBiosProcessorInformation>() {
-            Some(processor_info) => match processor_info.processor_version() {
-                Ok(processor_version) => Ok(processor_version),
-                Err(err) => match err {
-                    SMBiosStringError::Utf8(utf8) => {
-                        Ok(String::from_utf8_lossy(utf8.as_bytes()).to_string())
-                    }
-                    _ => Err(BiosParseError::ProcessorVersionNotFound),
-                },
-            },
-            None => Err(BiosParseError::ProcessorVersionNotFound),
-        },
+        "processor-manufacturer" => data
+            .find_map(|processor_info: SMBiosProcessorInformation| {
+                processor_info.processor_manufacturer().to_utf8_lossy()
+            })
+            .ok_or(BiosParseError::ProcessorManufacturerNotFound),
+        "processor-version" => data
+            .find_map(|processor_info: SMBiosProcessorInformation| {
+                processor_info.processor_version().to_utf8_lossy()
+            })
+            .ok_or(BiosParseError::ProcessorVersionNotFound),
         "processor-frequency" => match data
             .find_map(|processor_info: SMBiosProcessorInformation| processor_info.current_speed())
         {
