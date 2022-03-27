@@ -79,8 +79,13 @@ mod tests {
 
         assert_eq!(test_struct.count(), Some(1));
         assert_eq!(
-            test_struct.configuration_strings().into_iter().next(),
-            Some("scre++".to_string())
+            test_struct
+                .configuration_strings()
+                .into_iter()
+                .next()
+                .unwrap()
+                .unwrap(),
+            "scre++".to_string()
         );
     }
 }
