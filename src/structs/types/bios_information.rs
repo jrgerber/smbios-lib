@@ -195,7 +195,7 @@ impl<'a> SMBiosInformation<'a> {
 #[derive(Serialize, Debug, PartialEq, Eq)]
 pub enum RomSize {
     /// Size of this rom in bytes
-    Bytes(u32),
+    Kilobytes(u16),
     /// Extended size of the physical device(s)
     /// containing the BIOS (in MB).
     Megabytes(u16),
@@ -239,7 +239,7 @@ impl From<u8> for RomSize {
             0xFF => RomSize::SeeExtendedRomSize,
             // Size (n) where 64K * (n+1) is the size of the
             // physical device containing the BIOS, in bytes.
-            _ => RomSize::Bytes(0xFFFF * (raw as u32 + 1)),
+            _ => RomSize::Kilobytes(64 * (raw as u16 + 1)),
         }
     }
 }
@@ -980,5 +980,19 @@ mod tests {
         }
 
         println!("{:?}", test_struct);
+    }
+
+    #[test]
+    pub fn test_rom_size() {
+        let struct_type0 = vec![
+            0x00, 0x18, 0x00, 0x00, 0x01, 0x02, 0x00, 0xF0, 0x03, 0xFE, 0x80, 0x98, 0x8B, 0x3F,
+            0x01, 0x00, 0x11, 0x00, 0x03, 0x0D, 0x00, 0x21, 0x11, 0x2D, 0x4C, 0x45, 0x4E, 0x4F,
+            0x56, 0x4F, 0x00, 0x53, 0x30, 0x33, 0x4B, 0x54, 0x33, 0x33, 0x41, 0x00, 0x30, 0x38,
+            0x2F, 0x30, 0x36, 0x2F, 0x32, 0x30, 0x31, 0x39, 0x00, 0x00,
+        ];
+
+        let parts = UndefinedStruct::new(&struct_type0);
+        let test_struct = SMBiosInformation::new(&parts);
+        assert_eq!(test_struct.rom_size(), Some(RomSize::Kilobytes(16320)))
     }
 }
