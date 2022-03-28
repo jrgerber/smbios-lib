@@ -38,7 +38,7 @@ impl SMBiosStringSet {
     /// If the index is 0 an empty string "" is returned.
     /// If SMBiosStringError::InvalidStringNumber is returned, either the field value is corrupt or the string-set is corrupt.
     /// If SMBiosStringError::Utf8 is returned, the string is corrupt.
-    pub fn get_string(&self, index: u8) -> Result<String, SMBiosStringError> {
+    pub fn get_string(&self, index: u8) -> SMBiosString {
         let index_usize = index as usize;
 
         // As of 3.5.0 DMTF has decided to make UTF-8 the standard for how to interpret strings.
@@ -56,11 +56,14 @@ impl SMBiosStringSet {
         // In rust we can return the empty string ("") when index is 0. This is idempotent because
         // the structure's string-set, by design, is incapable of producing an empty string.
 
-        match index_usize == 0 {
-            true => Ok(String::new()),
-            false => match index_usize <= self.strings.len() {
-                true => Ok(String::from_utf8(self.strings[index_usize - 1].clone())?),
-                false => Err(SMBiosStringError::InvalidStringNumber(index)),
+        SMBiosString {
+            value: match index_usize == 0 {
+                true => Ok(String::new()),
+                false => match index_usize <= self.strings.len() {
+                    true => String::from_utf8(self.strings[index_usize - 1].clone())
+                        .map_err(|err| err.into()),
+                    false => Err(SMBiosStringError::InvalidStringNumber(index)),
+                },
             },
         }
     }
@@ -72,7 +75,7 @@ impl SMBiosStringSet {
 }
 
 impl Iterator for SMBiosStringSet {
-    type Item = Result<String, FromUtf8Error>;
+    type Item = SMBiosString;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.current_string_index == self.strings.len() {
@@ -80,16 +83,17 @@ impl Iterator for SMBiosStringSet {
             return None;
         }
 
-        let result = String::from_utf8(self.strings[self.current_string_index].clone());
+        let result = String::from_utf8(self.strings[self.current_string_index].clone())
+            .map_err(|err| err.into());
 
         self.current_string_index = self.current_string_index + 1;
 
-        Some(result)
+        Some(SMBiosString::from(result))
     }
 }
 
 impl IntoIterator for &SMBiosStringSet {
-    type Item = Result<String, FromUtf8Error>;
+    type Item = SMBiosString;
     type IntoIter = SMBiosStringSet;
 
     fn into_iter(self) -> Self::IntoIter {
@@ -111,10 +115,10 @@ impl Serialize for SMBiosStringSet {
     where
         S: Serializer,
     {
-        let strings: Vec<Result<String, FromUtf8Error>> = self.into_iter().collect();
+        let strings: Vec<SMBiosString> = self.into_iter().collect();
         let mut seq = serializer.serialize_seq(Some(strings.len()))?;
         for e in strings {
-            match e {
+            match e.value {
                 Ok(val) => seq.serialize_element(&val)?,
                 Err(err) => seq.serialize_element(format!("{}", err).as_str())?,
             }
@@ -150,7 +154,7 @@ impl fmt::Display for SMBiosStringError {
             SMBiosStringError::FieldOutOfBounds => {
                 write!(
                     f,
-                    "TThe structure's field is out of bounds of the formatted portion of the SMBIOS structure"
+                    "The structure's field is out of bounds of the formatted portion of the SMBIOS structure"
                 )
             }
             SMBiosStringError::InvalidStringNumber(_) => {
@@ -189,12 +193,6 @@ impl From<FromUtf8Error> for SMBiosStringError {
     }
 }
 
-impl From<SMBiosString> for Option<String> {
-    fn from(data: SMBiosString) -> Self {
-        data.to_utf8_lossy()
-    }
-}
-
 impl From<Result<String, SMBiosStringError>> for SMBiosString {
     fn from(data: Result<String, SMBiosStringError>) -> Self {
         SMBiosString { value: data }
@@ -223,22 +221,34 @@ impl SMBiosString {
         }
     }
 
-    /// Produces an ASCII (ISO-8859-1 specifically) string; otherwise returns Option::None
-    /// for all other conditions.
-    ///
-    /// Note: In DMTF SMBIOS standard 3.5.0 the format of BIOS strings was first specified to
-    /// be UTF-8.  Prior to that time the assumption was ASCII, though undetermined what the values
-    /// 128-255 represent.  Therefore, ISO-8859-1 is applied for these values.
-    pub fn to_ascii(self) -> Option<String> {
-        match self.value {
-            Ok(val) => Some(val.to_string()),
-            Err(err) => match err {
-                SMBiosStringError::Utf8(utf8) => {
-                    Some(utf8.into_bytes().iter().map(|x| *x as char).collect())
-                }
-                _ => None,
-            },
-        }
+    /// Returns `true` if the result is [Ok].
+    pub const fn is_ok(&self) -> bool {
+        self.value.is_ok()
+    }
+
+    /// Returns `true` if the result is [Err].
+    pub const fn is_err(&self) -> bool {
+        self.value.is_err()
+    }
+
+    /// Converts to `Option<String>` consuming self, and discarding the error, if any.
+    pub fn ok(self) -> Option<String> {
+        self.value.ok()
+    }
+
+    /// Converts to `Option<SMBiosStringError>` consuming self, and discarding the success value, if any.
+    pub fn err(self) -> Option<SMBiosStringError> {
+        self.value.err()
+    }
+
+    /// Produces a new `Result`, containing a reference into the original, leaving the original in place.
+    pub const fn as_ref(&self) -> Result<&String, &SMBiosStringError> {
+        self.value.as_ref()
+    }
+
+    /// Converts to Result<&mut String, &mut SMBiosStringError>.
+    pub fn as_mut(&mut self) -> Result<&mut String, &mut SMBiosStringError> {
+        self.value.as_mut()
     }
 }
 
@@ -289,25 +299,31 @@ mod tests {
 
         let mut string_iterator = string_set.into_iter();
 
-        let first_string = string_iterator.next().unwrap().unwrap();
+        let first_string = string_iterator.next().unwrap().value.unwrap();
         assert_eq!(first_string, "en|US|iso8859-1".to_string());
 
-        let second_string = string_iterator.next().unwrap().unwrap();
+        let second_string = string_iterator.next().unwrap().value.unwrap();
         assert_eq!(second_string, "Heart=💖".to_string());
 
         // Err(FromUtf8Error { bytes: [69, 114, 114, 111, 114, 61, 1, 159, 146, 150], error: Utf8Error { valid_up_to: 7, error_len: Some(1) } })
-        match string_iterator.next().unwrap() {
+        match string_iterator.next().unwrap().value {
             Ok(_) => panic!("This should have been a UTF8 error"),
-            Err(err) => {
-                assert_eq!(7, err.utf8_error().valid_up_to());
-                assert_eq!(
-                    "Error=\u{1}���",
-                    String::from_utf8_lossy(err.as_bytes()).to_string()
-                );
-            }
+            Err(err) => match err {
+                SMBiosStringError::FieldOutOfBounds => panic!("This should have been inbounds"),
+                SMBiosStringError::InvalidStringNumber(_) => {
+                    panic!("This should have been a valid string number")
+                }
+                SMBiosStringError::Utf8(utf8) => {
+                    assert_eq!(7, utf8.utf8_error().valid_up_to());
+                    assert_eq!(
+                        "Error=\u{1}���",
+                        String::from_utf8_lossy(utf8.as_bytes()).to_string()
+                    );
+                }
+            },
         }
 
-        let fourth_string = string_iterator.next().unwrap().unwrap();
+        let fourth_string = string_iterator.next().unwrap().value.unwrap();
         assert_eq!(fourth_string, "ja|JP|unicode".to_string());
     }
 }

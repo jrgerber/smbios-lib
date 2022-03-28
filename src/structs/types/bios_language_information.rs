@@ -199,15 +199,12 @@ mod tests {
         let mut string_iterator = bios_language_information
             .installable_langauges()
             .into_iter();
-        let first_string = string_iterator.next().expect("has a first string").unwrap();
-        assert_eq!(first_string, "en|US|iso8859-1".to_string());
-        let second_string = string_iterator
-            .next()
-            .expect("has a second string")
-            .unwrap();
-        assert_eq!(second_string, "hr|HR|iso8859-2".to_string());
-        let third_string = string_iterator.next().expect("has a third string").unwrap();
-        assert_eq!(third_string, "ja|JP|unicode".to_string());
+        let first_string = string_iterator.next().expect("has a first string").ok();
+        assert_eq!(first_string, Some("en|US|iso8859-1".to_string()));
+        let second_string = string_iterator.next().expect("has a second string").ok();
+        assert_eq!(second_string, Some("hr|HR|iso8859-2".to_string()));
+        let third_string = string_iterator.next().expect("has a third string").ok();
+        assert_eq!(third_string, Some("ja|JP|unicode".to_string()));
         assert!(string_iterator.next().is_none());
 
         // debug print test

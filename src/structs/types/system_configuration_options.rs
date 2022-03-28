@@ -84,8 +84,8 @@ mod tests {
                 .into_iter()
                 .next()
                 .unwrap()
-                .unwrap(),
-            "scre++".to_string()
+                .ok(),
+            Some("scre++".to_string())
         );
     }
 }

@@ -129,11 +129,10 @@ impl<'a> UndefinedStruct {
     /// The string is thus retrieved from the strings section based on the
     /// byte value at the given offset.
     pub fn get_field_string(&self, offset: usize) -> SMBiosString {
-        let result = match self.get_field_byte(offset) {
+        match self.get_field_byte(offset) {
             Some(val) => self.strings.get_string(val),
-            None => Err(SMBiosStringError::FieldOutOfBounds),
-        };
-        result.into()
+            None => Err(SMBiosStringError::FieldOutOfBounds).into(),
+        }
     }
 
     // todo: learn how to pass an index range (SliceIndex?) rather than start/end indices.

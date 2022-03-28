@@ -86,16 +86,16 @@ mod tests {
 
         let mut iter = test_struct.oem_strings().into_iter();
         assert_eq!(
-            iter.next().unwrap().unwrap(),
-            "ABS 70/71 60 61 62 63;".to_string()
+            iter.next().unwrap().ok(),
+            Some("ABS 70/71 60 61 62 63;".to_string())
         );
         assert_eq!(
-            iter.next().unwrap().unwrap(),
-            "FBYTE#2U3E3X476J6S6b7B7H7M7Q7T7W7a7j7ma3apaqaub7.Q3;".to_string()
+            iter.next().unwrap().ok(),
+            Some("FBYTE#2U3E3X476J6S6b7B7H7M7Q7T7W7a7j7ma3apaqaub7.Q3;".to_string())
         );
         assert_eq!(
-            iter.next().unwrap().unwrap(),
-            "BUILDID#13WWCDC8601#SABA#DABA;".to_string()
+            iter.next().unwrap().ok(),
+            Some("BUILDID#13WWCDC8601#SABA#DABA;".to_string())
         );
     }
 }
