@@ -1,4 +1,5 @@
-use crate::{MemoryTypes, SMBiosStruct, UndefinedStruct};
+use crate::core::{strings::*, UndefinedStruct};
+use crate::{MemoryTypes, SMBiosStruct};
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 
@@ -29,7 +30,7 @@ impl<'a> SMBiosMemoryModuleInformation<'a> {
     /// Socket reference designation
     ///
     /// EXAMPLE: ‘J202’,0
-    pub fn socket_designation(&self) -> Option<String> {
+    pub fn socket_designation(&self) -> SMBiosString {
         self.parts.get_field_string(0x04)
     }
 
@@ -131,7 +132,10 @@ mod tests {
         let parts = UndefinedStruct::new(&struct_type6);
         let test_struct = SMBiosMemoryModuleInformation::new(&parts);
 
-        assert_eq!(test_struct.socket_designation(), Some("A1".to_string()));
+        assert_eq!(
+            test_struct.socket_designation().to_string(),
+            "A1".to_string()
+        );
         assert_eq!(test_struct.bank_connections(), Some(0x01));
         assert_eq!(test_struct.current_speed(), Some(0b00000010));
         let memory_types = test_struct.current_memory_type().unwrap();

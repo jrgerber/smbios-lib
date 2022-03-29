@@ -1,4 +1,4 @@
-use crate::core::{Handle, UndefinedStruct};
+use crate::core::{strings::*, Handle, UndefinedStruct};
 use crate::SMBiosStruct;
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::convert::TryInto;
@@ -18,8 +18,8 @@ use std::ops::Deref;
 /// determine the maximum possible configuration of the system.
 ///
 /// Compliant with:
-/// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
-/// Document Date: 2020-07-17
+/// DMTF SMBIOS Reference Specification 3.5.0 (DSP0134)
+/// Document Date: 2021-09-15
 pub struct SMBiosProcessorInformation<'a> {
     parts: &'a UndefinedStruct,
 }
@@ -40,7 +40,7 @@ impl<'a> SMBiosProcessorInformation<'a> {
     /// Socket reference designation
     ///
     /// EXAMPLE: "J202"
-    pub fn socket_designation(&self) -> Option<String> {
+    pub fn socket_designation(&self) -> SMBiosString {
         self.parts.get_field_string(0x04)
     }
 
@@ -59,7 +59,7 @@ impl<'a> SMBiosProcessorInformation<'a> {
     }
 
     /// Processor manufacturer
-    pub fn processor_manufacturer(&self) -> Option<String> {
+    pub fn processor_manufacturer(&self) -> SMBiosString {
         self.parts.get_field_string(0x07)
     }
 
@@ -76,7 +76,7 @@ impl<'a> SMBiosProcessorInformation<'a> {
     }
 
     /// Processor version
-    pub fn processor_version(&self) -> Option<String> {
+    pub fn processor_version(&self) -> SMBiosString {
         self.parts.get_field_string(0x10)
     }
 
@@ -179,12 +179,12 @@ impl<'a> SMBiosProcessorInformation<'a> {
     ///
     /// This value is set by the manufacturer and
     /// normally not changeable.
-    pub fn serial_number(&self) -> Option<String> {
+    pub fn serial_number(&self) -> SMBiosString {
         self.parts.get_field_string(0x20)
     }
 
     /// The asset tag of this processor
-    pub fn asset_tag(&self) -> Option<String> {
+    pub fn asset_tag(&self) -> SMBiosString {
         self.parts.get_field_string(0x21)
     }
 
@@ -192,7 +192,7 @@ impl<'a> SMBiosProcessorInformation<'a> {
     ///
     /// This value is set by the manufacturer and
     /// normally not changeable.
-    pub fn part_number(&self) -> Option<String> {
+    pub fn part_number(&self) -> SMBiosString {
         self.parts.get_field_string(0x22)
     }
 
@@ -1401,6 +1401,8 @@ pub enum ProcessorUpgrade {
     SocketLGA4189,
     /// Socket LGA1200
     SocketLGA1200,
+    /// Socket LGA4677
+    SocketLGA4677,
     /// A value unknown to this standard, check the raw value
     None,
 }
@@ -1471,6 +1473,7 @@ impl From<u8> for ProcessorUpgradeData {
                 0x3C => ProcessorUpgrade::SocketBGA1528,
                 0x3D => ProcessorUpgrade::SocketLGA4189,
                 0x3E => ProcessorUpgrade::SocketLGA1200,
+                0x3F => ProcessorUpgrade::SocketLGA4677,
                 _ => ProcessorUpgrade::None,
             },
             raw,
@@ -1982,7 +1985,10 @@ mod tests {
         let parts = UndefinedStruct::new(&struct_type4);
         let test_struct = SMBiosProcessorInformation::new(&parts);
 
-        assert_eq!(test_struct.socket_designation(), Some("CPU0".to_string()));
+        assert_eq!(
+            test_struct.socket_designation().to_string(),
+            "CPU0".to_string()
+        );
         assert_eq!(
             *test_struct.processor_type().unwrap(),
             ProcessorType::CentralProcessor
@@ -1992,16 +1998,16 @@ mod tests {
             ProcessorFamily::IntelXeonProcessor
         );
         assert_eq!(
-            test_struct.processor_manufacturer(),
-            Some("Intel(R) Corporation".to_string())
+            test_struct.processor_manufacturer().to_string(),
+            "Intel(R) Corporation".to_string()
         );
         assert_eq!(
             test_struct.processor_id(),
             Some(&[0x54u8, 0x06, 0x05, 0x00, 0xFF, 0xFB, 0xEB, 0xBF])
         );
         assert_eq!(
-            test_struct.processor_version(),
-            Some("Intel(R) Xeon(R) W-2133 CPU @ 3.60GHz".to_string())
+            test_struct.processor_version().to_string(),
+            "Intel(R) Xeon(R) W-2133 CPU @ 3.60GHz".to_string()
         );
         match test_struct.voltage().unwrap() {
             ProcessorVoltage::CurrentVolts(volts) => assert_eq!(volts, 1.6),
@@ -2029,9 +2035,9 @@ mod tests {
         assert_eq!(*test_struct.l1cache_handle().unwrap(), 83);
         assert_eq!(*test_struct.l2cache_handle().unwrap(), 84);
         assert_eq!(*test_struct.l3cache_handle().unwrap(), 85);
-        assert_eq!(test_struct.serial_number(), None);
-        assert_eq!(test_struct.asset_tag(), Some("UNKNOWN".to_string()));
-        assert_eq!(test_struct.part_number(), None);
+        assert_eq!(test_struct.serial_number().to_string(), "".to_string());
+        assert_eq!(test_struct.asset_tag().to_string(), "UNKNOWN".to_string());
+        assert_eq!(test_struct.part_number().to_string(), "".to_string());
         match test_struct.core_count().unwrap() {
             CoreCount::Count(number) => assert_eq!(number, 6),
             CoreCount::Unknown => panic!("expected number"),

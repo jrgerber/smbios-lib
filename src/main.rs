@@ -50,13 +50,13 @@ impl Display for BiosParseError {
 fn string_keyword(keyword: String, data: &SMBiosData) -> Result<String, BiosParseError> {
     match keyword.to_lowercase().as_str() {
         "bios-vendor" => data
-            .find_map(|bios_info: SMBiosInformation| bios_info.vendor())
+            .find_map(|bios_info: SMBiosInformation| bios_info.vendor().to_utf8_lossy())
             .ok_or(BiosParseError::BiosVendorNotFound),
         "bios-version" => data
-            .find_map(|bios_info: SMBiosInformation| bios_info.version())
+            .find_map(|bios_info: SMBiosInformation| bios_info.version().to_utf8_lossy())
             .ok_or(BiosParseError::BiosVersionNotFound),
         "bios-release-date" => data
-            .find_map(|bios_info: SMBiosInformation| bios_info.release_date())
+            .find_map(|bios_info: SMBiosInformation| bios_info.release_date().to_utf8_lossy())
             .ok_or(BiosParseError::BiosReleaseDateNotFound),
         "bios-revision" => data
             .find_map(|bios_info: SMBiosInformation| {
@@ -81,16 +81,22 @@ fn string_keyword(keyword: String, data: &SMBiosData) -> Result<String, BiosPars
             })
             .ok_or(BiosParseError::FirmewareRevisionNotFound),
         "system-manufacturer" => data
-            .find_map(|system_info: SMBiosSystemInformation| system_info.manufacturer())
+            .find_map(|system_info: SMBiosSystemInformation| {
+                system_info.manufacturer().to_utf8_lossy()
+            })
             .ok_or(BiosParseError::SystemManufacturerNotFound),
         "system-product-name" => data
-            .find_map(|system_info: SMBiosSystemInformation| system_info.product_name())
+            .find_map(|system_info: SMBiosSystemInformation| {
+                system_info.product_name().to_utf8_lossy()
+            })
             .ok_or(BiosParseError::SystemProductNameNotFound),
         "system-version" => data
-            .find_map(|system_info: SMBiosSystemInformation| system_info.version())
+            .find_map(|system_info: SMBiosSystemInformation| system_info.version().to_utf8_lossy())
             .ok_or(BiosParseError::SystemVersionNotFound),
         "system-serial-number" => data
-            .find_map(|system_info: SMBiosSystemInformation| system_info.serial_number())
+            .find_map(|system_info: SMBiosSystemInformation| {
+                system_info.serial_number().to_utf8_lossy()
+            })
             .ok_or(BiosParseError::SystemSerialNumberNotFound),
         "system-uuid" => {
             match data.find_map(|system_info: SMBiosSystemInformation| system_info.uuid()) {
@@ -100,28 +106,42 @@ fn string_keyword(keyword: String, data: &SMBiosData) -> Result<String, BiosPars
             }
         }
         "system-sku-number" => data
-            .find_map(|system_info: SMBiosSystemInformation| system_info.sku_number())
+            .find_map(|system_info: SMBiosSystemInformation| {
+                system_info.sku_number().to_utf8_lossy()
+            })
             .ok_or(BiosParseError::SystemSkuNumberNotFound),
         "system-family" => data
-            .find_map(|system_info: SMBiosSystemInformation| system_info.family())
+            .find_map(|system_info: SMBiosSystemInformation| system_info.family().to_utf8_lossy())
             .ok_or(BiosParseError::SystemFamilyNotFound),
         "baseboard-manufacturer" => data
-            .find_map(|baseboard_info: SMBiosBaseboardInformation| baseboard_info.manufacturer())
+            .find_map(|baseboard_info: SMBiosBaseboardInformation| {
+                baseboard_info.manufacturer().to_utf8_lossy()
+            })
             .ok_or(BiosParseError::BaseboardManufacturerNotFound),
         "baseboard-product-name" => data
-            .find_map(|baseboard_info: SMBiosBaseboardInformation| baseboard_info.product())
+            .find_map(|baseboard_info: SMBiosBaseboardInformation| {
+                baseboard_info.product().to_utf8_lossy()
+            })
             .ok_or(BiosParseError::BaseboardProductNameNotFound),
         "baseboard-version" => data
-            .find_map(|baseboard_info: SMBiosBaseboardInformation| baseboard_info.version())
+            .find_map(|baseboard_info: SMBiosBaseboardInformation| {
+                baseboard_info.version().to_utf8_lossy()
+            })
             .ok_or(BiosParseError::BaseboardVersionNotFound),
         "baseboard-serial-number" => data
-            .find_map(|baseboard_info: SMBiosBaseboardInformation| baseboard_info.serial_number())
+            .find_map(|baseboard_info: SMBiosBaseboardInformation| {
+                baseboard_info.serial_number().to_utf8_lossy()
+            })
             .ok_or(BiosParseError::BaseboardSerialNumberNotFound),
         "baseboard-asset-tag" => data
-            .find_map(|baseboard_info: SMBiosBaseboardInformation| baseboard_info.asset_tag())
+            .find_map(|baseboard_info: SMBiosBaseboardInformation| {
+                baseboard_info.asset_tag().to_utf8_lossy()
+            })
             .ok_or(BiosParseError::BaseboardAssetTagNotFound),
         "chassis-manufacturer" => data
-            .find_map(|chassis_info: SMBiosSystemChassisInformation| chassis_info.manufacturer())
+            .find_map(|chassis_info: SMBiosSystemChassisInformation| {
+                chassis_info.manufacturer().to_utf8_lossy()
+            })
             .ok_or(BiosParseError::ChassisManufacturerNotFound),
         "chassis-type" => match data
             .find_map(|chassis_info: SMBiosSystemChassisInformation| chassis_info.chassis_type())
@@ -130,14 +150,18 @@ fn string_keyword(keyword: String, data: &SMBiosData) -> Result<String, BiosPars
             None => Err(BiosParseError::ChassisTypeNotFound),
         },
         "chassis-version" => data
-            .find_map(|chassis_info: SMBiosSystemChassisInformation| chassis_info.version())
+            .find_map(|chassis_info: SMBiosSystemChassisInformation| {
+                chassis_info.version().to_utf8_lossy()
+            })
             .ok_or(BiosParseError::ChassisVersionNotFound),
         "chassis-serial-number" => data
-            .find_map(|chassis_info: SMBiosSystemChassisInformation| chassis_info.serial_number())
+            .find_map(|chassis_info: SMBiosSystemChassisInformation| {
+                chassis_info.serial_number().to_utf8_lossy()
+            })
             .ok_or(BiosParseError::ChassisSerialNumberNotFound),
         "chassis-asset-tag" => data
             .find_map(|chassis_info: SMBiosSystemChassisInformation| {
-                chassis_info.asset_tag_number()
+                chassis_info.asset_tag_number().to_utf8_lossy()
             })
             .ok_or(BiosParseError::ChassisAssetTagNotFound),
         "processor-family" => match data.first::<SMBiosProcessorInformation>() {
@@ -157,12 +181,12 @@ fn string_keyword(keyword: String, data: &SMBiosData) -> Result<String, BiosPars
         },
         "processor-manufacturer" => data
             .find_map(|processor_info: SMBiosProcessorInformation| {
-                processor_info.processor_manufacturer()
+                processor_info.processor_manufacturer().to_utf8_lossy()
             })
             .ok_or(BiosParseError::ProcessorManufacturerNotFound),
         "processor-version" => data
             .find_map(|processor_info: SMBiosProcessorInformation| {
-                processor_info.processor_version()
+                processor_info.processor_version().to_utf8_lossy()
             })
             .ok_or(BiosParseError::ProcessorVersionNotFound),
         "processor-frequency" => match data

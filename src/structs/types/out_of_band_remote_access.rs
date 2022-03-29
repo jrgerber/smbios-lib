@@ -1,4 +1,5 @@
-use crate::{SMBiosStruct, UndefinedStruct};
+use crate::SMBiosStruct;
+use crate::{strings::*, UndefinedStruct};
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::{fmt, ops::Deref};
 
@@ -31,7 +32,7 @@ impl<'a> SMBiosStruct<'a> for SMBiosOutOfBandRemoteAccess<'a> {
 
 impl<'a> SMBiosOutOfBandRemoteAccess<'a> {
     ///  The manufacturer of the out-of-band access facility
-    pub fn manufacturer_name(&self) -> Option<String> {
+    pub fn manufacturer_name(&self) -> SMBiosString {
         self.parts.get_field_string(0x04)
     }
 
@@ -157,7 +158,10 @@ mod tests {
         let parts = UndefinedStruct::new(&struct_type41);
         let test_struct = SMBiosOutOfBandRemoteAccess::new(&parts);
 
-        assert_eq!(test_struct.manufacturer_name(), Some("ijkl".to_string()));
+        assert_eq!(
+            test_struct.manufacturer_name().to_string(),
+            "ijkl".to_string()
+        );
 
         let connections = test_struct.connections().unwrap();
         assert!(connections.inbound_connection_enabled());

@@ -1,4 +1,4 @@
-use crate::{SMBiosStruct, Strings, UndefinedStruct};
+use crate::{SMBiosStringSet, SMBiosStruct, UndefinedStruct};
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 
@@ -33,7 +33,7 @@ impl<'a> SMBiosOemStrings<'a> {
     }
 
     /// Iterable collection of OEM strings
-    pub fn oem_strings(&self) -> &Strings {
+    pub fn oem_strings(&self) -> &SMBiosStringSet {
         &self.parts.strings
     }
 }
@@ -85,13 +85,16 @@ mod tests {
         assert_eq!(test_struct.count(), Some(0x03));
 
         let mut iter = test_struct.oem_strings().into_iter();
-        assert_eq!(iter.next(), Some("ABS 70/71 60 61 62 63;".to_string()));
         assert_eq!(
-            iter.next(),
+            iter.next().unwrap().ok(),
+            Some("ABS 70/71 60 61 62 63;".to_string())
+        );
+        assert_eq!(
+            iter.next().unwrap().ok(),
             Some("FBYTE#2U3E3X476J6S6b7B7H7M7Q7T7W7a7j7ma3apaqaub7.Q3;".to_string())
         );
         assert_eq!(
-            iter.next(),
+            iter.next().unwrap().ok(),
             Some("BUILDID#13WWCDC8601#SABA#DABA;".to_string())
         );
     }

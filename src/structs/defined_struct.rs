@@ -104,6 +104,10 @@ pub enum DefinedStruct<'a> {
     TpmDevice(SMBiosTpmDevice<'a>),
     /// Processor Additional Information (Type 44)
     ProcessorAdditionalInformation(SMBiosProcessorAdditionalInformation<'a>),
+    /// Firmware Inventory Information (Type 45)
+    FirmwareInventoryInformation(SMBiosFirmwareInventoryInformation<'a>),
+    /// String Property (Type 46)
+    StringProperty(SMBiosStringProperty<'a>),
     /// Inactive (Type 126)
     Inactive(SMBiosInactive<'a>),
     /// End-of-Table (Type 127)
@@ -273,6 +277,14 @@ impl<'a> From<&'a UndefinedStruct> for DefinedStruct<'a> {
                 DefinedStruct::ProcessorAdditionalInformation(
                     SMBiosProcessorAdditionalInformation::new(undefined_struct),
                 )
+            }
+            SMBiosFirmwareInventoryInformation::STRUCT_TYPE => {
+                DefinedStruct::FirmwareInventoryInformation(
+                    SMBiosFirmwareInventoryInformation::new(undefined_struct),
+                )
+            }
+            SMBiosStringProperty::STRUCT_TYPE => {
+                DefinedStruct::StringProperty(SMBiosStringProperty::new(undefined_struct))
             }
             SMBiosInactive::STRUCT_TYPE => {
                 DefinedStruct::Inactive(SMBiosInactive::new(undefined_struct))

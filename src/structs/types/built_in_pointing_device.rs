@@ -11,8 +11,8 @@ use std::ops::Deref;
 /// for the system’s use.
 ///
 /// Compliant with:
-/// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
-/// Document Date: 2020-07-17
+/// DMTF SMBIOS Reference Specification 3.5.0 (DSP0134)
+/// Document Date: 2021-09-15
 pub struct SMBiosBuiltInPointingDevice<'a> {
     parts: &'a UndefinedStruct,
 }
@@ -239,6 +239,14 @@ pub enum PointingDeviceInterface {
     BusMouseMicroDin,
     /// USB
     USB,
+    /// I2C
+    ///
+    /// Available in version 3.5.0 and later.
+    I2C,
+    /// SPI
+    ///
+    /// Available in version 3.5.0 and later.
+    SPI,
     /// A value unknown to this standard, check the raw value
     None,
 }
@@ -258,6 +266,8 @@ impl From<u8> for PointingDeviceInterfaceData {
                 0xA0 => PointingDeviceInterface::BusMouseDB9,
                 0xA1 => PointingDeviceInterface::BusMouseMicroDin,
                 0xA2 => PointingDeviceInterface::USB,
+                0xA3 => PointingDeviceInterface::I2C,
+                0xA4 => PointingDeviceInterface::SPI,
                 _ => PointingDeviceInterface::None,
             },
             raw,

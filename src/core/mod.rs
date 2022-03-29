@@ -1,7 +1,8 @@
 mod entry_point;
 mod header;
 mod smbios_data;
-mod strings;
+/// SMBIOS String module
+pub mod strings;
 mod undefined_struct;
 
 pub use entry_point::*;

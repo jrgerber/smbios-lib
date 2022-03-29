@@ -1,5 +1,5 @@
 use super::header::{Handle, Header};
-use super::strings::Strings;
+use super::strings::*;
 use crate::structs::{DefinedStruct, SMBiosEndOfTable, SMBiosStruct};
 use serde::{Serialize, Serializer};
 use std::fmt;
@@ -49,10 +49,10 @@ pub struct UndefinedStruct {
 
     /// The strings of the structure
     #[serde(serialize_with = "ser_strings")]
-    pub strings: Strings,
+    pub strings: SMBiosStringSet,
 }
 
-fn ser_strings<S>(data: &Strings, serializer: S) -> Result<S::Ok, S::Error>
+fn ser_strings<S>(data: &SMBiosStringSet, serializer: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
 {
@@ -67,7 +67,7 @@ impl<'a> UndefinedStruct {
                 header: Header::new(raw[..Header::SIZE].try_into().expect("4 bytes")),
                 fields: raw.get(..(header_length as usize)).unwrap_or(&[]).to_vec(),
                 strings: {
-                    Strings::new(
+                    SMBiosStringSet::new(
                         raw.get((header_length as usize)..raw.len() - 2)
                             .unwrap_or(&[])
                             .to_vec(),
@@ -128,10 +128,10 @@ impl<'a> UndefinedStruct {
     /// contains a byte whose value is a 1 based index into the strings section.
     /// The string is thus retrieved from the strings section based on the
     /// byte value at the given offset.
-    pub fn get_field_string(&self, offset: usize) -> Option<String> {
+    pub fn get_field_string(&self, offset: usize) -> SMBiosString {
         match self.get_field_byte(offset) {
             Some(val) => self.strings.get_string(val),
-            None => None,
+            None => Err(SMBiosStringError::FieldOutOfBounds).into(),
         }
     }
 
@@ -185,7 +185,7 @@ impl Default for UndefinedStruct {
         UndefinedStruct {
             header: Header::new(v),
             fields: (&[]).to_vec(),
-            strings: { Strings::new((&[]).to_vec()) },
+            strings: { SMBiosStringSet::new((&[]).to_vec()) },
         }
     }
 }

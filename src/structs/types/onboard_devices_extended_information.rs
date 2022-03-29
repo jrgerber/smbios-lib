@@ -1,5 +1,6 @@
 use super::system_slot::{BusNumber, DeviceFunctionNumber, SegmentGroupNumber};
-use crate::{OnBoardDeviceType, SMBiosStruct, UndefinedStruct};
+use crate::core::{strings::*, UndefinedStruct};
+use crate::{OnBoardDeviceType, SMBiosStruct};
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 
@@ -11,13 +12,16 @@ use std::fmt;
 /// In general, an entry in this table implies that the BIOS has some level of control over the enablement of
 /// the associated device for use by the system.
 ///
+/// To describe multi-function devices, use one type 41 structure per function, and one type 14 (Group
+/// Association) structure referencing all the function handles.
+///
 /// NOTE: This structure replaces Onboard Device Information (Type 10) starting with version 2.6 of this specification.
 /// BIOS providers can choose to implement both types to allow existing SMBIOS browsers to properly display
 /// the system’s onboard devices information.
-///  
+///
 /// Compliant with:
-/// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
-/// Document Date: 2020-07-17
+/// DMTF SMBIOS Reference Specification 3.5.0 (DSP0134)
+/// Document Date: 2021-09-15
 pub struct SMBiosOnboardDevicesExtendedInformation<'a> {
     parts: &'a UndefinedStruct,
 }
@@ -36,7 +40,7 @@ impl<'a> SMBiosStruct<'a> for SMBiosOnboardDevicesExtendedInformation<'a> {
 
 impl<'a> SMBiosOnboardDevicesExtendedInformation<'a> {
     /// The onboard device reference designation
-    pub fn reference_designation(&self) -> Option<String> {
+    pub fn reference_designation(&self) -> SMBiosString {
         self.parts.get_field_string(0x4)
     }
 
@@ -124,8 +128,8 @@ mod tests {
         let test_struct = SMBiosOnboardDevicesExtendedInformation::new(&parts);
 
         assert_eq!(
-            test_struct.reference_designation(),
-            Some("i219".to_string())
+            test_struct.reference_designation().to_string(),
+            "i219".to_string()
         );
         let device_type = test_struct.device_type().unwrap();
         assert_eq!(device_type.type_of_device(), TypeOfDevice::Ethernet);

@@ -1,4 +1,5 @@
-use crate::{SMBiosStruct, UndefinedStruct};
+use crate::core::{strings::*, UndefinedStruct};
+use crate::SMBiosStruct;
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::{fmt, ops::Deref};
 
@@ -32,7 +33,7 @@ impl<'a> SMBiosPortConnectorInformation<'a> {
     /// internal to the system enclosure
     ///
     /// EXAMPLE: "J101"
-    pub fn internal_reference_designator(&self) -> Option<String> {
+    pub fn internal_reference_designator(&self) -> SMBiosString {
         self.parts.get_field_string(0x04)
     }
 
@@ -47,7 +48,7 @@ impl<'a> SMBiosPortConnectorInformation<'a> {
     /// external to the system enclosure
     ///
     /// EXAMPLE: "COM A"
-    pub fn external_reference_designator(&self) -> Option<String> {
+    pub fn external_reference_designator(&self) -> SMBiosString {
         self.parts.get_field_string(0x06)
     }
 
@@ -503,16 +504,16 @@ mod tests {
         let test_struct = SMBiosPortConnectorInformation::new(&parts);
 
         assert_eq!(
-            test_struct.internal_reference_designator(),
-            Some("J1A1".to_string())
+            test_struct.internal_reference_designator().to_string(),
+            "J1A1".to_string()
         );
         assert_eq!(
             *test_struct.internal_connector_type().unwrap(),
             PortInformationConnectorType::NoConnector
         );
         assert_eq!(
-            test_struct.external_reference_designator(),
-            Some("PS2Mouse".to_string())
+            test_struct.external_reference_designator().to_string(),
+            "PS2Mouse".to_string()
         );
         assert_eq!(
             *test_struct.external_connector_type().unwrap(),

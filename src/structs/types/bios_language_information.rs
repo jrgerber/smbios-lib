@@ -1,4 +1,4 @@
-use crate::{SMBiosStruct, Strings, UndefinedStruct};
+use crate::{strings::*, SMBiosStruct, UndefinedStruct};
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 use std::ops::Deref;
@@ -43,12 +43,12 @@ impl<'a> SMBiosBiosLanguageInformation<'a> {
     }
 
     /// The currently installed language.
-    pub fn current_language(&self) -> Option<String> {
+    pub fn current_language(&self) -> SMBiosString {
         self.parts.get_field_string(0x15)
     }
 
     /// Iterable collection of the installable languages.
-    pub fn installable_langauges(&self) -> &Strings {
+    pub fn installable_langauges(&self) -> &SMBiosStringSet {
         &self.parts.strings
     }
 }
@@ -181,9 +181,7 @@ mod tests {
 
         // basic field tests
         assert_eq!(
-            bios_language_information
-                .current_language()
-                .expect("current_language field exists"),
+            bios_language_information.current_language().to_string(),
             "en|US|iso8859-1".to_string()
         );
         assert_eq!(
@@ -201,12 +199,12 @@ mod tests {
         let mut string_iterator = bios_language_information
             .installable_langauges()
             .into_iter();
-        let first_string = string_iterator.next().expect("has a first string");
-        assert_eq!(first_string, "en|US|iso8859-1".to_string());
-        let second_string = string_iterator.next().expect("has a second string");
-        assert_eq!(second_string, "hr|HR|iso8859-2".to_string());
-        let third_string = string_iterator.next().expect("has a third string");
-        assert_eq!(third_string, "ja|JP|unicode".to_string());
+        let first_string = string_iterator.next().expect("has a first string").ok();
+        assert_eq!(first_string, Some("en|US|iso8859-1".to_string()));
+        let second_string = string_iterator.next().expect("has a second string").ok();
+        assert_eq!(second_string, Some("hr|HR|iso8859-2".to_string()));
+        let third_string = string_iterator.next().expect("has a third string").ok();
+        assert_eq!(third_string, Some("ja|JP|unicode".to_string()));
         assert!(string_iterator.next().is_none());
 
         // debug print test

@@ -1,4 +1,5 @@
-use crate::{SMBiosStruct, UndefinedStruct};
+use crate::core::{strings::*, UndefinedStruct};
+use crate::SMBiosStruct;
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use std::fmt;
 
@@ -28,7 +29,7 @@ impl<'a> SMBiosVoltageProbe<'a> {
     /// Description
     ///
     /// Additional descriptive information about the probe or its location
-    pub fn description(&self) -> Option<String> {
+    pub fn description(&self) -> SMBiosString {
         self.parts.get_field_string(0x04)
     }
 
@@ -345,7 +346,7 @@ mod tests {
         let parts = UndefinedStruct::new(&struct_type26);
         let test_struct = SMBiosVoltageProbe::new(&parts);
 
-        assert_eq!(test_struct.description(), Some("LM78A".to_string()));
+        assert_eq!(test_struct.description().to_string(), "LM78A".to_string());
         assert_eq!(
             test_struct.location_and_status(),
             Some(VoltageProbeLocationAndStatus::from(103))

@@ -1,4 +1,5 @@
-use crate::{SMBiosStruct, UndefinedStruct};
+use crate::core::{strings::*, UndefinedStruct};
+use crate::SMBiosStruct;
 use serde::{ser::SerializeSeq, ser::SerializeStruct, Serialize, Serializer};
 use std::{convert::TryInto, fmt, ops::Deref};
 
@@ -6,6 +7,10 @@ use std::{convert::TryInto, fmt, ops::Deref};
 ///
 /// The information in this structure defines the attributes of a system slot. One
 /// structure is provided for each slot in the system.
+///
+/// Compliant with:
+/// DMTF SMBIOS Reference Specification 3.5.0 (DSP0134)
+/// Document Date: 2021-09-15
 pub struct SMBiosSystemSlot<'a> {
     parts: &'a UndefinedStruct,
 }
@@ -24,7 +29,7 @@ impl<'a> SMBiosStruct<'a> for SMBiosSystemSlot<'a> {
 
 impl<'a> SMBiosSystemSlot<'a> {
     /// Slot Designation
-    pub fn slot_designation(&self) -> Option<String> {
+    pub fn slot_designation(&self) -> SMBiosString {
         self.parts.get_field_string(0x04)
     }
 
@@ -124,7 +129,7 @@ impl<'a> SMBiosSystemSlot<'a> {
     /// Slot Information
     pub fn slot_information(&self) -> Option<u8> {
         self.peer_group_size()
-            .and_then(|size| self.parts.get_field_byte(size + 0x13)) // TODO: watch for an errata, 0x13 is 0x14 in the 3.4.0 spec.
+            .and_then(|size| self.parts.get_field_byte(size + 0x13))
     }
 
     /// Slot Physical Width
@@ -157,6 +162,19 @@ impl<'a> SMBiosSystemSlot<'a> {
     pub fn slot_pitch(&self) -> Option<u16> {
         self.peer_group_size()
             .and_then(|size| self.parts.get_field_word(size + 0x15))
+    }
+
+    /// Slot Height
+    ///
+    /// This field indicates the maximum supported card height for the slot.
+    ///
+    /// Available in version 3.5.0 and later.
+    pub fn slot_height(&self) -> Option<SlotHeightData> {
+        self.peer_group_size().and_then(|size| {
+            self.parts
+                .get_field_byte(size + 0x17)
+                .map(|raw| SlotHeightData::from(raw))
+        })
     }
 }
 
@@ -648,6 +666,81 @@ pub enum SlotWidth {
     X16,
     /// 32x or x32
     X32,
+    /// A value unknown to this standard, check the raw value
+    None,
+}
+
+/// # Slot Height Data
+pub struct SlotHeightData {
+    /// Raw value
+    ///
+    /// _raw_ is most useful when _value_ is None.
+    /// This is most likely to occur when the standard was updated but
+    /// this library code has not been updated to match the current
+    /// standard.
+    pub raw: u8,
+    /// The contained [SlotHeight] value
+    pub value: SlotHeight,
+}
+
+impl Deref for SlotHeightData {
+    type Target = SlotHeight;
+
+    fn deref(&self) -> &Self::Target {
+        &self.value
+    }
+}
+
+impl From<u8> for SlotHeightData {
+    fn from(raw: u8) -> Self {
+        SlotHeightData {
+            value: match raw {
+                0x00 => SlotHeight::NotApplicable,
+                0x01 => SlotHeight::Other,
+                0x02 => SlotHeight::Unknown,
+                0x03 => SlotHeight::FullHeight,
+                0x04 => SlotHeight::LowProfile,
+                _ => SlotHeight::None,
+            },
+            raw,
+        }
+    }
+}
+
+impl fmt::Debug for SlotHeightData {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<SlotHeightData>())
+            .field("raw", &self.raw)
+            .field("value", &self.value)
+            .finish()
+    }
+}
+
+impl Serialize for SlotHeightData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SlotHeightData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
+/// # Slot Height
+#[derive(Serialize, Debug, PartialEq, Eq)]
+pub enum SlotHeight {
+    /// Not Applicable
+    NotApplicable,
+    /// Other
+    Other,
+    /// Unknown
+    Unknown,
+    /// Full Height
+    FullHeight,
+    /// Low-profile
+    LowProfile,
     /// A value unknown to this standard, check the raw value
     None,
 }
@@ -1293,7 +1386,10 @@ mod tests {
         let parts = UndefinedStruct::new(&struct_type9);
         let test_struct = SMBiosSystemSlot::new(&parts);
 
-        assert_eq!(test_struct.slot_designation(), Some("J6B2".to_string()));
+        assert_eq!(
+            test_struct.slot_designation().to_string(),
+            "J6B2".to_string()
+        );
 
         assert_eq!(
             *test_struct.system_slot_type().unwrap(),
