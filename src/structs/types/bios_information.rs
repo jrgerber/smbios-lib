@@ -68,8 +68,10 @@ impl<'a> SMBiosInformation<'a> {
     ///
     /// FFh - size is 16MB or greater, see Extended
     /// BIOS ROM Size for actual size
-    pub fn rom_size(&self) -> Option<u8> {
-        self.parts.get_field_byte(0x9)
+    pub fn rom_size(&self) -> Option<RomSize> {
+        self.parts
+            .get_field_byte(0x9)
+            .map(|raw| RomSize::from(raw))
     }
 
     /// BIOS characteristics
@@ -182,16 +184,18 @@ impl<'a> SMBiosInformation<'a> {
     /// represented as 0010h. A 48 GB device set
     /// would be represented as
     /// 0100_0000_0011_0000b or 4030h.
-    pub fn extended_rom_size(&self) -> Option<ExtendedRomSize> {
+    pub fn extended_rom_size(&self) -> Option<RomSize> {
         self.parts
             .get_field_word(0x18)
-            .map(|raw| ExtendedRomSize::from(raw))
+            .map(|raw| RomSize::from(raw))
     }
 }
 
-/// # Extended BIOS ROM size
+/// # BIOS ROM size
 #[derive(Serialize, Debug, PartialEq, Eq)]
-pub enum ExtendedRomSize {
+pub enum RomSize {
+    /// Size of this rom in bytes
+    Kilobytes(u16),
     /// Extended size of the physical device(s)
     /// containing the BIOS (in MB).
     Megabytes(u16),
@@ -204,9 +208,11 @@ pub enum ExtendedRomSize {
     /// The standard currently only defines MB and GB
     /// as given in the high nibble (bits 15-14)
     Undefined(u16),
+    /// The value present is 16MB or greater and must be found using `extended_rom_size`
+    SeeExtendedRomSize,
 }
 
-impl From<u16> for ExtendedRomSize {
+impl From<u16> for RomSize {
     fn from(raw: u16) -> Self {
         // Bits 15:14 Unit
         // 00b - megabytes
@@ -218,11 +224,22 @@ impl From<u16> for ExtendedRomSize {
         let size = raw & 0b00111111_11111111; // 13:0 mask
 
         if unit == 0b00000000_00000000 {
-            ExtendedRomSize::Megabytes(size)
+            RomSize::Megabytes(size)
         } else if unit == 0b01000000_00000000 {
-            ExtendedRomSize::Gigabytes(size)
+            RomSize::Gigabytes(size)
         } else {
-            ExtendedRomSize::Undefined(raw)
+            RomSize::Undefined(raw)
+        }
+    }
+}
+
+impl From<u8> for RomSize {
+    fn from(raw: u8) -> Self {
+        match raw {
+            0xFF => RomSize::SeeExtendedRomSize,
+            // Size (n) where 64K * (n+1) is the size of the
+            // physical device containing the BIOS, in bytes.
+            _ => RomSize::Kilobytes(64 * (raw as u16 + 1)),
         }
     }
 }
@@ -916,7 +933,7 @@ mod tests {
         assert_eq!(test_struct.version(), Some("S03KT33A".to_string()));
         assert_eq!(test_struct.starting_address_segment(), Some(61440));
         assert_eq!(test_struct.release_date(), Some("08/06/2019".to_string()));
-        assert_eq!(test_struct.rom_size(), Some(255));
+        assert_eq!(test_struct.rom_size(), Some(RomSize::SeeExtendedRomSize));
         assert_eq!(
             test_struct.characteristics(),
             Some(BiosCharacteristics::from(1066113152))
@@ -955,13 +972,27 @@ mod tests {
         let test_struct = SMBiosInformation::new(&parts);
 
         let extended_rom_size = test_struct.extended_rom_size().unwrap();
-        assert_eq!(extended_rom_size, ExtendedRomSize::from(0x4030));
+        assert_eq!(extended_rom_size, RomSize::from(0x4030u16));
 
         match extended_rom_size {
-            ExtendedRomSize::Gigabytes(size) => assert_eq!(size, 48),
+            RomSize::Gigabytes(size) => assert_eq!(size, 48),
             _ => panic!("incorrect unit"),
         }
 
         println!("{:?}", test_struct);
+    }
+
+    #[test]
+    pub fn test_rom_size() {
+        let struct_type0 = vec![
+            0x00, 0x18, 0x00, 0x00, 0x01, 0x02, 0x00, 0xF0, 0x03, 0xFE, 0x80, 0x98, 0x8B, 0x3F,
+            0x01, 0x00, 0x11, 0x00, 0x03, 0x0D, 0x00, 0x21, 0x11, 0x2D, 0x4C, 0x45, 0x4E, 0x4F,
+            0x56, 0x4F, 0x00, 0x53, 0x30, 0x33, 0x4B, 0x54, 0x33, 0x33, 0x41, 0x00, 0x30, 0x38,
+            0x2F, 0x30, 0x36, 0x2F, 0x32, 0x30, 0x31, 0x39, 0x00, 0x00,
+        ];
+
+        let parts = UndefinedStruct::new(&struct_type0);
+        let test_struct = SMBiosInformation::new(&parts);
+        assert_eq!(test_struct.rom_size(), Some(RomSize::Kilobytes(16320)))
     }
 }
