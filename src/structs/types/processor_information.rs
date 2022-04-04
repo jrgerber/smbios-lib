@@ -979,6 +979,8 @@ pub enum ProcessorFamily {
     ARMv7,
     /// ARMv8
     ARMv8,
+    /// ARMv9
+    ARMv9,
     /// SH-3
     SH3,
     /// SH-4
@@ -1214,6 +1216,7 @@ impl From<u16> for ProcessorFamily {
             0xFE => ProcessorFamily::SeeProcessorFamily2,
             0x100 => ProcessorFamily::ARMv7,
             0x101 => ProcessorFamily::ARMv8,
+            0x102 => ProcessorFamily::ARMv9,
             0x104 => ProcessorFamily::SH3,
             0x105 => ProcessorFamily::SH4,
             0x118 => ProcessorFamily::ARM,
@@ -1403,6 +1406,12 @@ pub enum ProcessorUpgrade {
     SocketLGA1200,
     /// Socket LGA4677
     SocketLGA4677,
+    /// Socket LGA1700
+    SocketLGA1700,
+    /// Socket BGA1744
+    SocketBGA1744,
+    /// Socket BGA1781
+    SocketBGA1781,
     /// A value unknown to this standard, check the raw value
     None,
 }
@@ -1474,6 +1483,9 @@ impl From<u8> for ProcessorUpgradeData {
                 0x3D => ProcessorUpgrade::SocketLGA4189,
                 0x3E => ProcessorUpgrade::SocketLGA1200,
                 0x3F => ProcessorUpgrade::SocketLGA4677,
+                0x40 => ProcessorUpgrade::SocketLGA1700,
+                0x41 => ProcessorUpgrade::SocketBGA1744,
+                0x42 => ProcessorUpgrade::SocketBGA1781,
                 _ => ProcessorUpgrade::None,
             },
             raw,
