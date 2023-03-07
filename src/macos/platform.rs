@@ -69,16 +69,12 @@ fn try_load_macos_entry_point() -> Result<SMBiosEntryPoint32, Error> {
             ));
         }
 
-        if !data_ref.is_null() {
-            CFRelease(data_ref.as_void_ptr());
-        }
-
         let data_ptr = CFDataGetBytePtr(data_ref);
         let data_length = CFDataGetLength(data_ref);
-        let mut entry_point = Vec::with_capacity(data_length as usize);
 
-        std::ptr::copy(data_ptr, entry_point.as_mut_ptr(), data_length as usize);
-        entry_point.set_len(data_length as usize);
+        let entry_point = std::slice::from_raw_parts(data_ptr, data_length as usize).to_vec();
+
+        CFRelease(data_ref.as_void_ptr());
 
         SMBiosEntryPoint32::try_from(entry_point)
     }
