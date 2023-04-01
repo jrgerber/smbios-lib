@@ -291,7 +291,7 @@ impl<'a> SMBiosEntryPoint32 {
     /// Load this structure from a file
     #[cfg(not(feature = "no_std"))]
     pub fn try_load_from_file(filename: &Path) -> Result<Self, Error> {
-        read(filename)?.try_into().map_err(|e: SMBiosEntryPoint32Error| e.into_io_error())
+        read(filename)?.try_into()
     }
 
     /// Load this structure by scanning a file within the given offsets,
@@ -316,8 +316,7 @@ impl<'a> SMBiosEntryPoint32 {
                 entry_point_buffer.resize(struct_length, 0);
                 file.seek(SeekFrom::Start(offset))?;
                 file.read_exact(&mut entry_point_buffer)?;
-                let entry_point: Self = entry_point_buffer.try_into()
-                    .map_err(|e: SMBiosEntryPoint32Error| e.into_io_error())?;
+                let entry_point: Self = entry_point_buffer.try_into()?;
                 return Ok(entry_point);
             }
         }
@@ -344,11 +343,11 @@ impl<'a> SMBiosEntryPoint32 {
 }
 
 impl<'a> TryFrom<Vec<u8>> for SMBiosEntryPoint32 {
-    type Error = SMBiosEntryPoint32Error;
+    type Error = Error;
 
     fn try_from(raw: Vec<u8>) -> Result<Self, Self::Error> {
         if raw.len() < Self::MINIMUM_SIZE {
-            return Err(SMBiosEntryPoint32Error::SliceTooSmall);
+            return Err(SMBiosEntryPoint32Error::SliceTooSmall.into_io_error());
         }
 
         if !raw
@@ -356,7 +355,7 @@ impl<'a> TryFrom<Vec<u8>> for SMBiosEntryPoint32 {
             .zip(Self::SM_ANCHOR.iter())
             .all(|pair| pair.0 == pair.1)
         {
-            return Err(SMBiosEntryPoint32Error::SMNotFound);
+            return Err(SMBiosEntryPoint32Error::SMNotFound.into_io_error());
         }
 
         // Verify the EPS checksum
@@ -365,10 +364,10 @@ impl<'a> TryFrom<Vec<u8>> for SMBiosEntryPoint32 {
         match raw.get(0..entry_point_length) {
             Some(checked_bytes) => {
                 if !verify_checksum(checked_bytes) {
-                    return Err(SMBiosEntryPoint32Error::EntryChecksumVerificationFailed);
+                    return Err(SMBiosEntryPoint32Error::EntryChecksumVerificationFailed.into_io_error());
                 }
             }
-            None => return Err(SMBiosEntryPoint32Error::EntryPointLengthTooBig),
+            None => return Err(SMBiosEntryPoint32Error::EntryPointLengthTooBig.into_io_error()),
         }
 
         let intermediate_anchor: [u8; 5] = raw
@@ -381,7 +380,7 @@ impl<'a> TryFrom<Vec<u8>> for SMBiosEntryPoint32 {
             .zip(Self::DMI_ANCHOR.iter())
             .all(|pair| pair.0 == pair.1)
         {
-            return Err(SMBiosEntryPoint32Error::DMINotFound);
+            return Err(SMBiosEntryPoint32Error::DMINotFound.into_io_error());
         }
 
         // Verify the IEPS checksum
@@ -392,7 +391,7 @@ impl<'a> TryFrom<Vec<u8>> for SMBiosEntryPoint32 {
             .expect("0x0F bytes");
 
         if !verify_checksum(&intermediate_entry_point_structure) {
-            return Err(SMBiosEntryPoint32Error::IntermediateChecksumVerificationFailed);
+            return Err(SMBiosEntryPoint32Error::IntermediateChecksumVerificationFailed.into_io_error());
         }
 
         Ok(SMBiosEntryPoint32 { raw })

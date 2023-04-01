@@ -3,7 +3,6 @@ use crate::SMBiosStruct;
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use core::{fmt, any};
 use core::ops::Deref;
-use alloc::string::String;
 
 /// # Cache Information (Type 7)
 ///

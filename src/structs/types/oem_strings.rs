@@ -1,5 +1,6 @@
 use crate::{SMBiosStringSet, SMBiosStruct, UndefinedStruct};
 use serde::{ser::SerializeStruct, Serialize, Serializer};
+use core::any;
 use std::fmt;
 
 /// # OEM Strings (Type 11)

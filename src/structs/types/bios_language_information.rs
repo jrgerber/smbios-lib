@@ -2,7 +2,6 @@ use crate::{strings::*, SMBiosStruct, UndefinedStruct};
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use core::{fmt, any};
 use core::ops::Deref;
-use alloc::string::String;
 
 /// # BIOS Language Information (Type 13)
 ///

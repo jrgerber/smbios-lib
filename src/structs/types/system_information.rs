@@ -8,7 +8,7 @@ use core::{
     ops::Deref,
     any
 };
-use alloc::{string::String, format};
+use alloc::format;
 
 /// # System Information (Type 1)
 ///

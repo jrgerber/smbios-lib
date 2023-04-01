@@ -1,5 +1,6 @@
 use crate::{SMBiosStruct, UndefinedStruct};
 use serde::{ser::SerializeStruct, Serialize, Serializer};
+use core::any;
 use std::fmt;
 
 /// # Inactive (Type 126)

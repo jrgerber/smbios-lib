@@ -13,7 +13,7 @@ use core::{
     fmt,
     any
 };
-use alloc::{vec::{Vec, IntoIter}, format, string::String};
+use alloc::{vec::{Vec, IntoIter}, format};
 
 /// # Embodies the three basic parts of an SMBIOS structure
 ///

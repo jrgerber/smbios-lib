@@ -2,7 +2,6 @@ use crate::core::{strings::*, UndefinedStruct};
 use crate::SMBiosStruct;
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use core::{fmt, any};
-use alloc::string::String;
 
 /// # Temperature Probe (Type 28)
 ///

@@ -3,7 +3,7 @@ use crate::{BoardTypeData, SMBiosStruct, SMBiosType};
 use serde::{ser::SerializeSeq, ser::SerializeStruct, Serialize, Serializer};
 use core::{fmt, any};
 use core::ops::Deref;
-use alloc::{vec::Vec, string::String};
+use alloc::vec::Vec;
 
 /// # System Enclosure or Chassis (Type 3)
 ///

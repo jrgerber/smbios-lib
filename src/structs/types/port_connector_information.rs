@@ -2,7 +2,6 @@ use crate::core::{strings::*, UndefinedStruct};
 use crate::SMBiosStruct;
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use core::{fmt, ops::Deref, any};
-use alloc::string::String;
 
 /// # Port Connector Information (Type 8)
 ///

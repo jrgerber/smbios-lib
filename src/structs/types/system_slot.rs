@@ -2,7 +2,7 @@ use crate::core::{strings::*, UndefinedStruct};
 use crate::SMBiosStruct;
 use serde::{ser::SerializeSeq, ser::SerializeStruct, Serialize, Serializer};
 use core::{convert::TryInto, fmt, ops::Deref, any};
-use alloc::{vec::Vec, string::String};
+use alloc::vec::Vec;
 
 /// # System Slots (Type 9)
 ///

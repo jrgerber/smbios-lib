@@ -1,6 +1,7 @@
 use crate::core::{strings::*, UndefinedStruct};
 use crate::{MemoryTypes, SMBiosStruct};
 use serde::{ser::SerializeStruct, Serialize, Serializer};
+use core::any;
 use std::fmt;
 
 /// # Memory Module Information (Type 6, Obsolete)

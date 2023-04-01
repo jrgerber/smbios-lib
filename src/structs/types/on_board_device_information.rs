@@ -2,7 +2,7 @@ use crate::core::{strings::*, Header, UndefinedStruct};
 use crate::SMBiosStruct;
 use serde::{ser::SerializeSeq, ser::SerializeStruct, Serialize, Serializer};
 use core::{fmt, any};
-use alloc::{string::String, vec::Vec};
+use alloc::vec::Vec;
 
 /// # On Board Devices Information (Type 10, Obsolete)
 ///

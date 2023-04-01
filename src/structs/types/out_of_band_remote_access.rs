@@ -2,7 +2,6 @@ use crate::SMBiosStruct;
 use crate::{strings::*, UndefinedStruct};
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use core::{fmt, ops::Deref, any};
-use alloc::string::String;
 
 /// # Out-of-Band Remote Access (Type 30)
 ///

@@ -3,7 +3,7 @@ use crate::SMBiosStruct;
 use serde::{ser::SerializeSeq, ser::SerializeStruct, Serialize, Serializer};
 use core::{fmt, any};
 use core::ops::Deref;
-use alloc::{string::String, vec::Vec};
+use alloc::vec::Vec;
 
 /// # Baseboard (or Module) Information (Type 2)
 ///

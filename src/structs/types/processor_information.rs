@@ -4,7 +4,7 @@ use serde::{ser::SerializeStruct, Serialize, Serializer};
 use core::convert::TryInto;
 use core::{fmt, any};
 use core::ops::Deref;
-use alloc::{string::String, vec::Vec};
+use alloc::vec::Vec;
 
 /// # Processor Information (Type 4)
 ///

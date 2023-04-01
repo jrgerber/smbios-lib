@@ -2,7 +2,6 @@ use crate::core::{strings::*, Handle, UndefinedStruct};
 use crate::SMBiosStruct;
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use core::{fmt, any};
-use alloc::string::String;
 
 /// # System Power Supply (Type 39)
 ///
