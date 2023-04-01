@@ -22,7 +22,11 @@ jobs:
     - uses: actions/checkout@v2
     - name: Build
       run: cargo build --verbose
-    - name: Build no-std
-      run: cargo +nightly build --features no_std,x86_64 --lib
     - name: Run tests
       run: cargo test --verbose
+    - name: Install nightly (Linux)
+      run: rustup toolchain install nightly
+      if:  matrix.os == 'ubuntu-latest'
+    - name: Build no_std with nightly
+      run: cargo +nightly build --features no_std,x86_64 --lib
+      if:  matrix.os == 'ubuntu-latest'
