@@ -18,12 +18,12 @@ For an example project using this library take a look at [dmidecode-rs](https://
 
 ### Supports
 * [DMTF System Management BIOS (SMBIOS) Reference
-Specification 3.5.0](https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.5.0.pdf)
+Specification 3.7.0](https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.7.0.pdf)
 * Linux
 * MacOS
 * Windows family
 
-> SMBIOS 3.5.0 contains 49 defined structure types, all of which are covered by this library (types 0-46, 126, and 127).  Support via extensibility exists for types 128-255 (reserved for OEMs).  Extensibility also applies in the case when this library has not been updated for the latest specification version or a pre-released specification and a new type is introduced.
+> SMBIOS 3.7.0 contains 49 defined structure types, all of which are covered by this library (types 0-46, 126, and 127).  Support via extensibility exists for types 128-255 (reserved for OEMs).  Extensibility also applies in the case when this library has not been updated for the latest specification version or a pre-released specification and a new type is introduced.
 
 ### Project Status
 In early development.

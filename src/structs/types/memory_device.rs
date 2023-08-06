@@ -9,8 +9,8 @@ use std::ops::Deref;
 /// This structure describes a single memory device that is part of a larger [super::SMBiosPhysicalMemoryArray] (Type 16) structure.
 ///
 /// Compliant with:
-/// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
-/// Document Date: 2020-07-17
+/// DMTF SMBIOS Reference Specification 3.7.0 (DSP0134)
+/// Document Date: 2023-07-21
 pub struct SMBiosMemoryDevice<'a> {
     parts: &'a UndefinedStruct,
 }
@@ -311,6 +311,66 @@ impl<'a> SMBiosMemoryDevice<'a> {
             .get_field_dword(0x58)
             .map(|raw| MemorySpeedExtended::from(raw))
     }
+
+    /// The two-byte PMIC0 manufacturer ID found in the
+    /// SPD of this memory device; LSB first.
+    ///
+    /// The PMIC0 Manufacturer ID indicates the manufacturer of the PMIC0 on memory device. This field shall
+    /// be set to the value of the SPD PMIC 0 Manufacturer ID Code. A value of 0000h indicates the PMIC0
+    /// Manufacturer ID is unknown.
+    ///
+    /// NOTE The location (byte addresses) of the SPD PMIC 0 Manufacturer ID Code may vary and is defined
+    /// by the memory type/technology SPD Standard. For example, for RDIMM DDR5, this field will have the
+    /// first byte correspond to the value in byte 198 and the second byte corresponds to the value in byte 199.
+    /// If SPD doesn't contain Register Revision Number, this field shall be set to 0000h
+    pub fn pmic0_manufacturer_id(&self) -> Option<u16> {
+        self.parts.get_field_word(0x5C)
+    }
+
+    /// The PMIC 0 Revision Number found in the SPD of
+    /// this memory device.
+    ///
+    /// The PMIC0 Revision Number indicates the revision of the PMIC0 on memory device. This field shall be
+    /// set to the value of the SPD PMIC 0 Revision Number. A value of FF00h indicates the PMIC0 Revision
+    /// Number is unknown.
+    ///
+    /// NOTE The location (byte addresses) of the SPD PMIC 0 Revision Number may vary and is defined by the
+    /// memory type/technology SPD Standard. For example, for RDIMM DDR5, this field will have the first byte
+    /// correspond to the value in byte 201 and the second byte shall be set to 00h. If SPD doesn't contain
+    /// Register Revision Number, this field shall be set to FF00h.
+    pub fn pmic0_revision_number(&self) -> Option<u16> {
+        self.parts.get_field_word(0x5E)
+    }
+
+    /// The two-byte RCD manufacturer ID found in the
+    /// SPD of this memory device; LSB first.
+    ///
+    /// The RCD Manufacturer ID indicates the manufacturer of the RCD on memory device. This field shall be
+    /// set to the value of the SPD Registering Clock Driver Manufacturer ID Code. A value of 0000h indicates
+    /// the RCD Manufacturer ID is unknown.
+    ///
+    /// NOTE The location (byte addresses) of the SPD Registering Clock Driver Manufacturer ID Code may
+    /// vary and is defined by the memory type/technology SPD Standard. For example, for RDIMM DDR5, this
+    /// field will have the first byte correspond to the value in byte 240 and the second byte corresponds to the
+    /// value in byte 241. If SPD doesn't contain Register Revision Number, this field shall be set to 0000h.
+    pub fn rcd_manufacturer_id(&self) -> Option<u16> {
+        self.parts.get_field_word(0x60)
+    }
+
+    /// The RCD 0 Revision Number found in the SPD of
+    /// this memory device.
+    ///
+    /// The RCD Revision Number indicates the revision of the RCD on memory device. This field shall be set to
+    /// the value of the SPD Register Revision Number. A value of FF00h indicates the RCD Revision Number is
+    /// unknown.
+    ///
+    /// NOTE The location (byte addresses) of the SPD Register Revision Number may vary and is defined by
+    /// the memory type/technology SPD Standard. For example, for RDIMM DDR5, this field will have the first
+    /// byte correspond to the value in byte 243 and the second byte shall be set to 00h. If SPD doesn't contain
+    /// Register Revision Number, this field shall be set to FF00h
+    pub fn rcd_revision_number(&self) -> Option<u16> {
+        self.parts.get_field_word(0x62)
+    }
 }
 
 impl fmt::Debug for SMBiosMemoryDevice<'_> {
@@ -370,6 +430,10 @@ impl fmt::Debug for SMBiosMemoryDevice<'_> {
                 "extended_configured_memory_speed",
                 &self.extended_configured_memory_speed(),
             )
+            .field("pmic0_manufacturer_id", &self.pmic0_manufacturer_id())
+            .field("pmic0_revision_number", &self.pmic0_revision_number())
+            .field("rcd_manufacturer_id", &self.rcd_manufacturer_id())
+            .field("rcd_revision_number", &self.rcd_revision_number())
             .finish()
     }
 }
@@ -434,6 +498,10 @@ impl Serialize for SMBiosMemoryDevice<'_> {
             "extended_configured_memory_speed",
             &self.extended_configured_memory_speed(),
         )?;
+        state.serialize_field("pmic0_manufacturer_id", &self.pmic0_manufacturer_id())?;
+        state.serialize_field("pmic0_revision_number", &self.pmic0_revision_number())?;
+        state.serialize_field("rcd_manufacturer_id", &self.rcd_manufacturer_id())?;
+        state.serialize_field("rcd_revision_number", &self.rcd_revision_number())?;
         state.end()
     }
 }
@@ -557,6 +625,8 @@ pub enum MemoryDeviceType {
     Ddr5,
     /// LPDDR5
     Lpddr5,
+    /// HBM3
+    Hbm3,
     /// A value unknown to this standard, check the raw value
     None,
 }
@@ -597,6 +667,7 @@ impl From<u8> for MemoryDeviceTypeData {
                 0x21 => MemoryDeviceType::Hbm2,
                 0x22 => MemoryDeviceType::Ddr5,
                 0x23 => MemoryDeviceType::Lpddr5,
+                0x24 => MemoryDeviceType::Hbm3,
                 _ => MemoryDeviceType::None,
             },
             raw,

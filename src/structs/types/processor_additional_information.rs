@@ -17,8 +17,8 @@ use std::ops::Deref;
 /// separate documents.
 ///
 /// Compliant with:
-/// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
-/// Document Date: 2020-07-17
+/// DMTF SMBIOS Reference Specification 3.7.0 (DSP0134)
+/// Document Date: 2023-07-21
 pub struct SMBiosProcessorAdditionalInformation<'a> {
     parts: &'a UndefinedStruct,
 }
@@ -222,6 +222,10 @@ pub enum ProcessorArchitectureType {
     RiscV64Bit,
     /// 128-bit RISC-V (RV128)
     RiscV128Bit,
+    /// 32-bit LoongArch (LoongArch32)
+    LoongArch32,
+    /// 64-bit LoongArch (LoongArch64)
+    LoongArch64,
     /// A value unknown to this standard, check the raw value
     None,
 }
@@ -238,6 +242,8 @@ impl From<u8> for ProcessorArchitectureTypeData {
                 0x06 => ProcessorArchitectureType::RiscV32Bit,
                 0x07 => ProcessorArchitectureType::RiscV64Bit,
                 0x08 => ProcessorArchitectureType::RiscV128Bit,
+                0x09 => ProcessorArchitectureType::LoongArch32,
+                0x10 => ProcessorArchitectureType::LoongArch64,
                 _ => ProcessorArchitectureType::None,
             },
             raw,

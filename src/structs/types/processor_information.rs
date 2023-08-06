@@ -18,8 +18,8 @@ use std::ops::Deref;
 /// determine the maximum possible configuration of the system.
 ///
 /// Compliant with:
-/// DMTF SMBIOS Reference Specification 3.5.0 (DSP0134)
-/// Document Date: 2021-09-15
+/// DMTF SMBIOS Reference Specification 3.7.0 (DSP0134)
+/// Document Date: 2023-07-21
 pub struct SMBiosProcessorInformation<'a> {
     parts: &'a UndefinedStruct,
 }
@@ -285,6 +285,19 @@ impl<'a> SMBiosProcessorInformation<'a> {
             .get_field_word(0x2E)
             .map(|raw| ThreadCount2::from(raw))
     }
+
+    /// Number of threads the BIOS has enabled and available for operating
+    /// system use.
+    ///
+    /// For example, if the BIOS detects a dual-core processor with two threads
+    /// supported in each core
+    ///     • And it leaves both threads enabled, it reports a value of 4.
+    ///     • And it disables multi-threading support, it reports a value of 2.
+    pub fn thread_enabled(&self) -> Option<ThreadEnabled> {
+        self.parts
+            .get_field_word(0x30)
+            .map(|raw| ThreadEnabled::from(raw))
+    }
 }
 
 impl fmt::Debug for SMBiosProcessorInformation<'_> {
@@ -320,6 +333,7 @@ impl fmt::Debug for SMBiosProcessorInformation<'_> {
             .field("core_count_2", &self.core_count_2())
             .field("cores_enabled_2", &self.cores_enabled_2())
             .field("thread_count_2", &self.thread_count_2())
+            .field("thread_enabled", &self.thread_enabled())
             .finish()
     }
 }
@@ -360,6 +374,7 @@ impl Serialize for SMBiosProcessorInformation<'_> {
         state.serialize_field("core_count_2", &self.core_count_2())?;
         state.serialize_field("cores_enabled_2", &self.cores_enabled_2())?;
         state.serialize_field("thread_count_2", &self.thread_count_2())?;
+        state.serialize_field("thread_enabled", &self.thread_enabled())?;
         state.end()
     }
 }
@@ -1007,6 +1022,40 @@ pub enum ProcessorFamily {
     RISCVRV64,
     /// RISC-V RV128
     RISCVRV128,
+    /// LoongArch
+    LoongArch,
+    /// Loongson™ 1 Processor Family
+    Longsoon1ProcessorFamily,
+    /// Loongson™ 2 Processor Family
+    Longsoon2ProcessorFamily,
+    /// Loongson™ 3 Processor Family
+    Longsoon3ProcessorFamily,
+    /// Loongson™ 2K Processor Family
+    Longsoon2KProcessorFamily,
+    /// Loongson™ 3A Processor Family
+    Longsoon3AProcessorFamily,
+    /// Loongson™ 3B Processor Family
+    Longsoon3BProcessorFamily,
+    /// Loongson™ 3C Processor Family
+    Longsoon3CProcessorFamily,
+    /// Loongson™ 3D Processor Family
+    Longsoon3DProcessorFamily,
+    /// Loongson™ 3E Processor Family
+    Longsoon3EProcessorFamily,
+    /// Dual-Core Loongson™ 2K Processor 2xxx Series
+    DualCoreLoongson2KProcessor2xxxSeries,
+    /// Quad-Core Loongson™ 3A Processor 5xxx Series
+    QuadCoreLoongson3AProcessor5xxxSeries,
+    /// Multi-Core Loongson™ 3A Processor 5xxx Series
+    MultiCoreLoongson3AProcessor5xxxSeries,
+    /// Quad-Core Loongson™ 3B Processor 5xxx Series
+    QuadCoreLoongson3BProcessor5xxxSeries,
+    /// Multi-Core Loongson™ 3B Processor 5xxx Series
+    MultiCoreLoongson3BProcessor5xxxSeries,
+    /// Multi-Core Loongson™ 3C Processor 5xxx Series
+    MultiCoreLoongson3CProcessor5xxxSeries,
+    /// Multi-Core Loongson™ 3D Processor 5xxx Series
+    MultiCoreLoongson3DProcessor5xxxSeries,
     /// A value unknown to this standard, check the raw value
     None,
 }
@@ -1230,6 +1279,23 @@ impl From<u16> for ProcessorFamily {
             0x200 => ProcessorFamily::RISCVRV32,
             0x201 => ProcessorFamily::RISCVRV64,
             0x202 => ProcessorFamily::RISCVRV128,
+            0x258 => ProcessorFamily::LoongArch,
+            0x259 => ProcessorFamily::Longsoon1ProcessorFamily,
+            0x25A => ProcessorFamily::Longsoon2ProcessorFamily,
+            0x25B => ProcessorFamily::Longsoon3ProcessorFamily,
+            0x25C => ProcessorFamily::Longsoon2KProcessorFamily,
+            0x25D => ProcessorFamily::Longsoon3AProcessorFamily,
+            0x25E => ProcessorFamily::Longsoon3BProcessorFamily,
+            0x25F => ProcessorFamily::Longsoon3CProcessorFamily,
+            0x260 => ProcessorFamily::Longsoon3DProcessorFamily,
+            0x261 => ProcessorFamily::Longsoon3EProcessorFamily,
+            0x262 => ProcessorFamily::DualCoreLoongson2KProcessor2xxxSeries,
+            0x26C => ProcessorFamily::QuadCoreLoongson3AProcessor5xxxSeries,
+            0x26D => ProcessorFamily::MultiCoreLoongson3AProcessor5xxxSeries,
+            0x26E => ProcessorFamily::QuadCoreLoongson3BProcessor5xxxSeries,
+            0x26F => ProcessorFamily::MultiCoreLoongson3BProcessor5xxxSeries,
+            0x270 => ProcessorFamily::MultiCoreLoongson3CProcessor5xxxSeries,
+            0x271 => ProcessorFamily::MultiCoreLoongson3DProcessor5xxxSeries,
             _ => ProcessorFamily::None,
         }
     }
@@ -1412,6 +1478,34 @@ pub enum ProcessorUpgrade {
     SocketBGA1744,
     /// Socket BGA1781
     SocketBGA1781,
+    /// Socket BGA1211
+    SocketBGA1211,
+    /// Socket BGA2422
+    SocketBGA2422,
+    /// Socket LGA1211
+    SocketLGA1211,
+    /// Socket LGA2422
+    SocketLGA2422,
+    /// Socket LGA5773
+    SocketLGA5773,
+    /// Socket BGA5773
+    SocketBGA5773,
+    /// Socket AM5
+    SocketAM5,
+    /// Socket SP5
+    SocketSP5,
+    /// Socket SP6
+    SocketSP6,
+    /// Socket BGA883
+    SocketBGA883,
+    /// Socket BGA1190
+    SocketBGA1190,
+    /// Socket BGA4129
+    SocketBGA4129,
+    /// Socket LGA4710
+    SocketLGA4710,
+    /// Socket LGA7529
+    SocketLGA7529,
     /// A value unknown to this standard, check the raw value
     None,
 }
@@ -1486,6 +1580,20 @@ impl From<u8> for ProcessorUpgradeData {
                 0x40 => ProcessorUpgrade::SocketLGA1700,
                 0x41 => ProcessorUpgrade::SocketBGA1744,
                 0x42 => ProcessorUpgrade::SocketBGA1781,
+                0x43 => ProcessorUpgrade::SocketBGA1211,
+                0x44 => ProcessorUpgrade::SocketBGA2422,
+                0x45 => ProcessorUpgrade::SocketLGA1211,
+                0x46 => ProcessorUpgrade::SocketLGA2422,
+                0x47 => ProcessorUpgrade::SocketLGA5773,
+                0x48 => ProcessorUpgrade::SocketBGA5773,
+                0x49 => ProcessorUpgrade::SocketAM5,
+                0x4A => ProcessorUpgrade::SocketSP5,
+                0x4B => ProcessorUpgrade::SocketSP6,
+                0x4C => ProcessorUpgrade::SocketBGA883,
+                0x4D => ProcessorUpgrade::SocketBGA1190,
+                0x4E => ProcessorUpgrade::SocketBGA4129,
+                0x4F => ProcessorUpgrade::SocketLGA4710,
+                0x50 => ProcessorUpgrade::SocketLGA7529,
                 _ => ProcessorUpgrade::None,
             },
             raw,
@@ -1972,6 +2080,27 @@ impl From<u16> for ThreadCount2 {
             0 => ThreadCount2::Unknown,
             0xFFFF => ThreadCount2::Reserved,
             _ => ThreadCount2::Count(raw),
+        }
+    }
+}
+
+/// Thread Enabled
+#[derive(Serialize, Debug)]
+pub enum ThreadEnabled {
+    /// The value is unknown (0x0000)
+    Unknown,
+    /// thread enabled counts 1 to 65534, respectively
+    Count(u16),
+    /// Reserved (0xFFFF)
+    Reserved,
+}
+
+impl From<u16> for ThreadEnabled {
+    fn from(raw: u16) -> Self {
+        match raw {
+            0 => ThreadEnabled::Unknown,
+            0xFFFF => ThreadEnabled::Reserved,
+            _ => ThreadEnabled::Count(raw),
         }
     }
 }
