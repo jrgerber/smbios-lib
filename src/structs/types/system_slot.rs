@@ -1072,6 +1072,11 @@ impl SystemSlotCharacteristics2 {
     pub fn flexbus_slot_cxl20_capable(&self) -> bool {
         self.raw & 0x40 == 0x40
     }
+
+    /// Flexbus slot, CXL 3.0 capable
+    pub fn flexbus_slot_cxl30_capable(&self) -> bool {
+        self.raw & 0x80 == 0x80
+    }
 }
 
 impl fmt::Debug for SystemSlotCharacteristics2 {
@@ -1096,6 +1101,10 @@ impl fmt::Debug for SystemSlotCharacteristics2 {
             .field(
                 "flexbus_slot_cxl20_capable",
                 &self.flexbus_slot_cxl20_capable(),
+            )
+            .field(
+                "flexbus_slot_cxl30_capable",
+                &self.flexbus_slot_cxl30_capable(),
             )
             .finish()
     }
@@ -1126,6 +1135,10 @@ impl Serialize for SystemSlotCharacteristics2 {
         state.serialize_field(
             "flexbus_slot_cxl20_capable",
             &self.flexbus_slot_cxl20_capable(),
+        )?;
+        state.serialize_field(
+            "flexbus_slot_cxl30_capable",
+            &self.flexbus_slot_cxl30_capable(),
         )?;
         state.end()
     }
