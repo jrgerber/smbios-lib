@@ -17,8 +17,8 @@ use std::ops::Deref;
 /// separate documents.
 ///
 /// Compliant with:
-/// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
-/// Document Date: 2020-07-17
+/// DMTF SMBIOS Reference Specification 3.7.0 (DSP0134)
+/// Document Date: 2023-07-21
 pub struct SMBiosProcessorAdditionalInformation<'a> {
     parts: &'a UndefinedStruct,
 }

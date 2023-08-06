@@ -9,8 +9,8 @@ use std::ops::Deref;
 /// This structure describes a single memory device that is part of a larger [super::SMBiosPhysicalMemoryArray] (Type 16) structure.
 ///
 /// Compliant with:
-/// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
-/// Document Date: 2020-07-17
+/// DMTF SMBIOS Reference Specification 3.7.0 (DSP0134)
+/// Document Date: 2023-07-21
 pub struct SMBiosMemoryDevice<'a> {
     parts: &'a UndefinedStruct,
 }

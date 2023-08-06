@@ -9,8 +9,8 @@ use std::{convert::TryInto, fmt, ops::Deref};
 /// structure is provided for each slot in the system.
 ///
 /// Compliant with:
-/// DMTF SMBIOS Reference Specification 3.5.0 (DSP0134)
-/// Document Date: 2021-09-15
+/// DMTF SMBIOS Reference Specification 3.7.0 (DSP0134)
+/// Document Date: 2023-07-21
 pub struct SMBiosSystemSlot<'a> {
     parts: &'a UndefinedStruct,
 }
