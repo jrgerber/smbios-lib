@@ -38,7 +38,7 @@ The current development stage is to finalize the API design.
     * mach = "^0.3"
     * core-foundation = "~0.9"
     * core-foundation-sys = "~0.8"
-    * io-kit-sys = "^0.3.0"
+    * io-kit-sys = "^0.4.0"
 	
 ## Security
 This library design follows a strict security mantra: *"Never trust the input"*.
