@@ -8,7 +8,7 @@ use io_kit_sys::{
     IOMasterPort, IOObjectRelease, IORegistryEntryCreateCFProperty, IOServiceGetMatchingService,
     IOServiceMatching, CFSTR,
 };
-use mach::*;
+use mach2::*;
 use std::{convert::TryFrom, ffi::CString, io::Error, io::ErrorKind};
 
 struct AppleSMBiosService {
