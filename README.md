@@ -35,10 +35,10 @@ The current development stage is to finalize the API design.
     * libc = "^0.2"
 * MacOS
     * libc = "^0.2"
-    * mach = "^0.3"
-    * core-foundation = "~0.6"
-    * core-foundation-sys = "~0.6"
-    * io-kit-sys = "^0.1.0"
+    * mach2 = "^0.4.1"
+    * core-foundation = "~0.9"
+    * core-foundation-sys = "~0.8"
+    * io-kit-sys = "^0.4.0"
 	
 ## Security
 This library design follows a strict security mantra: *"Never trust the input"*.
