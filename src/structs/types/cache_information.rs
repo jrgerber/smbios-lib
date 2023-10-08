@@ -48,6 +48,16 @@ impl<'a> SMBiosCacheInformation<'a> {
         self.parts
             .get_field_word(0x07)
             .map(|raw| CacheMemorySize::from(raw))
+            // When *_cache_size_2 is not present, SeeCacheSize2 is not considered sentinel
+            // and thus should be converted to Kilobytes
+            .map(|size| {
+                if size == CacheMemorySize::SeeCacheSize2
+                        && self.maximum_cache_size_2().is_none() {
+                    CacheMemorySize::Kilobytes(0x7FFFu64 * 64)
+                } else {
+                    size
+                }
+            })
     }
 
     /// Same format as Max Cache Size field; set to 0 if no cache is installed
@@ -55,6 +65,16 @@ impl<'a> SMBiosCacheInformation<'a> {
         self.parts
             .get_field_word(0x09)
             .map(|raw| CacheMemorySize::from(raw))
+            // When *_cache_size_2 is not present, SeeCacheSize2 is not considered sentinel
+            // and thus should be converted to Kilobytes
+            .map(|size| {
+                if size == CacheMemorySize::SeeCacheSize2
+                        && self.installed_cache_size_2().is_none() {
+                    CacheMemorySize::Kilobytes(0x7FFFu64 * 64)
+                } else {
+                    size
+                }
+            })
     }
 
     /// Supported SRAM type
