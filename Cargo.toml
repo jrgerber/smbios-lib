@@ -1,6 +1,6 @@
 [package]
 name = "smbios-lib"
-version = "0.9.1"
+version = "0.9.2"
 authors = ["Jeffrey R. Gerber <jeffreygerber@gmail.com>", "Ante Čulo <dante2711@gmail.com>", "Juan Zuluaga <juzuluag@hotmail.com>"]
 license-file = "LICENSE"
 edition = "2018"
@@ -24,14 +24,14 @@ path = "src/main.rs"
 [dependencies]
 getopts = "0.2.21"
 serde = { version = "1", features = ["derive"] }
-serde_json = "1.0"
+serde_json = "~1.0"
 
 [target.'cfg(windows)'.dependencies]
 libc = "0.2"
 
 [target.'cfg(any(target_os = "macos", target_os = "ios"))'.dependencies]
-libc = "^0.2"
-mach2 = "^0.4.1"
-core-foundation = "~0.9"
+libc = "~0.2"
+mach2 = "~0.4"
+core-foundation = "~0.10"
 core-foundation-sys = "~0.8"
-io-kit-sys = "0.4.0"
+io-kit-sys = "~0.4"
