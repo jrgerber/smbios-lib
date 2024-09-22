@@ -1,11 +1,10 @@
 name: smbioslib_ci
 
 on:
-  push:
-    branches: [ main ]
+  workflow_dispatch:
+  workflow_call:
   pull_request:
-    branches: [ main ]
-    types: [ labeled ]
+    branches: main
 
 env:
   CARGO_TERM_COLOR: always
