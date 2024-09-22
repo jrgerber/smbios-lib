@@ -12,7 +12,6 @@ env:
 
 jobs:
   build:
-    if: ${{ github.event.label.name == 'Ready for Review' }} || github.event_name == 'push'
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -22,5 +21,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Build
       run: cargo build --verbose
+    - name: OS Version
+      run: uname -a
     - name: Run tests
       run: cargo test --verbose
