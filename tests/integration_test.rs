@@ -18,7 +18,7 @@ fn retrieve_system_uuid() {
             Some(uuid) => println!("System Information UUID == {:?}", uuid),
             None => println!("No System Information (Type 1) structure found with a UUID field"),
         },
-        Err(err) => println!("failure: {:?}", err),
+        Err(err) => assert!(false, "Failure: {:?}", err)
     }
 }
 
@@ -29,8 +29,8 @@ fn print_all_memory_devices() {
             for memory_device in data.collect::<SMBiosMemoryDevice>() {
                 println!("{:#?}", memory_device);
             }
-        }
-        Err(err) => println!("failure: {:?}", err),
+        },
+        Err(err) => assert!(false, "Failure: {:?}", err)
     }
 }
 
@@ -51,7 +51,7 @@ fn struct_struct_association() {
             }
             None => println!("No Memory Device (Type 17) structure found"),
         },
-        Err(err) => println!("failure: {:?}", err),
+        Err(err) => assert!(false, "Failure: {:?}", err)
     }
 }
 
@@ -68,7 +68,7 @@ fn find_first_cpu() {
             }
             None => println!("No Processor Information (Type 4) structure found that is a CPU with a populated socket"),
         },
-        Err(err) => println!("Table load failure: {:?}", err),
+        Err(err) => assert!(false, "Failure: {:?}", err)
     }
 }
 
@@ -76,7 +76,7 @@ fn find_first_cpu() {
 #[test]
 fn find_installed_memory() {
     match table_load_from_device() {
-        Err(err) => println!("Table load failure: {:?}", err),
+        Err(err) => assert!(false, "Failure: {:?}", err),
         Ok(data) => data
             .filter(
                 |memory_device: &SMBiosMemoryDevice| match memory_device.size() {

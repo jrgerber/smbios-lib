@@ -29,16 +29,16 @@ Specification 3.7.0](https://www.dmtf.org/sites/default/files/standards/document
 In early development.
 
 The current development stage is to finalize the API design.
-	
+
 ## Dependencies
 * Windows
-    * libc = "^0.2"
+    * libc
 * MacOS
-    * libc = "^0.2"
-    * mach2 = "^0.4.1"
-    * core-foundation = "~0.9"
-    * core-foundation-sys = "~0.8"
-    * io-kit-sys = "^0.4.0"
+    * libc
+    * mach2
+    * core-foundation
+    * core-foundation-sys
+    * io-kit-sys
 	
 ## Security
 This library design follows a strict security mantra: *"Never trust the input"*.
@@ -59,7 +59,7 @@ fn retrieve_system_uuid() {
             Some(uuid) => println!("System Information UUID == {:?}", uuid),
             None => println!("No System Information (Type 1) structure found with a UUID field"),
         },
-        Err(err) => println!("failure: {:?}", err),
+        Err(err) => assert!(false, "Failure: {:?}", err)
     }
 }
 ```
@@ -84,7 +84,7 @@ fn print_all_memory_devices() {
                 println!("{:#?}", memory_device);
             }
         }
-        Err(err) => println!("failure: {:?}", err),
+        Err(err) => assert!(false, "Failure: {:?}", err),
     }
 }
 ```
@@ -129,7 +129,7 @@ fn struct_struct_association() {
             }
             None => println!("No Memory Device (Type 17) structure found"),
         },
-        Err(err) => println!("failure: {:?}", err),
+        Err(err) => assert!(false, "Failure: {:?}", err)
     }
 }
 ```

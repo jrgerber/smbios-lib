@@ -1,26 +1,26 @@
 name: smbioslib_ci
 
 on:
-  push:
-    branches: [ main ]
+  workflow_dispatch:
+  workflow_call:
   pull_request:
-    branches: [ main ]
-    types: [ labeled ]
+    branches: main
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
   build:
-    if: ${{ github.event.label.name == 'Ready for Review' }} || github.event_name == 'push'
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [macos-13, ubuntu-latest, windows-latest]
 
     steps:
     - uses: actions/checkout@v2
     - name: Build
-      run: cargo build --verbose
+      run: cargo build
+    - name: OS version
+      run: uname -a
     - name: Run tests
-      run: cargo test --verbose
+      run: cargo test
