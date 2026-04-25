@@ -243,7 +243,7 @@ impl From<u8> for ProcessorArchitectureTypeData {
                 0x07 => ProcessorArchitectureType::RiscV64Bit,
                 0x08 => ProcessorArchitectureType::RiscV128Bit,
                 0x09 => ProcessorArchitectureType::LoongArch32,
-                0x10 => ProcessorArchitectureType::LoongArch64,
+                0x0A => ProcessorArchitectureType::LoongArch64,
                 _ => ProcessorArchitectureType::None,
             },
             raw,

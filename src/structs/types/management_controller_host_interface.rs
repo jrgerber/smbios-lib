@@ -11,8 +11,8 @@ use std::ops::Deref;
 /// share that interface.
 ///
 /// Compliant with:
-/// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
-/// Document Date: 2020-07-17
+/// DMTF SMBIOS Reference Specification 3.9.0 (DSP0134)
+/// Document Date: 2025-07-07
 ///
 /// In SMBIOS 3.2, a Change Request is applied to this structure to add the missing information that is
 /// needed to parse the structure completely. The addition of the Interface Type Specific Data Length field
@@ -143,8 +143,8 @@ impl Serialize for SMBiosManagementControllerHostInterface<'_> {
 
 /// # Management Controller Host Interface Types
 ///
-/// 00h-3Fh: MCTP Host Interfaces - Refer to [DSP0239](https://www.dmtf.org/sites/default/files/standards/documents/DSP0239_1.1.0.pdf) for the definition and assignment of MCTP host interface type values
-/// 40h: Network Host Interface - Refer to [DSP0270](https://www.dmtf.org/sites/default/files/DSP0270_1.0.1.pdf) for the definition and details of the Network Host Interface type
+/// 00h-3Fh: MCTP Host Interfaces - Refer to [DSP0239](https://www.dmtf.org/sites/default/files/DSP0239_1.12.0.pdf) for the definition and assignment of MCTP host interface type values
+/// 40h: Network Host Interface - Refer to [DSP0270](https://www.dmtf.org/sites/default/files/standards/documents/DSP0270_1.3.0.pdf) for the definition and details of the Network Host Interface type
 /// F0h: OEM-defined
 /// All others: Reserved
 #[derive(Serialize, Debug, PartialEq, Eq)]
@@ -167,9 +167,23 @@ pub enum HostInterfaceType {
     Uart16750,
     /// 16850/16850A UART Register Compatible
     Uart16850,
+    /// I2C / SMBUS
+    I2C,
+    /// I3C
+    I3C,
+    /// PCIe VDM
+    PcieVdm,
+    /// MMBI
+    Mmbi,
+    /// PCC
+    Pcc,
+    /// UCIe
+    Ucie,
+    /// USB
+    Usb,
     /// Redfish Network Host Interface
     ///
-    /// See [DSP0270](https://www.dmtf.org/sites/default/files/DSP0270_1.0.1.pdf) Redfish Host Interface Specification
+    /// See [DSP0270](https://www.dmtf.org/sites/default/files/standards/documents/DSP0270_1.3.0.pdf) Redfish Host Interface Specification
     NetworkHostInterface,
     /// OEM Defined
     OemDefined,
@@ -238,6 +252,13 @@ impl From<u8> for HostInterfaceType {
             0x06 => HostInterfaceType::Uart16650,
             0x07 => HostInterfaceType::Uart16750,
             0x08 => HostInterfaceType::Uart16850,
+            0x09 => HostInterfaceType::I2C,
+            0x0A => HostInterfaceType::I3C,
+            0x0B => HostInterfaceType::PcieVdm,
+            0x0C => HostInterfaceType::Mmbi,
+            0x0D => HostInterfaceType::Pcc,
+            0x0E => HostInterfaceType::Ucie,
+            0x0F => HostInterfaceType::Usb,
             0x40 => HostInterfaceType::NetworkHostInterface,
             0xF0 => HostInterfaceType::OemDefined,
             _ => HostInterfaceType::None,

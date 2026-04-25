@@ -13,8 +13,8 @@ use std::ops::Deref;
 /// CIM_Chassis class.
 ///
 /// Compliant with:
-/// DMTF SMBIOS Reference Specification 3.4.0 (DSP0134)
-/// Document Date: 2020-07-17
+/// DMTF SMBIOS Reference Specification 3.9.0 (DSP0134)
+/// Document Date: 2025-07-07
 pub struct SMBiosSystemChassisInformation<'a> {
     parts: &'a UndefinedStruct,
 }
@@ -183,6 +183,26 @@ impl<'a> SMBiosSystemChassisInformation<'a> {
             None => Err(SMBiosStringError::FieldOutOfBounds).into(),
         }
     }
+
+    /// Rack type
+    pub fn rack_type(&self) -> Option<RackTypeData> {
+        self.contained_elements_size().and_then(|size| {
+            self.parts
+                .get_field_byte(Self::CONTAINED_ELEMENTS_OFFSET + 1 + size)
+                .map(|raw| RackTypeData::from(raw))
+        })
+    }
+
+    /// Rack height
+    ///
+    /// Height of the enclosure based on the Rack Type
+    pub fn rack_height(&self) -> Option<RackHeight> {
+        self.contained_elements_size().and_then(|size| {
+            self.parts
+                .get_field_byte(Self::CONTAINED_ELEMENTS_OFFSET + 2 + size)
+                .map(|raw| RackHeight::from(raw))
+        })
+    }
 }
 
 impl fmt::Debug for SMBiosSystemChassisInformation<'_> {
@@ -208,6 +228,8 @@ impl fmt::Debug for SMBiosSystemChassisInformation<'_> {
             )
             .field("contained_elements", &self.contained_elements())
             .field("sku_number", &self.sku_number())
+            .field("rack_type", &self.rack_type())
+            .field("rack_height", &self.rack_height())
             .finish()
     }
 }
@@ -217,7 +239,7 @@ impl Serialize for SMBiosSystemChassisInformation<'_> {
     where
         S: Serializer,
     {
-        let mut state = serializer.serialize_struct("SMBiosSystemChassisInformation", 17)?;
+        let mut state = serializer.serialize_struct("SMBiosSystemChassisInformation", 19)?;
         state.serialize_field("header", &self.parts.header)?;
         state.serialize_field("manufacturer", &self.manufacturer())?;
         state.serialize_field("chassis_type", &self.chassis_type())?;
@@ -238,6 +260,8 @@ impl Serialize for SMBiosSystemChassisInformation<'_> {
         )?;
         state.serialize_field("contained_elements", &self.contained_elements())?;
         state.serialize_field("sku_number", &self.sku_number())?;
+        state.serialize_field("rack_type", &self.rack_type())?;
+        state.serialize_field("rack_height", &self.rack_height())?;
         state.end()
     }
 }
@@ -253,12 +277,15 @@ pub enum ChassisHeight {
     /// or rack-mountable component and is equal to 1.75 inches or
     /// 4.445 cm.
     U(u8),
+    /// Height is specified in the Rack Height field (SMBIOS 3.9+)
+    SpecifiedInRackHeight,
 }
 
 impl From<u8> for ChassisHeight {
     fn from(raw: u8) -> Self {
         match raw {
             0 => ChassisHeight::Unspecified,
+            0xFF => ChassisHeight::SpecifiedInRackHeight,
             _ => ChassisHeight::U(raw),
         }
     }
@@ -630,6 +657,99 @@ impl From<u8> for ChassisSecurityStatusData {
     }
 }
 
+/// # Rack Type Data
+pub struct RackTypeData {
+    /// Raw value
+    ///
+    /// _raw_ is most useful when _value_ is None.
+    /// This is most likely to occur when the standard was updated but
+    /// this library code has not been updated to match the current
+    /// standard.
+    pub raw: u8,
+    /// The contained [RackType] value
+    pub value: RackType,
+}
+
+impl fmt::Debug for RackTypeData {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct(std::any::type_name::<RackTypeData>())
+            .field("raw", &self.raw)
+            .field("value", &self.value)
+            .finish()
+    }
+}
+
+impl Serialize for RackTypeData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("RackTypeData", 2)?;
+        state.serialize_field("raw", &self.raw)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
+impl fmt::Display for RackTypeData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.value {
+            RackType::None => write!(f, "{}", &self.raw),
+            _ => write!(f, "{:?}", &self.value),
+        }
+    }
+}
+
+impl Deref for RackTypeData {
+    type Target = RackType;
+
+    fn deref(&self) -> &Self::Target {
+        &self.value
+    }
+}
+
+/// # Rack Type
+#[derive(Serialize, Debug, PartialEq, Eq, Copy, Clone)]
+pub enum RackType {
+    /// Unspecified
+    Unspecified,
+    /// Open U
+    OpenU,
+    /// A value unknown to this standard, check the raw value
+    None,
+}
+
+impl From<u8> for RackTypeData {
+    fn from(raw: u8) -> Self {
+        RackTypeData {
+            value: match raw {
+                0x00 => RackType::Unspecified,
+                0x01 => RackType::OpenU,
+                _ => RackType::None,
+            },
+            raw,
+        }
+    }
+}
+
+/// # Rack Height
+#[derive(Serialize, Debug, PartialEq, Eq, Copy, Clone)]
+pub enum RackHeight {
+    /// A rack enclosure height is not specified.
+    Unspecified,
+    /// Height of the enclosure in Rack Type units.
+    Units(u8),
+}
+
+impl From<u8> for RackHeight {
+    fn from(raw: u8) -> Self {
+        match raw {
+            0 => RackHeight::Unspecified,
+            _ => RackHeight::Units(raw),
+        }
+    }
+}
+
 /// # Contained Elements
 pub struct ContainedElements<'a> {
     raw: &'a [u8],
@@ -933,6 +1053,7 @@ mod tests {
         match test_struct.height().unwrap() {
             ChassisHeight::U(_) => panic!("expected no height specified"),
             ChassisHeight::Unspecified => (),
+            ChassisHeight::SpecifiedInRackHeight => (),
         }
         match test_struct.number_of_power_cords().unwrap() {
             PowerCords::Count(count) => assert_eq!(count, 1),

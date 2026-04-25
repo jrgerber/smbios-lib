@@ -9,8 +9,8 @@ use std::ops::Deref;
 /// This structure describes a single memory device that is part of a larger [super::SMBiosPhysicalMemoryArray] (Type 16) structure.
 ///
 /// Compliant with:
-/// DMTF SMBIOS Reference Specification 3.7.0 (DSP0134)
-/// Document Date: 2023-07-21
+/// DMTF SMBIOS Reference Specification 3.9.0 (DSP0134)
+/// Document Date: 2025-07-07
 pub struct SMBiosMemoryDevice<'a> {
     parts: &'a UndefinedStruct,
 }
@@ -627,6 +627,8 @@ pub enum MemoryDeviceType {
     Lpddr5,
     /// HBM3
     Hbm3,
+    /// MRDIMM
+    Mrdimm,
     /// A value unknown to this standard, check the raw value
     None,
 }
@@ -668,6 +670,7 @@ impl From<u8> for MemoryDeviceTypeData {
                 0x22 => MemoryDeviceType::Ddr5,
                 0x23 => MemoryDeviceType::Lpddr5,
                 0x24 => MemoryDeviceType::Hbm3,
+                0x25 => MemoryDeviceType::Mrdimm,
                 _ => MemoryDeviceType::None,
             },
             raw,
@@ -752,6 +755,12 @@ pub enum MemoryFormFactor {
     Fbdimm,
     /// Die
     Die,
+    /// CAMM
+    Camm,
+    /// CUDIMM
+    Cudimm,
+    /// CSODIMM
+    Csodimm,
     /// A value unknown to this standard, check the raw value
     None,
 }
@@ -776,6 +785,9 @@ impl From<u8> for MemoryFormFactorData {
                 0x0E => MemoryFormFactor::Srimm,
                 0x0F => MemoryFormFactor::Fbdimm,
                 0x10 => MemoryFormFactor::Die,
+                0x11 => MemoryFormFactor::Camm,
+                0x12 => MemoryFormFactor::Cudimm,
+                0x13 => MemoryFormFactor::Csodimm,
                 _ => MemoryFormFactor::None,
             },
             raw,
@@ -989,6 +1001,8 @@ pub enum MemoryDeviceTechnology {
     NvdimmP,
     /// Intel® Optane™ persistent memory
     IntelOptaneDcPersistentMemory,
+    /// MRDIMM (Deprecated)
+    Mrdimm,
     /// A value unknown to this standard, check the raw value
     None,
 }
@@ -1004,6 +1018,7 @@ impl From<u8> for MemoryDeviceTechnologyData {
                 0x05 => MemoryDeviceTechnology::NvdimmF,
                 0x06 => MemoryDeviceTechnology::NvdimmP,
                 0x07 => MemoryDeviceTechnology::IntelOptaneDcPersistentMemory,
+                0x08 => MemoryDeviceTechnology::Mrdimm,
                 _ => MemoryDeviceTechnology::None,
             },
             raw,

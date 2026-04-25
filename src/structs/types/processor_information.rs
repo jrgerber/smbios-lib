@@ -18,8 +18,8 @@ use std::ops::Deref;
 /// determine the maximum possible configuration of the system.
 ///
 /// Compliant with:
-/// DMTF SMBIOS Reference Specification 3.7.0 (DSP0134)
-/// Document Date: 2023-07-21
+/// DMTF SMBIOS Reference Specification 3.9.0 (DSP0134)
+/// Document Date: 2025-07-07
 pub struct SMBiosProcessorInformation<'a> {
     parts: &'a UndefinedStruct,
 }
@@ -80,7 +80,7 @@ impl<'a> SMBiosProcessorInformation<'a> {
         self.parts.get_field_string(0x10)
     }
 
-    /// Voltage
+    /// Voltage (deprecated from 3.8.0)
     pub fn voltage(&self) -> Option<ProcessorVoltage> {
         self.parts
             .get_field_byte(0x11)
@@ -298,6 +298,16 @@ impl<'a> SMBiosProcessorInformation<'a> {
             .get_field_word(0x30)
             .map(|raw| ThreadEnabled::from(raw))
     }
+
+    /// String number of socket type.
+    ///
+    /// This value is the type of processor socket in use,
+    /// such as "Socket BGA1190" or "Socket LGA4710".
+    ///
+    /// NOTE: This exists if 'processor_upgrade' returns SeeSocketType.
+    pub fn socket_type(&self) -> SMBiosString {
+        self.parts.get_field_string(0x32)
+    }
 }
 
 impl fmt::Debug for SMBiosProcessorInformation<'_> {
@@ -334,6 +344,7 @@ impl fmt::Debug for SMBiosProcessorInformation<'_> {
             .field("cores_enabled_2", &self.cores_enabled_2())
             .field("thread_count_2", &self.thread_count_2())
             .field("thread_enabled", &self.thread_enabled())
+            .field("socket_type", &self.socket_type())
             .finish()
     }
 }
@@ -343,7 +354,7 @@ impl Serialize for SMBiosProcessorInformation<'_> {
     where
         S: Serializer,
     {
-        let mut state = serializer.serialize_struct("SMBiosProcessorInformation", 27)?;
+        let mut state = serializer.serialize_struct("SMBiosProcessorInformation", 28)?;
         state.serialize_field("header", &self.parts.header)?;
         state.serialize_field("socket_designation", &self.socket_designation())?;
         state.serialize_field("processor_type", &self.processor_type())?;
@@ -375,6 +386,7 @@ impl Serialize for SMBiosProcessorInformation<'_> {
         state.serialize_field("cores_enabled_2", &self.cores_enabled_2())?;
         state.serialize_field("thread_count_2", &self.thread_count_2())?;
         state.serialize_field("thread_enabled", &self.thread_enabled())?;
+        state.serialize_field("socket_type", &self.socket_type())?;
         state.end()
     }
 }
@@ -632,6 +644,8 @@ pub enum ProcessorFamily {
     IntelCeleronMProcessor,
     /// Intel® Pentium® 4 HT processor
     IntelPentium4HTProcessor,
+    /// Intel® Processor
+    Intel,
     /// AMD Duron™ Processor Family
     AMDDuronProcessorFamily,
     /// K5 Family
@@ -932,6 +946,8 @@ pub enum ProcessorFamily {
     IntelCorei3processor,
     /// Intel® Core™ i9 processor
     IntelCorei9processor,
+    /// Intel® Xeon® D Processor family
+    IntelXeonDProcessorFamily,
     /// VIA C7™-M Processor Family
     VIAC7MProcessorFamily,
     /// VIA C7™-D Processor Family
@@ -1056,6 +1072,22 @@ pub enum ProcessorFamily {
     MultiCoreLoongson3CProcessor5xxxSeries,
     /// Multi-Core Loongson™ 3D Processor 5xxx Series
     MultiCoreLoongson3DProcessor5xxxSeries,
+    /// Intel® Core™ 3
+    IntelCore3,
+    /// Intel® Core™ 5
+    IntelCore5,
+    /// Intel® Core™ 7
+    IntelCore7,
+    /// Intel® Core™ 9
+    IntelCore9,
+    /// Intel® Core™ Ultra 3
+    IntelCoreUltra3,
+    /// Intel® Core™ Ultra 5
+    IntelCoreUltra5,
+    /// Intel® Core™ Ultra 7
+    IntelCoreUltra7,
+    /// Intel® Core™ Ultra 9
+    IntelCoreUltra9,
     /// A value unknown to this standard, check the raw value
     None,
 }
@@ -1084,6 +1116,7 @@ impl From<u16> for ProcessorFamily {
             0x13 => ProcessorFamily::M2Family,
             0x14 => ProcessorFamily::IntelCeleronMProcessor,
             0x15 => ProcessorFamily::IntelPentium4HTProcessor,
+            0x16 => ProcessorFamily::Intel,
             0x18 => ProcessorFamily::AMDDuronProcessorFamily,
             0x19 => ProcessorFamily::K5Family,
             0x1A => ProcessorFamily::K6Family,
@@ -1234,6 +1267,7 @@ impl From<u16> for ProcessorFamily {
             0xCD => ProcessorFamily::IntelCorei5processor,
             0xCE => ProcessorFamily::IntelCorei3processor,
             0xCF => ProcessorFamily::IntelCorei9processor,
+            0xD0 => ProcessorFamily::IntelXeonDProcessorFamily,
             0xD2 => ProcessorFamily::VIAC7MProcessorFamily,
             0xD3 => ProcessorFamily::VIAC7DProcessorFamily,
             0xD4 => ProcessorFamily::VIAC7ProcessorFamily,
@@ -1296,6 +1330,15 @@ impl From<u16> for ProcessorFamily {
             0x26F => ProcessorFamily::MultiCoreLoongson3BProcessor5xxxSeries,
             0x270 => ProcessorFamily::MultiCoreLoongson3CProcessor5xxxSeries,
             0x271 => ProcessorFamily::MultiCoreLoongson3DProcessor5xxxSeries,
+            0x300 => ProcessorFamily::IntelCore3,
+            0x301 => ProcessorFamily::IntelCore5,
+            0x302 => ProcessorFamily::IntelCore7,
+            0x303 => ProcessorFamily::IntelCore9,
+            0x304 => ProcessorFamily::IntelCoreUltra3,
+            0x305 => ProcessorFamily::IntelCoreUltra5,
+            0x306 => ProcessorFamily::IntelCoreUltra7,
+            0x307 => ProcessorFamily::IntelCoreUltra9,
+
             _ => ProcessorFamily::None,
         }
     }
@@ -1506,6 +1549,22 @@ pub enum ProcessorUpgrade {
     SocketLGA4710,
     /// Socket LGA7529
     SocketLGA7529,
+    /// Socket BGA1964
+    SocketBGA1964,
+    /// Socket BGA1792
+    SocketBGA1792,
+    /// Socket BGA2049
+    SocketBGA2049,
+    /// Socket BGA2551
+    SocketBGA2551,
+    /// Socket LGA1851
+    SocketLGA1851,
+    /// Socket BGA2114
+    SocketBGA2114,
+    /// Socket BGA2833
+    SocketBGA2833,
+    /// Socket type is specified in the socket_type string field (SMBIOS 3.8+)
+    SeeSocketType,
     /// A value unknown to this standard, check the raw value
     None,
 }
@@ -1594,6 +1653,14 @@ impl From<u8> for ProcessorUpgradeData {
                 0x4E => ProcessorUpgrade::SocketBGA4129,
                 0x4F => ProcessorUpgrade::SocketLGA4710,
                 0x50 => ProcessorUpgrade::SocketLGA7529,
+                0x51 => ProcessorUpgrade::SocketBGA1964,
+                0x52 => ProcessorUpgrade::SocketBGA1792,
+                0x53 => ProcessorUpgrade::SocketBGA2049,
+                0x54 => ProcessorUpgrade::SocketBGA2551,
+                0x55 => ProcessorUpgrade::SocketLGA1851,
+                0x56 => ProcessorUpgrade::SocketBGA2114,
+                0x57 => ProcessorUpgrade::SocketBGA2833,
+                0xFF => ProcessorUpgrade::SeeSocketType,
                 _ => ProcessorUpgrade::None,
             },
             raw,
