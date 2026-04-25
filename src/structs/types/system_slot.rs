@@ -9,8 +9,8 @@ use std::{convert::TryInto, fmt, ops::Deref};
 /// structure is provided for each slot in the system.
 ///
 /// Compliant with:
-/// DMTF SMBIOS Reference Specification 3.7.0 (DSP0134)
-/// Document Date: 2023-07-21
+/// DMTF SMBIOS Reference Specification 3.9.0 (DSP0134)
+/// Document Date: 2025-07-07
 pub struct SMBiosSystemSlot<'a> {
     parts: &'a UndefinedStruct,
 }
@@ -240,8 +240,9 @@ impl Serialize for SMBiosSystemSlot<'_> {
 /// | Slot Type | Slot ID Field Meaning |
 /// | --------- | --------------------- |
 /// | MCA | Identifies the logical Micro Channel slot number, in the range 1 to 15, in byte 0. Byte 1 is set to 0. |
-/// | PCI, AGP, PCIX, PCI Express | On a system that supports ACPI, identifies the value returned in the _SUN object for this slot. On a system that supports the PCI IRQ Routing Table Specification, identifies the value present in the Slot Number field of the PCI Interrupt Routing table entry that is associated with this slot, in byte 0 - byte 1 is set to 0. The table is returned by the "Get PCI Interrupt Routing Options" PCI BIOS function call and provided directly in the PCI IRQ Routing Table Specification ($PIRQ). Software can determine the PCI bus number and device associated with the slot by matching the "Slot ID" to an entry in the routing-table and ultimately determine what device is present in that slot. NOTE: This definition also applies to the 66 MHz-capable PCI slots. |
-/// | PCMCIA | Identifies the Adapter Number (byte 0) and Socket Number (byte 1) to be passed toPCMCIA Socket Services to identify this slot |
+/// | EISA | Identifies the logical EISA slot number, in the range 1 to 15, in offset 09h. Offset 0Ah is set to 0. |
+/// | PCI, AGP, PCI-X, PCI Express, OCP, M.2, U.2, EDSFF E1/E3 | On a system that supports ACPI, identifies the value returned in the _SUN object for this slot. On a system that supports the PCI IRQ Routing Table Specification, identifies the value present in the Slot Number field of the PCI Interrupt Routing table entry that is associated with this slot, in offset 09h—offset 0Ah is set to 0. The table is returned by the "Get PCI Interrupt Routing Options" PCI BIOS function call and provided directly in the PCI IRQ Routing Table Specification ($PIRQ). Software can determine the PCI bus number and device associated with the slot by matching the "Slot ID" to an entry in the routing-table and ultimately determine what device is present in that slot. NOTE: This definition also applies to the 66 MHz-capable PCI slots. |
+/// | PCMCIA | Identifies the Adapter Number (byte 0) and Socket Number (byte 1) to be passed to PCMCIA Socket Services to identify this slot |
 #[derive(Serialize, Debug, PartialEq, Eq, Clone, Copy)]
 pub struct SystemSlotId(pub [u8; 2]);
 

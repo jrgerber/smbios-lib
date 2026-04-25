@@ -133,7 +133,7 @@ impl<'a> SMBiosData {
     }
 
     /// Finds the structure matching the given handle
-    pub fn find_by_handle(&'a self, handle: &Handle) -> Option<&UndefinedStruct> {
+    pub fn find_by_handle(&'a self, handle: &Handle) -> Option<&'a UndefinedStruct> {
         self.table.find_by_handle(handle)
     }
 
