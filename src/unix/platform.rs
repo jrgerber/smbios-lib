@@ -209,11 +209,57 @@ pub fn raw_smbios_from_device() -> Result<Vec<u8>, Error> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::fs::File;
     use std::io;
 
     #[test]
+    #[cfg(any(target_os = "linux"))]
     fn test_dev_mem_scan() -> io::Result<()> {
+        let entry_path = std::path::Path::new(SYS_ENTRY_FILE);
+
+        match SMBiosEntryPoint64::try_load_from_file(entry_path) {
+            Ok(entry_point) => {
+                println!(
+                    "SMBIOS {}.{}.{} present.",
+                    entry_point.major_version(),
+                    entry_point.minor_version(),
+                    entry_point.docrev()
+                );
+                println!(
+                    "Occupying {} bytes maximum.",
+                    entry_point.structure_table_maximum_size()
+                );
+                println!("Table at: {:#018X}.", entry_point.structure_table_address());
+            }
+            Err(err) => match err.kind() {
+                ErrorKind::InvalidData => {
+                    let entry_point = SMBiosEntryPoint32::try_load_from_file(entry_path)?;
+                    println!(
+                        "SMBIOS {}.{} present.",
+                        entry_point.major_version(),
+                        entry_point.minor_version()
+                    );
+                    println!(
+                        "{} structures occupying {} bytes.",
+                        entry_point.number_of_smbios_structures(),
+                        entry_point.structure_table_length()
+                    );
+                    println!("Table at: {:#010X}.", entry_point.structure_table_address());
+                }
+                _ => return Err(err),
+            },
+        }
+
+        let data = SMBiosData::try_load_from_file(SYS_TABLE_FILE, None)?;
+        println!("{:#X?}", data);
+
+        Ok(())
+    }
+
+    #[test]
+    #[cfg(any(target_os = "freebsd"))]
+    fn test_dev_mem_scan() -> io::Result<()> {
+        use std::fs::File;
+
         const RANGE_START: u64 = 0x000F0000u64;
         const RANGE_END: u64 = 0x000FFFFFu64;
         let mut dev_mem = File::open(DEV_MEM_FILE)?;
