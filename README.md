@@ -1,156 +1,104 @@
 # smbios-lib
-An SMBIOS Library created in Rust that reads and parses raw BIOS data
+
+A Rust library for reading, parsing, and serializing SMBIOS data from the host system or from a file.
 
 [![crates.io](https://img.shields.io/crates/v/smbios-lib.svg)](https://crates.io/crates/smbios-lib)
 [![smbioslib_ci](https://github.com/jrgerber/smbios-lib/actions/workflows/smbios_ci.yml/badge.svg)](https://github.com/jrgerber/smbios-lib/actions/workflows/smbios_ci.yml)
 ![LOC](https://tokei.rs/b1/github/jrgerber/smbios-lib?category=code)
 
 ## Table of contents
-* [General info](#general-info)
-* [Dependencies](#dependencies)
-* [Security](#security)
-* [Examples](#examples)
+- [Overview](#overview)
+- [Installation](#installation)
+- [Features](#features)
+- [CLI usage](#cli-usage)
+- [Library usage](#library-usage)
+- [Security](#security)
 
-## General info
-This project reads raw [SMBIOS](https://en.wikipedia.org/wiki/BIOS) data from either a device or file and provides the data as an API.
+## Overview
+This crate reads raw SMBIOS data from the current platform and exposes it through a typed API. It also supports loading SMBIOS tables from a file and dumping raw data to disk.
 
-For an example project using this library take a look at [dmidecode-rs](https://github.com/jrgerber/dmidecode-rs).
+The crate now targets the DMTF SMBIOS 3.9.0 specification and is designed to be usable both as a library and as a small CLI tool. For a higher-level example application built on top of this crate, see [dmidecode-rs](https://github.com/jrgerber/dmidecode-rs).
 
-### Supports
-* [DMTF System Management BIOS (SMBIOS) Reference
-Specification 3.7.0](https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.7.0.pdf)
-* Linux
-* MacOS
-* Windows family
+## Installation
+Add the crate to your project:
 
-> SMBIOS 3.7.0 contains 49 defined structure types, all of which are covered by this library (types 0-46, 126, and 127).  Support via extensibility exists for types 128-255 (reserved for OEMs).  Extensibility also applies in the case when this library has not been updated for the latest specification version or a pre-released specification and a new type is introduced.
+```toml
+[dependencies]
+smbios-lib = "0.9.3"
+```
 
-### Project Status
-In early development.
+Or install it with Cargo:
 
-The current development stage is to finalize the API design.
+```bash
+cargo add smbios-lib
+```
 
-## Dependencies
-* Windows
-    * libc
-* MacOS
-    * libc
-    * mach2
-    * core-foundation
-    * core-foundation-sys
-    * io-kit-sys
-	
+## Features
+- Implements all 49 defined structure types from the [DMTF SMBIOS 3.9.0 specification](https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.9.0.pdf) (types 0–46, 126, and 127), with extensibility for OEM types 128–255.
+- Cross-platform support for Linux, Intel macOS , Windows, FreeBSD.
+- On Linux, reads SMBIOS data from `/sys/firmware/dmi/tables` (sysfs); on FreeBSD falls back to `/dev/mem`.
+- Exposes typed structure accessors for BIOS, system, baseboard, chassis, processor, memory, and all other standard records.
+- Supports iteration, filtering, and handle-based lookups over SMBIOS entries.
+- Provides JSON serialization via `serde`/`serde_json`.
+- Includes a CLI binary named `smbiosdump`.
+
+### SMBIOS 3.8 / 3.9 highlights
+- **Processor Information (Type 4):** new `socket_type` field; `voltage` marked deprecated from 3.8.0; additional `ProcessorFamily` variants (Intel Core 3/5/7/9, Intel Core Ultra 3/5/7/9, Intel Xeon D, and more).
+- **System Chassis Information (Type 3):** new `rack_type` and `rack_height` fields; new `SpecifiedInRackHeight` variant for `ChassisHeight`.
+- **Memory Device (Type 17):** updated fields per 3.9.0.
+- **Management Controller Host Interface (Type 42):** expanded protocol record data.
+- **System Slot (Type 9):** additional slot type values.
+
+## CLI usage
+The repository includes a binary that can be used directly from the workspace:
+
+```bash
+cargo run --bin smbiosdump -- --help
+```
+
+Useful examples:
+
+```bash
+# Print the full SMBIOS table
+cargo run --bin smbiosdump
+
+# Read from a file instead of the host platform
+cargo run --bin smbiosdump -- -f /path/to/smbios.bin
+
+# Dump the raw SMBIOS bytes to a file
+cargo run --bin smbiosdump -- -o /tmp/smbios.bin
+
+# Query a single SMBIOS string field
+cargo run --bin smbiosdump -- -s system-serial-number
+
+# Output the parsed table as JSON
+cargo run --bin smbiosdump -- -j
+```
+
+## Library usage
+The primary entry points are `table_load_from_device`, `load_smbios_data_from_file`, and the `SMBiosData` iterator API.
+
+```rust
+use smbioslib::*;
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let data = table_load_from_device()?;
+
+    if let Some(uuid) = data.find_map(|sys_info: SMBiosSystemInformation| sys_info.uuid()) {
+        println!("System UUID: {}", uuid);
+    }
+
+    Ok(())
+}
+```
+
+Common patterns include:
+- `find_map` to retrieve a single structure instance.
+- `collect::<T>()` to gather all entries of a given structure type.
+- `find_by_handle(&handle)` to resolve structures that reference one another.
+- `filter(...)` and `find(...)` for targeted searches.
+
 ## Security
-This library design follows a strict security mantra: *"Never trust the input"*.
+This library follows a strict security stance: never trust the input.
 
-SMBIOS has been around for decades and has undergone many versions and revisions.  Many OEM vendors have interpreted and implemented the specifications over the years. Known cases of incorrect firmware implementations exist.  This presents a veritable labrynth of logic for both the known and the unknown. Rather than creating such a complex state machine, we take advantage of Rust's [Option<>](https://doc.rust-lang.org/std/option/) trait and assert that the act of retrieval for any and all information may fail.  The burden of proof thus shifts from the library to the library consumer who is required to implement the failing condition arm.
-
-## Examples
-### Retrieve a Field of a Single Instance Structure
-Some structures are required and are a single instance. (e.g. [SMBiosSystemInformation](src/structs/types/system_information.rs))
-
-```rust
-#[test]
-/// Retrieves the System UUID from a device.
-/// UUID is found in the System Information (type 1) structure
-fn retrieve_system_uuid() {
-    match table_load_from_device() {
-        Ok(data) => match data.find_map(|sys_info: SMBiosSystemInformation| sys_info.uuid()) {
-            Some(uuid) => println!("System Information UUID == {:?}", uuid),
-            None => println!("No System Information (Type 1) structure found with a UUID field"),
-        },
-        Err(err) => assert!(false, "Failure: {:?}", err)
-    }
-}
-```
-
-Output:
-```
-running 1 test
-System Information UUID == Uuid(4ee6523f-d56a-f3ea-8e2a-891cf96286ea)
-test retrieve_system_uuid ... ok
-```
-
-### Retrieve All Instances of a Structure - collect()
-Some structures are allowed to have more than one instance. (e.g. [SMBiosMemoryDevice](src/structs/types/memory_device.rs))
-
-```rust
-#[test]
-/// Prints information for all memory devices within a device.
-fn print_all_memory_devices() {
-    match table_load_from_device() {
-        Ok(data) => {
-            for memory_device in data.collect::<SMBiosMemoryDevice>() {
-                println!("{:#?}", memory_device);
-            }
-        }
-        Err(err) => assert!(false, "Failure: {:?}", err),
-    }
-}
-```
-
-Output:
-```
-running 1 test
-smbioslib::structs::types::memory_device::SMBiosMemoryDevice {
-    header: smbioslib::core::header::Header {
-        struct_type: 17,
-        length: 40,
-        handle: smbioslib::structs::structure::Handle {
-            handle: 8,
-        },
-    },
-    physical_memory_array_handle: Some(
-        smbioslib::structs::structure::Handle {
-            handle: 1,
-        },
-    ),
-[...elided...]
-```
-
-### Retrieve a Structure Given a Handle - find_by_handle()
-Some structures point to other structures via handles. (e.g. [SMBiosMemoryDevice](src/structs/types/memory_device.rs) points to [SMBiosPhysicalMemoryArray](src/structs/types/physical_memory_array.rs))
-
-```rust
-/// Finds an associated struct by handle
-#[test]
-fn struct_struct_association() {
-    match table_load_from_device() {
-        Ok(data) => match data.first::<SMBiosMemoryDevice>() {
-            Some(first_memory_device) => {
-                let handle = first_memory_device.physical_memory_array_handle().unwrap();
-                match data.find_by_handle(&handle) {
-                    Some(undefined_struct) => {
-                        let physical_memory_array = undefined_struct.defined_struct();
-                        println!("{:#?}", physical_memory_array)
-                    }
-                    None => println!("No Physical Memory Array (Type 16) structure found"),
-                }
-            }
-            None => println!("No Memory Device (Type 17) structure found"),
-        },
-        Err(err) => assert!(false, "Failure: {:?}", err)
-    }
-}
-```
-
-Output:
-```
-running 1 test
-PhysicalMemoryArray(
-    smbioslib::structs::types::physical_memory_array::SMBiosPhysicalMemoryArray {
-        header: smbioslib::core::header::Header {
-            struct_type: 16,
-            length: 23,
-            handle: smbioslib::structs::structure::Handle {
-                handle: 1,
-            },
-        },
-        location: Some(
-            smbioslib::structs::types::physical_memory_array::MemoryArrayLocationData {
-                raw: 3,
-                value: SystemBoardOrMotherboard,
-            },
-        ),
-[...elided...]
-```
+SMBIOS firmware can be inconsistent across vendors and across versions, so the API is designed to return `Option`-based results and let callers handle missing or malformed data explicitly.
