@@ -4,7 +4,6 @@ A Rust library for reading, parsing, and serializing SMBIOS data from the host s
 
 [![crates.io](https://img.shields.io/crates/v/smbios-lib.svg)](https://crates.io/crates/smbios-lib)
 [![smbioslib_ci](https://github.com/jrgerber/smbios-lib/actions/workflows/smbios_ci.yml/badge.svg)](https://github.com/jrgerber/smbios-lib/actions/workflows/smbios_ci.yml)
-![LOC](https://tokei.rs/b1/github/jrgerber/smbios-lib?category=code)
 
 ## Table of contents
 - [Overview](#overview)
