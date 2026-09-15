@@ -49,7 +49,19 @@ cargo add smbios-lib
 - **System Slot (Type 9):** additional slot type values.
 
 ## CLI usage
-The repository includes a binary that can be used directly from the workspace:
+The crate ships a command-line tool named `smbiosdump`. On Debian-based systems, install it with `apt`:
+
+```bash
+sudo apt install smbiosdump
+```
+
+Elsewhere, install it from crates.io, which places the binary in `~/.cargo/bin`:
+
+```bash
+cargo install smbios-lib
+```
+
+It can also be run straight from a checkout of this repository:
 
 ```bash
 cargo run --bin smbiosdump -- --help
